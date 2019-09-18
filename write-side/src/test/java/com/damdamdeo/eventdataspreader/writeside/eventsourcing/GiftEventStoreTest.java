@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class GiftTest {
+public class GiftEventStoreTest {
 
     @Inject
     GiftAggregateRepository giftAggregateRepository;
