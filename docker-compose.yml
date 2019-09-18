@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+
+  eventstore:
+    image: debezium/postgres:11-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=eventstore
