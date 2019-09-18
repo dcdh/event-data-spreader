@@ -1,6 +1,6 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event;
+package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventPayload;
 
 import java.util.Objects;

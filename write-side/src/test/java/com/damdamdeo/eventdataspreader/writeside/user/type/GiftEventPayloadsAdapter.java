@@ -1,8 +1,8 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.user.type;
+package com.damdamdeo.eventdataspreader.writeside.user.type;
 
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventPayload;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hibernate.user.types.EventPayloadsAdapter;
 
 import javax.json.Json;

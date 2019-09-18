@@ -1,7 +1,7 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing;
+package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.user.type.GiftEventMetadataAdapter;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.user.type.GiftEventMetadataAdapter;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.command;
+package com.damdamdeo.eventdataspreader.writeside.command;
 
 import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 

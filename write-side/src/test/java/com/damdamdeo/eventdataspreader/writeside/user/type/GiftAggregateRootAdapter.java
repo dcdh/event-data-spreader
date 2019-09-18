@@ -1,6 +1,6 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.user.type;
+package com.damdamdeo.eventdataspreader.writeside.user.type;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hibernate.user.types.AggregateRootAdapter;
 

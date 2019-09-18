@@ -1,7 +1,7 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing;
+package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.user.type.GiftAggregateRootAdapter;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.user.type.GiftAggregateRootAdapter;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;

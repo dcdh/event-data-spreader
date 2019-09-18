@@ -1,11 +1,11 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.command.handler;
+package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.command.BuyGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

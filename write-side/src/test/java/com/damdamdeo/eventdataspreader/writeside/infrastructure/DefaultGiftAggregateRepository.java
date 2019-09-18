@@ -1,7 +1,7 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
+package com.damdamdeo.eventdataspreader.writeside.infrastructure;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregateRepository;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AbstractAggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;

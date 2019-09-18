@@ -1,8 +1,8 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate;
+package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 
 import java.util.Objects;
 

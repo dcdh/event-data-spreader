@@ -1,6 +1,6 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.user.type;
+package com.damdamdeo.eventdataspreader.writeside.user.type;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hibernate.user.types.EventMetadataAdapter;
 

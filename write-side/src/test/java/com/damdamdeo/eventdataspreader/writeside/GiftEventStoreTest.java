@@ -1,10 +1,10 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing;
+package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.GiftAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
