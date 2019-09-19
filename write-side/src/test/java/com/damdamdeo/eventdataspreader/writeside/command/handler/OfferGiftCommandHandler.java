@@ -1,26 +1,31 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
+import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class OfferGiftCommandHandler implements CommandHandler<GiftAggregate, OfferGiftCommand> {
+@CommandQualifier(OfferGiftCommand.class)
+public class OfferGiftCommandHandler implements CommandHandler {
 
     @Inject
     GiftAggregateRepository giftAggregateRepository;
 
     @Override
-    public GiftAggregate handle(final OfferGiftCommand command) {
+    public AggregateRoot handle(final Command command) {
         final GiftAggregate giftAggregate = giftAggregateRepository.load(command.aggregateId());
-        giftAggregate.apply(new GiftOffered(command.name(), command.offeredTo()),
-                new GiftEventMetadata(command.executedBy()));
+        final OfferGiftCommand offerGiftCommand = (OfferGiftCommand) command;
+        giftAggregate.apply(new GiftOffered(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
+                new GiftEventMetadata(offerGiftCommand.executedBy()));
         return giftAggregateRepository.save(giftAggregate);
     }
 

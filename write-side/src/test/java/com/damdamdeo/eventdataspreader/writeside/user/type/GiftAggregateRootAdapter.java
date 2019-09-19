@@ -7,6 +7,7 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hi
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.bind.adapter.JsonbAdapter;
+import java.util.Optional;
 
 public class GiftAggregateRootAdapter implements AggregateRootAdapter,
         JsonbAdapter<AggregateRoot, JsonObject> // Quick fix an issue with yasson
@@ -23,7 +24,7 @@ public class GiftAggregateRootAdapter implements AggregateRootAdapter,
                         .add(DISCRIMINATOR, aggregateRootTypeSimpleName)
                         .add("aggregateRootId", aggregateRoot.aggregateRootId())
                         .add("name", ((GiftAggregate) aggregateRoot).name())
-                        .add("offeredTo", ((GiftAggregate) aggregateRoot).offeredTo())
+                        .add("offeredTo", Optional.ofNullable(((GiftAggregate) aggregateRoot).offeredTo()).orElse(""))
                         .add("version", aggregateRoot.version())
                         .build();
             default:

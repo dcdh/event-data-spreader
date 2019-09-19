@@ -28,6 +28,7 @@ public class JpaPostgreSQLEventRepository implements EventRepository {
                 .forEach(eventEntity -> entityManager.persist(eventEntity));
     }
 
+    @Transactional
     @Override
     public List<Event> load(final String aggregateRootId, final String aggregateRootType) {
         return entityManager.createNamedQuery("Events.findByAggregateRootIdOrderByVersionAsc", EventEntity.class)

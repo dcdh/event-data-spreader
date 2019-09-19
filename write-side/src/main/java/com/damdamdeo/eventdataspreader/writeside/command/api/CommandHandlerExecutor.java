@@ -5,7 +5,9 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.util.AnnotationLiteral;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @ApplicationScoped
-public class DefaultCommandHandler {
+public class CommandHandlerExecutor {
 
     private ExecutorService exactlyOnceCommandExecutor;
     private List<ExecutorService> threadPools;
@@ -38,7 +40,7 @@ public class DefaultCommandHandler {
         this.threadPools.stream().forEach(ExecutorService::shutdown);
     }
 
-    public AggregateRoot handle(final Command command) throws Throwable {
+    public Optional<AggregateRoot> execute(final Command command) throws Throwable {
         final ExecutorService executorServiceToExecuteCommand;
         if (command.exactlyOnceCommandExecution()) {
             executorServiceToExecuteCommand = this.exactlyOnceCommandExecutor;
@@ -53,8 +55,10 @@ public class DefaultCommandHandler {
         }
         try {
             return executorServiceToExecuteCommand.submit(() -> {
-                final AggregateRoot aggregateRoot = executeCommand(command);
-                this.handledAggregateRootIdsInExactlyOnce.remove(aggregateRoot.aggregateRootId());
+                final Optional<AggregateRoot> aggregateRoot = executeCommand(command);
+                aggregateRoot.ifPresent(ar -> {
+                    this.handledAggregateRootIdsInExactlyOnce.remove(ar.aggregateRootId());
+                });
                 return aggregateRoot;
             }).get();
         } catch (final InterruptedException e) {
@@ -64,12 +68,33 @@ public class DefaultCommandHandler {
         }
     }
 
-    private AggregateRoot executeCommand(final Command command) {
-        final CommandHandler commandHandler = CDI.current()
-                .select(CommandHandler.class)
-                // FCK !!!
-                .get();
-        return commandHandler.handle(command);
+    private class CommandQualifierLiteral extends AnnotationLiteral<CommandQualifier> implements CommandQualifier {
+
+        private final Class value;
+
+        private CommandQualifierLiteral(final Class value) {
+            this.value = value;
+        }
+
+        @Override
+        public Class value() {
+            return value;
+        }
+
+    }
+
+    private Optional<AggregateRoot> executeCommand(final Command command) {
+        final Instance<CommandHandler> commandHandler = CDI.current()
+                .select(CommandHandler.class, new CommandQualifierLiteral(command.getClass()));
+        if (commandHandler.isResolvable()) {
+            final AggregateRoot aggregateRoot = commandHandler.get().handle(command);
+            return Optional.of(aggregateRoot);
+        } else if (commandHandler.isUnsatisfied()) {
+//            TODO log
+        } else if (commandHandler.isAmbiguous()) {
+            throw new IllegalStateException("Ambigous command handlers for " + command.getClass());
+        }
+        return Optional.empty();
     }
 
 }
