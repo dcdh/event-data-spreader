@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.user.type.GiftEventMetadataAdapter;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.user.type.DefaultEventMetadataAdapter;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -14,24 +14,24 @@ import javax.json.bind.JsonbConfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GiftEventMetadataTest {
+public class DefaultEventMetadataTest {
 
     private static final Jsonb MAPPER = JsonbBuilder.create(new JsonbConfig()
             .withFormatting(true)
-            .withAdapters(new GiftEventMetadataAdapter()));
+            .withAdapters(new DefaultEventMetadataAdapter()));
 
     @Test
     public void should_be_equals() {
-        EqualsVerifier.forClass(GiftEventMetadata.class).verify();
+        EqualsVerifier.forClass(DefaultEventMetadata.class).verify();
     }
 
     @Test
     public void should_serialize() throws JSONException {
         // Given
-        final GiftEventMetadata giftEventMetadata = new GiftEventMetadata("executedBy");
+        final DefaultEventMetadata defaultEventMetadata = new DefaultEventMetadata("executedBy");
 
         // When
-        final String json = MAPPER.toJson(giftEventMetadata);
+        final String json = MAPPER.toJson(defaultEventMetadata);
 
         // Then
         JSONAssert.assertEquals(
@@ -44,10 +44,10 @@ public class GiftEventMetadataTest {
         final String json = "{\"executedBy\": \"executedBy\"}";
 
         // When
-        final GiftEventMetadata giftEventMetadata = (GiftEventMetadata) MAPPER.fromJson(json, GiftEventMetadata.class);
+        final DefaultEventMetadata defaultEventMetadata = (DefaultEventMetadata) MAPPER.fromJson(json, DefaultEventMetadata.class);
 
         // Then
-        assertEquals("executedBy", giftEventMetadata.executedBy());
+        assertEquals("executedBy", defaultEventMetadata.executedBy());
     }
 
 }

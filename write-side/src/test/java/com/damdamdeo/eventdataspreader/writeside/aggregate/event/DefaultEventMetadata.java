@@ -4,11 +4,11 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventMetadata
 
 import java.util.Objects;
 
-public final class GiftEventMetadata implements EventMetadata {
+public final class DefaultEventMetadata implements EventMetadata {
 
     private final String executedBy;
 
-    public GiftEventMetadata(final String executedBy) {
+    public DefaultEventMetadata(final String executedBy) {
         this.executedBy = Objects.requireNonNull(executedBy);
     }
 
@@ -19,8 +19,8 @@ public final class GiftEventMetadata implements EventMetadata {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GiftEventMetadata)) return false;
-        GiftEventMetadata that = (GiftEventMetadata) o;
+        if (!(o instanceof DefaultEventMetadata)) return false;
+        DefaultEventMetadata that = (DefaultEventMetadata) o;
         return Objects.equals(executedBy, that.executedBy);
     }
 
@@ -31,7 +31,7 @@ public final class GiftEventMetadata implements EventMetadata {
 
     @Override
     public String toString() {
-        return "GiftEventMetadata{" +
+        return "DefaultEventMetadata{" +
                 "executedBy='" + executedBy + '\'' +
                 '}';
     }

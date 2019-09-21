@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
-import com.damdamdeo.eventdataspreader.writeside.user.type.GiftEventPayloadsAdapter;
+import com.damdamdeo.eventdataspreader.writeside.user.type.DefaultEventPayloadsAdapter;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ public class GiftOfferedTest {
 
     private static final Jsonb MAPPER = JsonbBuilder.create(new JsonbConfig()
             .withFormatting(true)
-            .withAdapters(new GiftEventPayloadsAdapter()));
+            .withAdapters(new DefaultEventPayloadsAdapter()));
 
 
     @Test

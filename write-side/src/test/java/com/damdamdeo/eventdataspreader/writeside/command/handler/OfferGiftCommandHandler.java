@@ -1,10 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
@@ -25,7 +25,7 @@ public class OfferGiftCommandHandler implements CommandHandler {
         final GiftAggregate giftAggregate = giftAggregateRepository.load(command.aggregateId());
         final OfferGiftCommand offerGiftCommand = (OfferGiftCommand) command;
         giftAggregate.apply(new GiftOffered(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
-                new GiftEventMetadata(offerGiftCommand.executedBy()));
+                new DefaultEventMetadata(offerGiftCommand.executedBy()));
         return giftAggregateRepository.save(giftAggregate);
     }
 

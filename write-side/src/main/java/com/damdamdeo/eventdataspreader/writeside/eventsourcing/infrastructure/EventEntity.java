@@ -71,6 +71,38 @@ public class EventEntity {
                 metaData);
     }
 
+    public UUID eventId() {
+        return eventId;
+    }
+
+    public String aggregateRootId() {
+        return aggregateRootId;
+    }
+
+    public String aggregateRootType() {
+        return aggregateRootType;
+    }
+
+    public String eventType() {
+        return eventType;
+    }
+
+    public Long version() {
+        return version;
+    }
+
+    public Date creationDate() {
+        return creationDate;
+    }
+
+    public EventMetadata metaData() {
+        return metaData;
+    }
+
+    public EventPayload eventPayload() {
+        return eventPayload;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,4 +116,17 @@ public class EventEntity {
         return Objects.hash(eventId);
     }
 
+    @Override
+    public String toString() {
+        return "EventEntity{" +
+                "eventId=" + eventId +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
+                ", aggregateRootType='" + aggregateRootType + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", version=" + version +
+                ", creationDate=" + creationDate +
+                ", metaData=" + metaData +
+                ", eventPayload=" + eventPayload +
+                '}';
+    }
 }

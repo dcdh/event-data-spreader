@@ -1,5 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.user.type;
 
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
@@ -8,13 +9,14 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hi
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.bind.adapter.JsonbAdapter;
+import java.math.BigDecimal;
 
-public class GiftEventPayloadsAdapter implements EventPayloadsAdapter,
+public class DefaultEventPayloadsAdapter implements EventPayloadsAdapter,
         JsonbAdapter<EventPayload, JsonObject> // Quick fix an issue with yasson
     {
 
     private final static String DISCRIMINATOR = "@class";
-
+// TODO je devrais avoir des noms full qualifié !!!!
     @Override
     public JsonObject adaptToJson(final EventPayload eventPayload) {
         final String eventPayloadTypeSimpleName = eventPayload.getClass().getSimpleName();
@@ -30,6 +32,12 @@ public class GiftEventPayloadsAdapter implements EventPayloadsAdapter,
                         .add("name", ((GiftOffered) eventPayload).name())
                         .add("offeredTo", ((GiftOffered) eventPayload).offeredTo())
                         .build();
+            case "AccountDebited":
+                return Json.createObjectBuilder()
+                        .add(DISCRIMINATOR, eventPayloadTypeSimpleName)
+                        .add("owner", ((AccountDebited) eventPayload).owner())
+                        .add("price", ((AccountDebited) eventPayload).price())
+                        .build();
             default:
                 throw new IllegalStateException("Unknown event type : " + eventPayloadTypeSimpleName);
         }
@@ -43,6 +51,9 @@ public class GiftEventPayloadsAdapter implements EventPayloadsAdapter,
             case "GiftOffered":
                 return new GiftOffered(eventPayload.getString("name"),
                         eventPayload.getString("offeredTo"));
+            case "AccountDebited":
+                return new AccountDebited(eventPayload.getString("owner"),
+                        eventPayload.getJsonNumber("price").bigDecimalValue());
             default:
                 throw new IllegalStateException("Unknown event type : " + eventPayload.getString(DISCRIMINATOR));
         }

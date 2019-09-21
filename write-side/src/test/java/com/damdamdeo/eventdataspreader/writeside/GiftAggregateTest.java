@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.user.type.GiftAggregateRootAdapter;
+import com.damdamdeo.eventdataspreader.writeside.user.type.DefaultAggregateRootAdapter;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -17,7 +17,7 @@ public class GiftAggregateTest {
 
     private static final Jsonb MAPPER = JsonbBuilder.create(new JsonbConfig()
             .withFormatting(true)
-            .withAdapters(new GiftAggregateRootAdapter()));
+            .withAdapters(new DefaultAggregateRootAdapter()));
 
     @Test
     public void should_serialize() throws JSONException {

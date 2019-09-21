@@ -2,8 +2,8 @@ package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
@@ -37,14 +37,16 @@ public class GiftEventStoreTest {
     public void setup() {
         entityManager.createQuery("DELETE FROM EventEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM AggregateRootProjectionEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
     }
 
     @Test
     public void should_buy_and_offer_the_gift() {
         // Given
         final GiftAggregate giftAggregate = new GiftAggregate();
-        giftAggregate.apply(new GiftBought("Motorola G6"), new GiftEventMetadata("damdamdeo"));
-        giftAggregate.apply(new GiftOffered("Motorola G6", "toto"), new GiftEventMetadata("damdamdeo"));
+        giftAggregate.apply(new GiftBought("Motorola G6"), new DefaultEventMetadata("damdamdeo"));
+        giftAggregate.apply(new GiftOffered("Motorola G6", "toto"), new DefaultEventMetadata("damdamdeo"));
 
         // When save
         final GiftAggregate giftAggregateSaved = giftAggregateRepository.save(giftAggregate);
@@ -63,7 +65,7 @@ public class GiftEventStoreTest {
         assertEquals("GiftBought", events.get(0).eventType());
         assertEquals(0L, events.get(0).version());
         assertNotNull(events.get(0).creationDate());
-        assertEquals(new GiftEventMetadata("damdamdeo"), events.get(0).eventMetaData());
+        assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(0).eventMetaData());
         assertEquals(new GiftBought("Motorola G6"), events.get(0).eventPayload());
         // -- GiftOffered
         assertNotNull(events.get(1).eventId());
@@ -72,7 +74,7 @@ public class GiftEventStoreTest {
         assertEquals("GiftOffered", events.get(1).eventType());
         assertEquals(1L, events.get(1).version());
         assertNotNull(events.get(1).creationDate());
-        assertEquals(new GiftEventMetadata("damdamdeo"), events.get(1).eventMetaData());
+        assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(1).eventMetaData());
         assertEquals(new GiftOffered("Motorola G6", "toto"), events.get(1).eventPayload());
     }
 
