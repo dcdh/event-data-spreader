@@ -1,14 +1,12 @@
-package com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.infrastructure;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumedRepository;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class JpaEventConsumedRepository implements EventConsumedRepository {

@@ -1,6 +1,6 @@
-package com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.infrastructure;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumerConsumed;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;

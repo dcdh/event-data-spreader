@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;

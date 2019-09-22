@@ -21,6 +21,7 @@
     <modules>
         <module>write-side</module>
         <module>query-side</module>
+        <module>debezium-event-consumer</module>
     </modules>
 
     <dependencyManagement>

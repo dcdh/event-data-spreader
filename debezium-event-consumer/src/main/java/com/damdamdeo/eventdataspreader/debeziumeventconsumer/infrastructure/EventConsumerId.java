@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.infrastructure;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.annotations.Type;

@@ -1,12 +1,12 @@
 package com.damdamdeo.eventdataspreader.writeside.eventconsumer;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.Event;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumer;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventQualifier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

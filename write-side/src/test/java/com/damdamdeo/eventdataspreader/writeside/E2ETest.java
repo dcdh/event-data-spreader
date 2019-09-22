@@ -1,11 +1,11 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.infrastructure.EventConsumedEntity;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EventEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;

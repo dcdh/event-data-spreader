@@ -1,9 +1,9 @@
-package com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.infrastructure;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.Event;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumedRepository;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventConsumer;
-import com.damdamdeo.eventdataspreader.writeside.debeziumeventconsumer.api.EventQualifier;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class KafkaEventConsumer {
