@@ -8,15 +8,18 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepos
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @ApplicationScoped
 @EventQualifier(aggregateRootType = "GiftAggregate", eventType = "GiftBought")
 public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsumer {
 
-    @Inject
-    AccountAggregateRepository accountAggregateRepository;
+    final AccountAggregateRepository accountAggregateRepository;
+
+    public DebitAccountFollowingGiftBoughtEventConsumer(final AccountAggregateRepository accountAggregateRepository) {
+        this.accountAggregateRepository = Objects.requireNonNull(accountAggregateRepository);
+    }
 
     // je creer une commande à partir d'un event ;)
     @Override

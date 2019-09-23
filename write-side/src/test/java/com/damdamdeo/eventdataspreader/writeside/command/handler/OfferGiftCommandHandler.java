@@ -9,14 +9,17 @@ import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.Objects;
 
 @ApplicationScoped
 @CommandQualifier(OfferGiftCommand.class)
 public class OfferGiftCommandHandler implements CommandHandler {
 
-    @Inject
-    GiftAggregateRepository giftAggregateRepository;
+    final GiftAggregateRepository giftAggregateRepository;
+
+    public OfferGiftCommandHandler(final GiftAggregateRepository giftAggregateRepository) {
+        this.giftAggregateRepository = Objects.requireNonNull(giftAggregateRepository);
+    }
 
     @Override
     public AggregateRoot handle(final Command command) {
