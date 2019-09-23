@@ -37,13 +37,13 @@ public class AccountDebitedTest {
 
         // Then
         JSONAssert.assertEquals(
-                "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": 100.01, \"balance\": 899.99}", json, JSONCompareMode.STRICT);
+                "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": \"100.01\", \"balance\": \"899.99\"}", json, JSONCompareMode.STRICT);
     }
 
     @Test
     public void should_deserialize() {
         // Given
-        final String json = "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": 100.01, \"balance\": 899.99}";
+        final String json = "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": \"100.01\", \"balance\": \"899.99\"}";
 
         // When
         final AccountDebited accountDebited = (AccountDebited) MAPPER.fromJson(json, AccountDebited.class);

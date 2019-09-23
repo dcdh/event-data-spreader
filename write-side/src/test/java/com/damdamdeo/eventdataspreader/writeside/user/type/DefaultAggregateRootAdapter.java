@@ -34,7 +34,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
                         .add(DISCRIMINATOR, aggregateRootTypeSimpleName)
                         .add("aggregateRootId", aggregateRoot.aggregateRootId())
                         .add("owner", ((AccountAggregate) aggregateRoot).owner())
-                        .add("balance", ((AccountAggregate) aggregateRoot).balance())
+                        .add("balance", ((AccountAggregate) aggregateRoot).balance().toString())
                         .add("version", aggregateRoot.version())
                         .build();
             default:
@@ -56,7 +56,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
                 return new AccountAggregate(
                         aggregateRoot.getString("aggregateRootId"),
                         aggregateRoot.getString("owner"),
-                        aggregateRoot.getJsonNumber("balance").bigDecimalValue(),
+                        new BigDecimal(aggregateRoot.getString("balance")),
                         aggregateRoot.getJsonNumber("version").longValue()
                 );
             default:
