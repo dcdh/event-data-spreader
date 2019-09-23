@@ -5,8 +5,7 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -24,8 +23,10 @@ public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsum
     public void consume(final Event event) {
         final String owner = event.metadata().getString("executedBy");
         final BigDecimal price = new BigDecimal("100");
+        final String executedBy = event.metadata().getString("executedBy");
         final AccountAggregate accountAggregate = new AccountAggregate();
-        accountAggregate.apply(new AccountDebited(owner, price), new DefaultEventMetadata(owner));
+        accountAggregate.handle(new DebitAccountCommand(
+                owner, price, executedBy));
         accountAggregateRepository.save(accountAggregate);
     }
 

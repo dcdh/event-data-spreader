@@ -9,11 +9,11 @@ public abstract class AggregateRoot implements Serializable {
     private final transient List<Event> unsavedEvents = new LinkedList<>();
     protected Long version = -1l;
 
-    public void apply(final EventPayload eventPayload) {
+    protected void apply(final EventPayload eventPayload) {
         this.apply(eventPayload, null);
     }
 
-    public void apply(final EventPayload eventPayload, final EventMetadata metaData) {
+    protected void apply(final EventPayload eventPayload, final EventMetadata metaData) {
         eventPayload.apply(this);
         this.version++;
         this.unsavedEvents.add(new Event(UUID.randomUUID(),

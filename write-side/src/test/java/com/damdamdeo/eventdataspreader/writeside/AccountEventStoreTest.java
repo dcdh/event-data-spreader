@@ -4,6 +4,7 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -44,8 +45,7 @@ public class AccountEventStoreTest {
     public void should_debit_account() {
         // Given
         final AccountAggregate accountAggregate = new AccountAggregate();
-        accountAggregate.apply(new AccountDebited("owner", new BigDecimal("100.01")),
-                new DefaultEventMetadata("owner"));
+        accountAggregate.handle(new DebitAccountCommand("owner", new BigDecimal("100.01"), "executedBy"));
 
         // When save
         final AccountAggregate accountAggregateSaved = accountAggregateRepository.save(accountAggregate);
@@ -65,8 +65,8 @@ public class AccountEventStoreTest {
         assertEquals("AccountDebited", events.get(0).eventType());
         assertEquals(0L, events.get(0).version());
         assertNotNull(events.get(0).creationDate());
-        assertEquals(new DefaultEventMetadata("owner"), events.get(0).eventMetaData());
-        assertEquals(new AccountDebited("owner", new BigDecimal("100.01")), events.get(0).eventPayload());
+        assertEquals(new DefaultEventMetadata("executedBy"), events.get(0).eventMetaData());
+        assertEquals(new AccountDebited("owner", new BigDecimal("100.01"), new BigDecimal("899.99")), events.get(0).eventPayload());
     }
 
 }

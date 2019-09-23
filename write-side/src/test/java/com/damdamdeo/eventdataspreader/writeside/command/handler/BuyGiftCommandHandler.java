@@ -4,8 +4,6 @@ import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
@@ -24,8 +22,7 @@ public class BuyGiftCommandHandler implements CommandHandler {
     public AggregateRoot handle(final Command command) {
         final GiftAggregate giftAggregate = new GiftAggregate();
         final BuyGiftCommand buyGiftCommand = (BuyGiftCommand) command;
-        giftAggregate.apply(new GiftBought(buyGiftCommand.name()),
-                new DefaultEventMetadata(buyGiftCommand.executedBy()));
+        giftAggregate.handle(buyGiftCommand);
         return giftAggregateRepository.save(giftAggregate);
     }
 

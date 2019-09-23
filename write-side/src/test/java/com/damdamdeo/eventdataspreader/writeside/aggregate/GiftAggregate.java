@@ -1,5 +1,8 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
@@ -22,6 +25,16 @@ public class GiftAggregate extends AggregateRoot {
         this.name = Objects.requireNonNull(name);
         this.offeredTo = offeredTo;
         this.version = Objects.requireNonNull(version);
+    }
+
+    public void handle(final BuyGiftCommand buyGiftCommand) {
+        apply(new GiftBought(buyGiftCommand.name()),
+                new DefaultEventMetadata(buyGiftCommand.executedBy()));
+    }
+
+    public void handle(final OfferGiftCommand offerGiftCommand) {
+        apply(new GiftOffered(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
+                new DefaultEventMetadata(offerGiftCommand.executedBy()));
     }
 
     public void on(final GiftBought giftBought) {

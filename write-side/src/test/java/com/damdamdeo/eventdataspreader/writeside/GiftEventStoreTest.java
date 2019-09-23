@@ -5,6 +5,8 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateReposito
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -45,8 +47,8 @@ public class GiftEventStoreTest {
     public void should_buy_and_offer_the_gift() {
         // Given
         final GiftAggregate giftAggregate = new GiftAggregate();
-        giftAggregate.apply(new GiftBought("Motorola G6"), new DefaultEventMetadata("damdamdeo"));
-        giftAggregate.apply(new GiftOffered("Motorola G6", "toto"), new DefaultEventMetadata("damdamdeo"));
+        giftAggregate.handle(new BuyGiftCommand("Motorola G6","damdamdeo"));
+        giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
 
         // When save
         final GiftAggregate giftAggregateSaved = giftAggregateRepository.save(giftAggregate);

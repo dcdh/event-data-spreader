@@ -3,9 +3,8 @@ package com.damdamdeo.eventdataspreader.writeside;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EventEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
@@ -70,8 +69,8 @@ public class E2ETest {
     public void should_buy_offer_the_gift_and_debit_account() throws Exception{
         // Given
         final GiftAggregate giftAggregate = new GiftAggregate();
-        giftAggregate.apply(new GiftBought("Motorola G6"), new DefaultEventMetadata("damdamdeo"));
-        giftAggregate.apply(new GiftOffered("Motorola G6", "toto"), new DefaultEventMetadata("damdamdeo"));
+        giftAggregate.handle(new BuyGiftCommand("Motorola G6","damdamdeo"));
+        giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
 
         // When
         transaction.begin();

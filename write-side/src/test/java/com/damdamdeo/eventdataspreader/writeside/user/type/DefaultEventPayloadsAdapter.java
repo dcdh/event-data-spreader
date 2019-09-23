@@ -37,6 +37,7 @@ public class DefaultEventPayloadsAdapter implements EventPayloadsAdapter,
                         .add(DISCRIMINATOR, eventPayloadTypeSimpleName)
                         .add("owner", ((AccountDebited) eventPayload).owner())
                         .add("price", ((AccountDebited) eventPayload).price())
+                        .add("balance", ((AccountDebited) eventPayload).balance())
                         .build();
             default:
                 throw new IllegalStateException("Unknown event type : " + eventPayloadTypeSimpleName);
@@ -53,7 +54,8 @@ public class DefaultEventPayloadsAdapter implements EventPayloadsAdapter,
                         eventPayload.getString("offeredTo"));
             case "AccountDebited":
                 return new AccountDebited(eventPayload.getString("owner"),
-                        eventPayload.getJsonNumber("price").bigDecimalValue());
+                        eventPayload.getJsonNumber("price").bigDecimalValue(),
+                        eventPayload.getJsonNumber("balance").bigDecimalValue());
             default:
                 throw new IllegalStateException("Unknown event type : " + eventPayload.getString(DISCRIMINATOR));
         }
