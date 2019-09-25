@@ -73,9 +73,7 @@ public class E2ETest {
         giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
 
         // When
-        transaction.begin();
         giftAggregateRepository.save(giftAggregate);
-        transaction.commit();
 
         // Then
         await().atMost(5, TimeUnit.SECONDS).until(() -> {

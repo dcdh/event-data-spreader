@@ -1,11 +1,13 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> implements AggregateRootRepository<T> {
 
     @Override
+    @Transactional
     public T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
         final EventRepository eventRepository = eventRepository();
@@ -17,6 +19,7 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
     }
 
     @Override
+    @Transactional
     public T load(final String aggregateRootId) throws UnknownAggregateRootException {
         Objects.requireNonNull(aggregateRootId);
         final EventRepository eventRepository = eventRepository();
