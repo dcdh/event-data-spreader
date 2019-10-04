@@ -15,3 +15,9 @@
 
 
 > DROP SCHEMA public CASCADE;CREATE SCHEMA public;
+
+## Openshift
+
+git clone https://github.com/dcdh/event-data-spreader.git
+
+oc process -f templates/event-data-spreader-build-pipeline.yml | oc create -f - -n ci
