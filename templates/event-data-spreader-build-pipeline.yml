@@ -19,12 +19,12 @@ objects:
             try {
               timeout(time: 60, unit: 'MINUTES') {
                 podTemplate(
-                  label: 'app-users-it',
+                  label: 'event-data-spreader-builder',
                   cloud: 'openshift', //This needs to match the cloud name in jenkins-kubernetes-plugin config
                   containers: [
                     //Jenkins agent. Also executes the integration test. Having a 'jnlp' container is mandatory.
                     containerTemplate(name: 'jnlp',
-                                      image: 'dcdh1983/jenkins-agent-maven-35-graalvm-centos7:v3.11',
+                                      image: 'openshift/jenkins-agent-maven-35-centos7:v3.11',
                                       resourceLimitMemory: '512Mi',
                                       args: '${computer.jnlpmac} ${computer.name}',
                                       envVars: [
@@ -33,7 +33,7 @@ objects:
                                       ]),
                     containerTemplate(name: 'zookeeper',
                                       image: 'debezium/zookeeper:0.10',
-                                      resourceLimitMemory: '512Mi'),
+                                      resourceLimitMemory: '128Mi'),
                     containerTemplate(name: 'kafka',
                                       image: 'debezium/kafka:0.10',
                                       resourceLimitMemory: '512Mi',
@@ -43,7 +43,7 @@ objects:
                                       ]),
                     containerTemplate(name: 'connect',
                                       image: 'debezium/connect:0.10',
-                                      resourceLimitMemory: '512Mi',
+                                      resourceLimitMemory: '128Mi',
                                       envVars: [
                                         envVar(key: 'BOOTSTRAP_SERVERS', value: 'localhost:9092'),
                                         envVar(key: 'GROUP_ID', value: '1'),
@@ -52,15 +52,15 @@ objects:
                                         envVar(key: 'STATUS_STORAGE_TOPIC', value: 'my_connect_statuses')
                                       ]),
                     containerTemplate(name: 'db',
-                                      image: 'debezium/postgres:11-alpine',
-                                      resourceLimitMemory: '512Mi',
+                                      image: 'dcdh1983/postgresql-10-debezium-centos7',
+                                      resourceLimitMemory: '128Mi',
                                       envVars: [
-                                        envVar(key: 'POSTGRES_USER', value: 'postgres'),
-                                        envVar(key: 'POSTGRES_PASSWORD', value: 'postgres'),
-                                        envVar(key: 'POSTGRES_DB', value: 'db')
+                                        envVar(key: 'POSTGRESQL_USER', value: 'postgres'),
+                                        envVar(key: 'POSTGRESQL_PASSWORD', value: 'postgres'),
+                                        envVar(key: 'POSTGRESQL_DATABASE', value: 'db')
                                       ])
-                ) {
-                  node("app-users-it") {
+                  ]) {
+                  node("event-data-spreader-builder") {
                     stage("prepare test") {
                       container("db") {
                         sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'eventstore'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE eventstore\""
