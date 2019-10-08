@@ -1,6 +1,17 @@
 apiVersion: v1
 kind: Template
 objects:
+  - apiVersion: "v1"
+    kind: "PersistentVolumeClaim"
+    metadata:
+      name: "maven-repo"
+      namespace: "kubernetes-plugin"
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
   - apiVersion: v1
     kind: BuildConfig
     metadata:
@@ -18,8 +29,9 @@ objects:
           jenkinsfile: |-
             try {
               timeout(time: 60, unit: 'MINUTES') {
+                def label = "event-data-spreader-${UUID.randomUUID().toString()}"
                 podTemplate(
-                  label: 'event-data-spreader-builder',
+                  label: label,
                   cloud: 'openshift', //This needs to match the cloud name in jenkins-kubernetes-plugin config
                   containers: [
                     //Jenkins agent. Also executes the integration test. Having a 'jnlp' container is mandatory.
@@ -39,11 +51,13 @@ objects:
                                       resourceLimitMemory: '512Mi',
                                       envVars: [
                                         envVar(key: 'ZOOKEEPER_CONNECT', value: 'localhost:2181'),
+                                        envVar(key: 'HOST_NAME', value: 'localhost'),
+                                        envVar(key: 'ADVERTISED_HOST_NAME', value: 'localhost'),
                                         envVar(key: 'CREATE_TOPICS', value: 'event:1:1:compact,aggregaterootprojection:1:1:compact,flyway_schema_history:1:1:compact,test:1:1:compact')
                                       ]),
                     containerTemplate(name: 'connect',
                                       image: 'debezium/connect:0.10',
-                                      resourceLimitMemory: '128Mi',
+                                      resourceLimitMemory: '1Gi',
                                       envVars: [
                                         envVar(key: 'BOOTSTRAP_SERVERS', value: 'localhost:9092'),
                                         envVar(key: 'GROUP_ID', value: '1'),
@@ -51,20 +65,29 @@ objects:
                                         envVar(key: 'OFFSET_STORAGE_TOPIC', value: 'my_connect_offsets'),
                                         envVar(key: 'STATUS_STORAGE_TOPIC', value: 'my_connect_statuses')
                                       ]),
-                    containerTemplate(name: 'db',
-                                      image: 'dcdh1983/postgresql-10-debezium-centos7',
+                    containerTemplate(name: 'database',
+                                      image: 'dcdh1983/postgresql-10-debezium-centos7:latest',
                                       resourceLimitMemory: '128Mi',
                                       envVars: [
-                                        envVar(key: 'POSTGRESQL_USER', value: 'postgres'),
-                                        envVar(key: 'POSTGRESQL_PASSWORD', value: 'postgres'),
+                                        envVar(key: 'POSTGRESQL_USER', value: 'postgresuser'),
+                                        envVar(key: 'POSTGRESQL_PASSWORD', value: 'postgrespassword'),
                                         envVar(key: 'POSTGRESQL_DATABASE', value: 'db')
-                                      ])
+                                      ]),
+                    containerTemplate(name: 'debug',
+                                      image: 'busybox',
+                                      resourceLimitMemory: '128Mi',
+                                      command: "cat",
+                                      ttyEnabled: true)
+                  ],
+                  volumes: [
+                    persistentVolumeClaim(mountPath: '/root/.m2/repository', claimName: 'maven-repo', readOnly: false)
                   ]) {
-                  node("event-data-spreader-builder") {
+                  node(label) {
                     stage("prepare test") {
-                      container("db") {
-                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'eventstore'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE eventstore\""
-                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'query'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE query\""
+                      container("database") {
+                        sh "printenv | sort"
+                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'eventstore'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE eventstore\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE eventstore TO postgresuser;\""
+                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'query'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE query\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE query TO postgresuser;\""
                       }
                     }
                     stage("checkout") {
