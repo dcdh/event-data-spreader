@@ -30,6 +30,7 @@ objects:
             try {
               timeout(time: 60, unit: 'MINUTES') {
                 def label = "event-data-spreader-${UUID.randomUUID().toString()}"
+                String mavenSettingsXmlPathOption = "-s \$HOME/settings.xml"
                 podTemplate(
                   label: label,
                   cloud: 'openshift', //This needs to match the cloud name in jenkins-kubernetes-plugin config
@@ -81,22 +82,51 @@ objects:
                   ],
                   volumes: [
                     persistentVolumeClaim(mountPath: '/home/jenkins/.m2/repository', claimName: 'maven-repo', readOnly: false)
-                  ],
-                  yml: '''
-spec:
-  securityContext:
-    runAsUser: 1000
-    runAsGroup: 3000
-    fsGroup: 2000
-                  ''') {
+                  ]) {
                   node(label) {
                     stage("prepare env") {
-                      sh 'id'
                       container('jnlp') {
-                        sh 'id'
-                        String settingsXml = "<settings><mirrors><mirror><id>mirror.default</id><url>http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/nexus/content/groups/public</url></mirror></mirrors></settings>"
-                        sh "ls -ltrh $HOME/.m2"
-                        sh "echo '${settingsXml}' > $HOME/.m2/settings.xml"
+                        String settingsXml = '''
+                        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
+                          <servers>
+                            <server>
+                              <id>nexus3-snapshot-repository</id>
+                              <username>admin</username>
+                              <password>123admin</password>
+                            </server>
+                            <server>
+                              <id>nexus3-release-repository</id>
+                              <username>admin</username>
+                              <password>123admin</password>
+                            </server>
+                          </servers>
+                          <profiles>
+                            <profile>
+                              <id>nexus</id>
+                              <properties>
+                                <altSnapshotDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots</altSnapshotDeploymentRepository>
+                                <altReleaseDeploymentRepository>nexus3-release-repository::default::https://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-releases/</altReleaseDeploymentRepository>
+                              </properties>
+                            </profile>
+                          </profiles>
+
+                          <activeProfiles>
+                            <activeProfile>nexus</activeProfile>
+                          </activeProfiles>
+
+                          <mirrors>
+                            <mirror>
+                              <id>nexus</id>
+                              <mirrorOf>*</mirrorOf>
+                              <url>http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-all-public/</url>
+                            </mirror>
+                          </mirrors>
+                        </settings>
+                        '''
+                        sh "echo '${settingsXml}' > $HOME/settings.xml"
                       }
                     }
                     stage("prepare test") {
@@ -111,23 +141,23 @@ spec:
                     }
                     dir("debezium-event-consumer") {
                       stage("compiling and installing debezium-event-consumer") {
-                        sh "mvn clean install"
+                        sh "mvn $mavenSettingsXmlPathOption clean install deploy"
                       }
                     }
                     dir("query-side") {
                       stage("query side: testing") {
-                        sh "mvn test"
+                        sh "mvn $mavenSettingsXmlPathOption test"
                       }
                       stage("query side: installing") {
-                        sh "mvn install -Dmaven.test.skip=true"
+                        sh "mvn $mavenSettingsXmlPathOption install deploy -Dmaven.test.skip=true"
                       }
                     }
                     dir("write-side") {
                       stage("write side: testing") {
-                        sh "mvn test"
+                        sh "mvn $mavenSettingsXmlPathOption test"
                       }
                       stage("write side: installing") {
-                        sh "mvn install -Dmaven.test.skip=true"
+                        sh "mvn $mavenSettingsXmlPathOption install deploy -Dmaven.test.skip=true"
                       }
                     }
                   }
