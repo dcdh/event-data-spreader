@@ -80,9 +80,11 @@ objects:
                                       ttyEnabled: true)
                   ],
                   volumes: [
-                    persistentVolumeClaim(mountPath: '/root/.m2/repository', claimName: 'maven-repo', readOnly: false)
+                    persistentVolumeClaim(mountPath: '/home/jenkins/.m2/repository', claimName: 'maven-repo', readOnly: false)
                   ]) {
                   node(label) {
+                    stage("prepare env") {
+                    }
                     stage("prepare test") {
                       container("database") {
                         sh "printenv | sort"
