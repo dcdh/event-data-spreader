@@ -30,7 +30,6 @@ objects:
             try {
               timeout(time: 60, unit: 'MINUTES') {
                 def label = "event-data-spreader-${UUID.randomUUID().toString()}"
-                String mavenSettingsXmlPathOption = "-s \$HOME/settings.xml"
                 podTemplate(
                   label: label,
                   cloud: 'openshift', //This needs to match the cloud name in jenkins-kubernetes-plugin config
@@ -61,6 +60,7 @@ objects:
                                       resourceLimitMemory: '1Gi',
                                       envVars: [
                                         envVar(key: 'BOOTSTRAP_SERVERS', value: 'localhost:9092'),
+                                        envVar(key: 'HOST_NAME', value: 'localhost'),
                                         envVar(key: 'GROUP_ID', value: '1'),
                                         envVar(key: 'CONFIG_STORAGE_TOPIC', value: 'my_connect_configs'),
                                         envVar(key: 'OFFSET_STORAGE_TOPIC', value: 'my_connect_offsets'),
@@ -84,6 +84,7 @@ objects:
                     persistentVolumeClaim(mountPath: '/home/jenkins/.m2/repository', claimName: 'maven-repo', readOnly: false)
                   ]) {
                   node(label) {
+                    String mavenSettingsXmlPathOption = "-s /home/jenkins/settings.xml"
                     stage("prepare env") {
                       container('jnlp') {
                         String settingsXml = """
@@ -95,26 +96,27 @@ objects:
                             <server>
                               <id>nexus3-snapshot-repository</id>
                               <username>admin</username>
-                              <password>123admin</password>
+                              <password>admin123</password>
                             </server>
                             <server>
                               <id>nexus3-release-repository</id>
                               <username>admin</username>
-                              <password>123admin</password>
+                              <password>admin123</password>
                             </server>
                           </servers>
                           <profiles>
                             <profile>
-                              <id>nexus</id>
+                              <id>nexus3</id>
                               <properties>
-                                <altSnapshotDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots</altSnapshotDeploymentRepository>
+                                <altDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altDeploymentRepository>
+                                <altSnapshotDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altSnapshotDeploymentRepository>
                                 <altReleaseDeploymentRepository>nexus3-release-repository::default::https://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-releases/</altReleaseDeploymentRepository>
                               </properties>
                             </profile>
                           </profiles>
 
                           <activeProfiles>
-                            <activeProfile>nexus</activeProfile>
+                            <activeProfile>nexus3</activeProfile>
                           </activeProfiles>
 
                           <mirrors>
@@ -139,26 +141,8 @@ objects:
                     stage("checkout") {
                       git url: "https://github.com/dcdh/event-data-spreader.git", branch: "master"
                     }
-                    dir("debezium-event-consumer") {
-                      stage("compiling and installing debezium-event-consumer") {
-                        sh "mvn $mavenSettingsXmlPathOption clean install deploy"
-                      }
-                    }
-                    dir("query-side") {
-                      stage("query side: testing") {
-                        sh "mvn $mavenSettingsXmlPathOption test"
-                      }
-                      stage("query side: installing") {
-                        sh "mvn $mavenSettingsXmlPathOption install deploy -Dmaven.test.skip=true"
-                      }
-                    }
-                    dir("write-side") {
-                      stage("write side: testing") {
-                        sh "mvn $mavenSettingsXmlPathOption test"
-                      }
-                      stage("write side: installing") {
-                        sh "mvn $mavenSettingsXmlPathOption install deploy -Dmaven.test.skip=true"
-                      }
+                    stage("install and deploy") {
+                      sh "mvn $mavenSettingsXmlPathOption clean install deploy"
                     }
                   }
                 }
