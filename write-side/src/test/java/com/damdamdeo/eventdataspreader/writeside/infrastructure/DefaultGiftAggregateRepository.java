@@ -6,10 +6,10 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AbstractAggre
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 
-@ApplicationScoped
+@Dependent
 public class DefaultGiftAggregateRepository extends AbstractAggregateRootRepository<GiftAggregate> implements GiftAggregateRepository {
 
     final EntityManager entityManager;

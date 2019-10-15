@@ -8,10 +8,10 @@ import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import java.util.Objects;
 
-@ApplicationScoped
+@Dependent
 @CommandQualifier(OfferGiftCommand.class)
 public class OfferGiftCommandHandler implements CommandHandler {
 

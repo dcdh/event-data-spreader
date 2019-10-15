@@ -3,13 +3,13 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjection;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.Objects;
 import java.util.Optional;
 
-@ApplicationScoped
+@Dependent
 public class JpaPostgreSQLAggregateRootProjectionRepository implements AggregateRootProjectionRepository {
 
     final EntityManager em;

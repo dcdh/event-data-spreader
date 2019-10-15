@@ -5,12 +5,12 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@ApplicationScoped
+@Dependent
 @EventQualifier(aggregateRootType = "AccountAggregate", eventType = "AccountDebited")
 public class AccountDebitedEventConsumer implements EventConsumer {
 

@@ -5,11 +5,11 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import java.util.Objects;
 
-@ApplicationScoped
+@Dependent
 @EventQualifier(aggregateRootType = "GiftAggregate", eventType = "GiftBought")
 public class GiftBoughtEventConsumer implements EventConsumer {
 

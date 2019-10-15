@@ -2,13 +2,13 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import java.util.*;
 
-@ApplicationScoped
+@Dependent
 public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     final EntityManager entityManager;

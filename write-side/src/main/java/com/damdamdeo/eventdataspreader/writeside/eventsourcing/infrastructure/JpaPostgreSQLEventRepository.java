@@ -3,7 +3,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.Collections;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@ApplicationScoped
+@Dependent
 public class JpaPostgreSQLEventRepository implements EventRepository {
 
     final EntityManager entityManager;

@@ -47,7 +47,7 @@ public class QuerySideTest {
         kafkaDebeziumProducer.produce("event/AccountDebited.json");
 
         // Then
-        await().atMost(5, TimeUnit.SECONDS).until(() -> {
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
             transaction.begin();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();

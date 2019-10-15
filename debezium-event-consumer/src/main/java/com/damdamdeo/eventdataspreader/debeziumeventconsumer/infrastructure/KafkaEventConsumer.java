@@ -12,7 +12,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -28,15 +27,11 @@ public class KafkaEventConsumer {
 
     final EventConsumedRepository eventConsumedRepository;
 
-    final EntityManager entityManager;
-
     final UserTransaction transaction;
 
     public KafkaEventConsumer(final EventConsumedRepository eventConsumedRepository,
-                              final EntityManager entityManager,
                               final UserTransaction transaction) {
         this.eventConsumedRepository = Objects.requireNonNull(eventConsumedRepository);
-        this.entityManager = Objects.requireNonNull(entityManager);
         this.transaction = Objects.requireNonNull(transaction);
     }
 

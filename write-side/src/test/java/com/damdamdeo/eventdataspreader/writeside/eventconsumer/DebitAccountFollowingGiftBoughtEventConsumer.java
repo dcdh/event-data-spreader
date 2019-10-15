@@ -7,11 +7,11 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@ApplicationScoped
+@Dependent
 @EventQualifier(aggregateRootType = "GiftAggregate", eventType = "GiftBought")
 public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsumer {
 
