@@ -62,12 +62,13 @@ services:
       - STATUS_STORAGE_TOPIC=my_connect_statuses
 
   eventstore:
+    #image: dcdh1983/postgresql-10-debezium-centos7:latest
     image: debezium/postgres:11-alpine
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=postgresql
       - POSTGRES_DB=eventstore
 
   query:
@@ -75,6 +76,6 @@ services:
     ports:
       - 5433:5432
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=postgresql
       - POSTGRES_DB=query

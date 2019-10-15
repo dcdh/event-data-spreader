@@ -8,7 +8,7 @@ CREATE TABLE public.eventconsumed (
 );
 
 
-ALTER TABLE public.eventconsumed OWNER TO postgres;
+ALTER TABLE public.eventconsumed OWNER TO postgresql;
 
 --
 -- Name: eventconsumerconsumed; Type: TABLE; Schema: public; Owner: postgres
@@ -22,7 +22,7 @@ CREATE TABLE public.eventconsumerconsumed (
 );
 
 
-ALTER TABLE public.eventconsumerconsumed OWNER TO postgres;
+ALTER TABLE public.eventconsumerconsumed OWNER TO postgresql;
 
 
 --

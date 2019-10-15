@@ -9,7 +9,7 @@ CREATE TABLE public.account (
 );
 
 
-ALTER TABLE public.account OWNER TO postgres;
+ALTER TABLE public.account OWNER TO postgresql;
 
 --
 -- Name: gift; Type: TABLE; Schema: public; Owner: postgres
@@ -22,7 +22,7 @@ CREATE TABLE public.gift (
 );
 
 
-ALTER TABLE public.gift OWNER TO postgres;
+ALTER TABLE public.gift OWNER TO postgresql;
 
 --
 -- Name: account account_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
