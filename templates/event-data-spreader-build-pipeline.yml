@@ -207,7 +207,7 @@ objects:
                 "schema.whitelist": "public",
                 "transforms": "route",
                 "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
-                "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+                "transforms.route.regex": "([^.]+)\\\\.([^.]+)\\\\.([^.]+)",
                 "transforms.route.replacement": "\$3"
               }
             }
@@ -215,7 +215,12 @@ objects:
                       sh "echo '${writeDebeziumJson}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/debezium.json"
                     }
                     stage("test, install and deploy") {
-                      sh "mvn $mavenSettingsXmlPathOption clean install deploy"
+                      def status = sh(returnStatus: true, script: "mvn $mavenSettingsXmlPathOption clean install deploy")
+                      if (status != 0) {
+                        containerLog 'kafka'
+                        containerLog 'connect'
+                        currentBuild.result = 'FAILURE'
+                      }
                     }
                   }
                 }
