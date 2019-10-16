@@ -4,7 +4,7 @@
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": "1",
     "plugin.name": "wal2json",
-"database.hostname": "localhost",
+    "database.hostname": "eventstore",
     "database.port": "5432",
     "database.user": "postgresql",
     "database.password": "postgresql",

@@ -88,46 +88,46 @@ objects:
                     stage("prepare env") {
                       container('jnlp') {
                         String settingsXml = """
-                        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
-                          <servers>
-                            <server>
-                              <id>nexus3-snapshot-repository</id>
-                              <username>admin</username>
-                              <password>admin123</password>
-                            </server>
-                            <server>
-                              <id>nexus3-release-repository</id>
-                              <username>admin</username>
-                              <password>admin123</password>
-                            </server>
-                          </servers>
-                          <profiles>
-                            <profile>
-                              <id>nexus3</id>
-                              <properties>
-                                <altDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altDeploymentRepository>
-                                <altSnapshotDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altSnapshotDeploymentRepository>
-                                <altReleaseDeploymentRepository>nexus3-release-repository::default::https://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-releases/</altReleaseDeploymentRepository>
-                              </properties>
-                            </profile>
-                          </profiles>
+            <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      https://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                <server>
+                  <id>nexus3-snapshot-repository</id>
+                  <username>admin</username>
+                  <password>admin123</password>
+                </server>
+                <server>
+                  <id>nexus3-release-repository</id>
+                  <username>admin</username>
+                  <password>admin123</password>
+                </server>
+              </servers>
+              <profiles>
+                <profile>
+                  <id>nexus3</id>
+                  <properties>
+                    <altDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altDeploymentRepository>
+                    <altSnapshotDeploymentRepository>nexus3-snapshot-repository::default::http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-snapshots/</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>nexus3-release-repository::default::https://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-releases/</altReleaseDeploymentRepository>
+                  </properties>
+                </profile>
+              </profiles>
 
-                          <activeProfiles>
-                            <activeProfile>nexus3</activeProfile>
-                          </activeProfiles>
+              <activeProfiles>
+                <activeProfile>nexus3</activeProfile>
+              </activeProfiles>
 
-                          <mirrors>
-                            <mirror>
-                              <id>nexus</id>
-                              <mirrorOf>*</mirrorOf>
-                              <url>http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-all-public/</url>
-                            </mirror>
-                          </mirrors>
-                        </settings>
-                        """
+              <mirrors>
+                <mirror>
+                  <id>nexus</id>
+                  <mirrorOf>*</mirrorOf>
+                  <url>http://$NEXUS_SERVICE_HOST:$NEXUS_SERVICE_PORT/repository/maven-all-public/</url>
+                </mirror>
+              </mirrors>
+            </settings>
+            """
                         sh "echo '${settingsXml}' > $HOME/settings.xml"
                       }
                     }
@@ -141,7 +141,80 @@ objects:
                     stage("checkout") {
                       git url: "https://github.com/dcdh/event-data-spreader.git", branch: "master"
                     }
-                    stage("install and deploy") {
+                    stage("prepare test") {
+                      String queryApplicationProperties = """
+            smallrye.messaging.source.event.type=io.smallrye.reactive.messaging.kafka.Kafka
+            smallrye.messaging.source.event.connector=smallrye-kafka
+            smallrye.messaging.source.event.topic=event
+            smallrye.messaging.source.event.bootstrap.servers=localhost:9092
+            smallrye.messaging.source.event.key.deserializer=io.vertx.kafka.client.serialization.JsonObjectDeserializer
+            smallrye.messaging.source.event.value.deserializer=io.vertx.kafka.client.serialization.JsonObjectDeserializer
+            smallrye.messaging.source.event.group.id=query-side-test
+
+            # earliest obligatoire lors de la relance du service et des tests !!!
+            smallrye.messaging.source.event.auto.offset.reset=earliest
+
+            quarkus.datasource.url=jdbc:postgresql://localhost:5433/query
+            quarkus.datasource.driver=org.postgresql.Driver
+            quarkus.datasource.username=postgresuser
+            quarkus.datasource.password=postgrespassword
+
+            quarkus.hibernate-orm.database.generation=none
+
+            quarkus.flyway.migrate-at-start=true
+
+            quarkus.swagger-ui.always-include=true
+            """
+                      sh "echo '${queryApplicationProperties}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/query-side/src/test/resources/application.properties"
+                      String writeApplicationProperties = """
+            smallrye.messaging.source.event.type=io.smallrye.reactive.messaging.kafka.Kafka
+            smallrye.messaging.source.event.connector=smallrye-kafka
+            smallrye.messaging.source.event.topic=event
+            smallrye.messaging.source.event.bootstrap.servers=localhost:9092
+            smallrye.messaging.source.event.key.deserializer=io.vertx.kafka.client.serialization.JsonObjectDeserializer
+            smallrye.messaging.source.event.value.deserializer=io.vertx.kafka.client.serialization.JsonObjectDeserializer
+            smallrye.messaging.source.event.group.id=write-side-test
+
+            # earliest obligatoire lors de la relance du service et des tests !!!
+            smallrye.messaging.source.event.auto.offset.reset=earliest
+
+            quarkus.datasource.url=jdbc:postgresql://localhost:5432/eventstore
+            quarkus.datasource.driver=org.postgresql.Driver
+            quarkus.datasource.username=postgresuser
+            quarkus.datasource.password=postgrespassword
+
+            quarkus.hibernate-orm.database.generation=none
+            quarkus.hibernate-orm.dialect=com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hibernate.JSONBPostgreSQLDialect
+
+            quarkus.flyway.migrate-at-start=true
+
+            quarkus.swagger-ui.always-include=true
+            """
+                      sh "echo '${writeApplicationProperties}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/application.properties"
+                      String writeDebeziumJson = """
+            {
+              "name": "test-connector",
+              "config": {
+                "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+                "tasks.max": "1",
+                "plugin.name": "wal2json",
+                "database.hostname": "localhost",
+                "database.port": "5432",
+                "database.user": "postgresuser",
+                "database.password": "postgrespassword",
+                "database.dbname": "eventstore",
+                "database.server.name": "eventstore",
+                "schema.whitelist": "public",
+                "transforms": "route",
+                "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+                "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+                "transforms.route.replacement": "\$3"
+              }
+            }
+            """
+                      sh "echo '${writeDebeziumJson}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/debezium.json"
+                    }
+                    stage("test, install and deploy") {
                       sh "mvn $mavenSettingsXmlPathOption clean install deploy"
                     }
                   }

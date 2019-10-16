@@ -13,9 +13,6 @@ CREATE TABLE public.aggregaterootprojection (
     version bigint
 );
 
-
-ALTER TABLE public.aggregaterootprojection OWNER TO postgresql;
-
 --
 -- Name: event; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -30,9 +27,6 @@ CREATE TABLE public.event (
     eventPayload jsonb,
     version bigint
 );
-
-
-ALTER TABLE public.event OWNER TO postgresql;
 
 --
 -- Name: aggregaterootprojection aggregaterootprojection_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres

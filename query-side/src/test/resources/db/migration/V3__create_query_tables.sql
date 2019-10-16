@@ -8,9 +8,6 @@ CREATE TABLE public.account (
     version bigint NOT NULL
 );
 
-
-ALTER TABLE public.account OWNER TO postgresql;
-
 --
 -- Name: gift; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -20,9 +17,6 @@ CREATE TABLE public.gift (
     offeredto character varying(255),
     version bigint NOT NULL
 );
-
-
-ALTER TABLE public.gift OWNER TO postgresql;
 
 --
 -- Name: account account_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres

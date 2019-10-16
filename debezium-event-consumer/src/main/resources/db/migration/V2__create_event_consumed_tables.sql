@@ -7,9 +7,6 @@ CREATE TABLE public.eventconsumed (
     consumed boolean NOT NULL
 );
 
-
-ALTER TABLE public.eventconsumed OWNER TO postgresql;
-
 --
 -- Name: eventconsumerconsumed; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -20,9 +17,6 @@ CREATE TABLE public.eventconsumerconsumed (
     consumedat timestamp without time zone NOT NULL,
     eventconsumerconsumedentity_eventconsumerid uuid
 );
-
-
-ALTER TABLE public.eventconsumerconsumed OWNER TO postgresql;
 
 
 --
