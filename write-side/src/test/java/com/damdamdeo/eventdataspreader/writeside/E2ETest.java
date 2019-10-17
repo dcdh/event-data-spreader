@@ -77,7 +77,7 @@ public class E2ETest {
         giftAggregateRepository.save(giftAggregate);
 
         // Then
-        await().atMost(15, TimeUnit.SECONDS).until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
             transaction.begin();
             final List<EventEntity> events = entityManager.createQuery("SELECT e FROM EventEntity e").getResultList();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();

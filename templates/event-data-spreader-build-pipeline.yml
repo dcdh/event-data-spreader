@@ -154,7 +154,7 @@ objects:
             # earliest obligatoire lors de la relance du service et des tests !!!
             smallrye.messaging.source.event.auto.offset.reset=earliest
 
-            quarkus.datasource.url=jdbc:postgresql://localhost:5433/query
+            quarkus.datasource.url=jdbc:postgresql://localhost:5432/query
             quarkus.datasource.driver=org.postgresql.Driver
             quarkus.datasource.username=postgresuser
             quarkus.datasource.password=postgrespassword
