@@ -1,5 +1,5 @@
 {
-  "topic": "event",
+  "topic": "event-query",
   "key": {
     "schema": {
       "type": "struct",
