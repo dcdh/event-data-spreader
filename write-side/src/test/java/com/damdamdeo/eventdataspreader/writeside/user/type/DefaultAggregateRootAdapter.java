@@ -15,7 +15,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
         JsonbAdapter<AggregateRoot, JsonObject> // Quick fix an issue with yasson
     {
 
-    private final static String DISCRIMINATOR = "@class";
+    private final static String AGGREGATE_ROOT_TYPE = "@aggregaterootType";
 
     @Override
     public JsonObject adaptToJson(final AggregateRoot aggregateRoot) throws Exception {
@@ -23,7 +23,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
         switch (aggregateRootTypeSimpleName) {
             case "GiftAggregate":
                 return Json.createObjectBuilder()
-                        .add(DISCRIMINATOR, aggregateRootTypeSimpleName)
+                        .add(AGGREGATE_ROOT_TYPE, aggregateRootTypeSimpleName)
                         .add("aggregateRootId", aggregateRoot.aggregateRootId())
                         .add("name", ((GiftAggregate) aggregateRoot).name())
                         .add("offeredTo", Optional.ofNullable(((GiftAggregate) aggregateRoot).offeredTo()).orElse(""))
@@ -31,7 +31,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
                         .build();
             case "AccountAggregate":
                 return Json.createObjectBuilder()
-                        .add(DISCRIMINATOR, aggregateRootTypeSimpleName)
+                        .add(AGGREGATE_ROOT_TYPE, aggregateRootTypeSimpleName)
                         .add("aggregateRootId", aggregateRoot.aggregateRootId())
                         .add("owner", ((AccountAggregate) aggregateRoot).owner())
                         .add("balance", ((AccountAggregate) aggregateRoot).balance().toString())
@@ -44,7 +44,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
 
     @Override
     public AggregateRoot adaptFromJson(final JsonObject aggregateRoot) throws Exception {
-        switch (aggregateRoot.getString(DISCRIMINATOR)) {
+        switch (aggregateRoot.getString(AGGREGATE_ROOT_TYPE)) {
             case "GiftAggregate":
                 return new GiftAggregate(
                         aggregateRoot.getString("aggregateRootId"),
@@ -60,7 +60,7 @@ public class DefaultAggregateRootAdapter implements AggregateRootAdapter,
                         aggregateRoot.getJsonNumber("version").longValue()
                 );
             default:
-                throw new IllegalStateException("Unknown type : " + aggregateRoot.getString(DISCRIMINATOR));
+                throw new IllegalStateException("Unknown type : " + aggregateRoot.getString(AGGREGATE_ROOT_TYPE));
         }
     }
 

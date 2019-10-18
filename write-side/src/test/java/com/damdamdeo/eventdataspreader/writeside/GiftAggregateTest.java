@@ -32,13 +32,13 @@ public class GiftAggregateTest {
 
         // Then
         JSONAssert.assertEquals(
-                "{\"@class\": \"GiftAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"name\": \"name\", \"offeredTo\": \"offeredTo\", \"version\": 1}", json, JSONCompareMode.STRICT);
+                "{\"@aggregaterootType\": \"GiftAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"name\": \"name\", \"offeredTo\": \"offeredTo\", \"version\": 1}", json, JSONCompareMode.STRICT);
     }
 
     @Test
     public void should_deserialize() {
         // Given
-        final String json = "{\"@class\": \"GiftAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"name\": \"name\", \"offeredTo\": \"offeredTo\", \"version\": 1}";
+        final String json = "{\"@aggregaterootType\": \"GiftAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"name\": \"name\", \"offeredTo\": \"offeredTo\", \"version\": 1}";
 
         // When
         final GiftAggregate giftAggregate = (GiftAggregate) MAPPER.fromJson(json, GiftAggregate.class);

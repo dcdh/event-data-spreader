@@ -34,13 +34,13 @@ public class AccountAggregateTest {
 
         // Then
         JSONAssert.assertEquals(
-                "{\"@class\": \"AccountAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"owner\": \"owner\", \"balance\": \"100.01\", \"version\": 1}", json, JSONCompareMode.STRICT);
+                "{\"@aggregaterootType\": \"AccountAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"owner\": \"owner\", \"balance\": \"100.01\", \"version\": 1}", json, JSONCompareMode.STRICT);
     }
 
     @Test
     public void should_deserialize() {
         // Given
-        final String json = "{\"@class\": \"AccountAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"owner\": \"owner\", \"balance\": \"100.01\", \"version\": 1}";
+        final String json = "{\"@aggregaterootType\": \"AccountAggregate\", \"aggregateRootId\": \"aggregateRootId\", \"owner\": \"owner\", \"balance\": \"100.01\", \"version\": 1}";
 
         // When
         final AccountAggregate accountAggregate = (AccountAggregate) MAPPER.fromJson(json, AccountAggregate.class);
