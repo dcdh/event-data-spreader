@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebitedPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
@@ -27,16 +27,15 @@ public class AccountAggregate extends AggregateRoot {
     }
 
     public void handle(final DebitAccountCommand debitAccountCommand) {
-        apply(new AccountDebited(debitAccountCommand.owner(),
+        apply(new AccountDebitedPayload(debitAccountCommand.owner(),
                         debitAccountCommand.price(),
                         this.balance.add(debitAccountCommand.price().negate())),
                 new DefaultEventMetadata(debitAccountCommand.executedBy()));
     }
 
-    public void on(final AccountDebited accountDebited) {
-        this.aggregateRootId = accountDebited.owner();
-        this.owner = accountDebited.owner();
-        this.balance = accountDebited.balance();
+    public void on(final AccountDebitedPayload accountDebitedPayload) {
+        this.owner = accountDebitedPayload.owner();
+        this.balance = accountDebitedPayload.balance();
     }
 
     public String owner() {
@@ -56,5 +55,4 @@ public class AccountAggregate extends AggregateRoot {
                 ", version=" + version +
                 '}';
     }
-
 }

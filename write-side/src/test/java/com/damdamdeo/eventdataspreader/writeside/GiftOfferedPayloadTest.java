@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOfferedPayload;
 import com.damdamdeo.eventdataspreader.writeside.user.type.DefaultEventPayloadsAdapter;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.json.JSONException;
@@ -14,7 +14,7 @@ import javax.json.bind.JsonbConfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GiftBoughtTest {
+public class GiftOfferedPayloadTest {
 
     private static final Jsonb MAPPER = JsonbBuilder.create(new JsonbConfig()
             .withFormatting(true)
@@ -22,32 +22,33 @@ public class GiftBoughtTest {
 
     @Test
     public void should_be_equals() {
-        EqualsVerifier.forClass(GiftBought.class).verify();
+        EqualsVerifier.forClass(GiftOfferedPayload.class).verify();
     }
 
     @Test
     public void should_serialize() throws JSONException {
         // Given
-        final GiftBought giftBought = new GiftBought("name");
+        final GiftOfferedPayload giftOfferedPayload = new GiftOfferedPayload("name", "offeredTo");
 
         // When
-        final String json = MAPPER.toJson(giftBought);
+        final String json = MAPPER.toJson(giftOfferedPayload);
 
         // Then
         JSONAssert.assertEquals(
-                "{\"@class\": \"GiftBought\", \"name\": \"name\"}", json, JSONCompareMode.STRICT);
+                "{\"@payloadType\": \"GiftOfferedPayload\", \"@aggregaterootType\": \"GiftAggregate\", \"name\": \"name\", \"offeredTo\": \"offeredTo\"}", json, JSONCompareMode.STRICT);
     }
 
     @Test
     public void should_deserialize() {
         // Given
-        final String json = "{\"@class\": \"GiftBought\", \"name\": \"name\"}";
+        final String json = "{\"@payloadType\": \"GiftOfferedPayload\", \"@aggregaterootType\": \"GiftAggregate\", \"name\": \"name\", \"offeredTo\": \"offeredTo\"}";
 
         // When
-        final GiftBought giftBought = (GiftBought) MAPPER.fromJson(json, GiftBought.class);
+        final GiftOfferedPayload giftOfferedPayload = (GiftOfferedPayload) MAPPER.fromJson(json, GiftOfferedPayload.class);
 
         // Then
-        assertEquals("name", giftBought.name());
+        assertEquals("name", giftOfferedPayload.name());
+        assertEquals("offeredTo", giftOfferedPayload.offeredTo());
     }
 
 }

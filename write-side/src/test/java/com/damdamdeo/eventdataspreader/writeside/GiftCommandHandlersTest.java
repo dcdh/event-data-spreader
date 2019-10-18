@@ -1,9 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBoughtPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOfferedPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandlerExecutor;
@@ -74,7 +74,7 @@ public class GiftCommandHandlersTest {
         assertEquals(0L, events.get(0).version());
         assertNotNull(events.get(0).creationDate());
         assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(0).eventMetaData());
-        assertEquals(new GiftBought("Motorola G6"), events.get(0).eventPayload());
+        assertEquals(new GiftBoughtPayload("Motorola G6"), events.get(0).eventPayload());
         // -- GiftOffered
         assertNotNull(events.get(1).eventId());
         assertEquals("Motorola G6", events.get(1).aggregateRootId());
@@ -83,7 +83,7 @@ public class GiftCommandHandlersTest {
         assertEquals(1L, events.get(1).version());
         assertNotNull(events.get(1).creationDate());
         assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(1).eventMetaData());
-        assertEquals(new GiftOffered("Motorola G6", "toto"), events.get(1).eventPayload());
+        assertEquals(new GiftOfferedPayload("Motorola G6", "toto"), events.get(1).eventPayload());
     }
 
 }

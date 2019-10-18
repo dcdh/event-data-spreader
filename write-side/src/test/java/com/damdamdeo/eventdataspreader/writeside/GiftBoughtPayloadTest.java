@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebited;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBoughtPayload;
 import com.damdamdeo.eventdataspreader.writeside.user.type.DefaultEventPayloadsAdapter;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.json.JSONException;
@@ -12,11 +12,9 @@ import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.json.bind.JsonbConfig;
 
-import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AccountDebitedTest {
+public class GiftBoughtPayloadTest {
 
     private static final Jsonb MAPPER = JsonbBuilder.create(new JsonbConfig()
             .withFormatting(true)
@@ -24,34 +22,32 @@ public class AccountDebitedTest {
 
     @Test
     public void should_be_equals() {
-        EqualsVerifier.forClass(AccountDebited.class).verify();
+        EqualsVerifier.forClass(GiftBoughtPayload.class).verify();
     }
 
     @Test
     public void should_serialize() throws JSONException {
         // Given
-        final AccountDebited accountDebited = new AccountDebited("owner", new BigDecimal("100.01"), new BigDecimal("899.99"));
+        final GiftBoughtPayload giftBoughtPayload = new GiftBoughtPayload("name");
 
         // When
-        final String json = MAPPER.toJson(accountDebited);
+        final String json = MAPPER.toJson(giftBoughtPayload);
 
         // Then
         JSONAssert.assertEquals(
-                "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": \"100.01\", \"balance\": \"899.99\"}", json, JSONCompareMode.STRICT);
+                "{\"@payloadType\": \"GiftBoughtPayload\", \"@aggregaterootType\": \"GiftAggregate\", \"name\": \"name\"}", json, JSONCompareMode.STRICT);
     }
 
     @Test
     public void should_deserialize() {
         // Given
-        final String json = "{\"@class\": \"AccountDebited\", \"owner\": \"owner\", \"price\": \"100.01\", \"balance\": \"899.99\"}";
+        final String json = "{\"@payloadType\": \"GiftBoughtPayload\", \"@aggregaterootType\": \"GiftAggregate\", \"name\": \"name\"}";
 
         // When
-        final AccountDebited accountDebited = (AccountDebited) MAPPER.fromJson(json, AccountDebited.class);
+        final GiftBoughtPayload giftBoughtPayload = (GiftBoughtPayload) MAPPER.fromJson(json, GiftBoughtPayload.class);
 
         // Then
-        assertEquals("owner", accountDebited.owner());
-        assertEquals(new BigDecimal("100.01"), accountDebited.price());
-        assertEquals(new BigDecimal("899.99"), accountDebited.balance());
+        assertEquals("name", giftBoughtPayload.name());
     }
 
 }

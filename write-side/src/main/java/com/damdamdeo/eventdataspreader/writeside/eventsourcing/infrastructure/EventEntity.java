@@ -62,9 +62,6 @@ public class EventEntity {
 
     public Event toEvent() {
         return new Event(eventId,
-                aggregateRootId,
-                aggregateRootType,
-                eventType,
                 version,
                 creationDate,
                 eventPayload,

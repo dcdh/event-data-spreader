@@ -227,7 +227,7 @@
         "creationdate": 1569174258217000,
         "eventtype": "GiftBought",
         "metadata": "{\"executedBy\": \"damdamdeo\"}",
-        "eventpayload": "{\"name\": \"Motorola G6\", \"@class\": \"GiftBought\"}",
+        "eventpayload": "{\"name\": \"Motorola G6\", \"@payloadType\": \"GiftBoughtPayload\", \"@aggregaterootType\": \"GiftAggregate\"}",
         "version": 0
       },
       "source": {

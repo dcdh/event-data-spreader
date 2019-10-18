@@ -4,8 +4,8 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMet
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBought;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOffered;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBoughtPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOfferedPayload;
 
 import java.util.Objects;
 
@@ -28,22 +28,21 @@ public class GiftAggregate extends AggregateRoot {
     }
 
     public void handle(final BuyGiftCommand buyGiftCommand) {
-        apply(new GiftBought(buyGiftCommand.name()),
+        apply(new GiftBoughtPayload(buyGiftCommand.name()),
                 new DefaultEventMetadata(buyGiftCommand.executedBy()));
     }
 
     public void handle(final OfferGiftCommand offerGiftCommand) {
-        apply(new GiftOffered(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
+        apply(new GiftOfferedPayload(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
                 new DefaultEventMetadata(offerGiftCommand.executedBy()));
     }
 
-    public void on(final GiftBought giftBought) {
-        this.aggregateRootId = giftBought.name();
-        this.name = giftBought.name();
+    public void on(final GiftBoughtPayload giftBoughtPayload) {
+        this.name = giftBoughtPayload.name();
     }
 
-    public void on(final GiftOffered giftOffered) {
-        this.offeredTo = giftOffered.offeredTo();
+    public void on(final GiftOfferedPayload giftOfferedPayload) {
+        this.offeredTo = giftOfferedPayload.offeredTo();
     }
 
     public String name() {
@@ -63,5 +62,4 @@ public class GiftAggregate extends AggregateRoot {
                 ", version=" + version +
                 '}';
     }
-
 }

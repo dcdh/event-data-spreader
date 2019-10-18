@@ -5,29 +5,29 @@ import java.util.*;
 
 public abstract class AggregateRoot implements Serializable {
 
-    protected String aggregateRootId;
     private final transient List<Event> unsavedEvents = new LinkedList<>();
+    protected String aggregateRootId;
     protected Long version = -1l;
 
     protected void apply(final EventPayload eventPayload) {
         this.apply(eventPayload, null);
     }
 
-    protected void apply(final EventPayload eventPayload, final EventMetadata metaData) {
+    protected void apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
         eventPayload.apply(this);
         this.version++;
+        this.aggregateRootId = eventPayload.eventPayloadIdentifier().aggregateRootId();
         this.unsavedEvents.add(new Event(UUID.randomUUID(),
-                Objects.requireNonNull(aggregateRootId, "aggregateRootId must not be null please ensure it was set by the creational event !"),
-                this.getClass().getSimpleName(),
-                eventPayload.getClass().getSimpleName().replaceFirst("(^.+)Payload$", "$1"),
                 this.version,
                 new Date(),
                 eventPayload,
-                metaData));
+                eventMetaData
+        ));
     }
 
     public void loadFromHistory(final List<Event> events) {
         events.forEach(event -> {
+            this.aggregateRootId = event.aggregateRootId();
             event.eventPayload().apply(this);
             this.version = event.version();
         });

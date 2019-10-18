@@ -227,7 +227,7 @@
         "creationdate": 1569174260987000,
         "eventtype": "AccountDebited",
         "metadata": "{\"executedBy\": \"damdamdeo\"}",
-        "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100\", \"@class\": \"AccountDebited\", \"balance\": \"900\"}",
+        "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100\", \"@payloadType\": \"AccountDebitedPayload\", \"@aggregaterootType\": \"AccountAggregate\", \"balance\": \"900\"}",
         "version": 0
       },
       "source": {

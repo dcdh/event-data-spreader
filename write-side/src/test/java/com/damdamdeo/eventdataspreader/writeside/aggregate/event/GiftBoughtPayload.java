@@ -2,27 +2,20 @@ package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventPayload;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventPayloadIdentifier;
 
 import java.util.Objects;
 
-public final class GiftOffered extends EventPayload<GiftAggregate> {
+public final class GiftBoughtPayload extends EventPayload<GiftAggregate> {
 
     private final String name;
 
-    private final String offeredTo;
-
-    public GiftOffered(final String name,
-                       final String offeredTo) {
+    public GiftBoughtPayload(final String name) {
         this.name = Objects.requireNonNull(name);
-        this.offeredTo = Objects.requireNonNull(offeredTo);
     }
 
     public String name() {
         return name;
-    }
-
-    public String offeredTo() {
-        return offeredTo;
     }
 
     @Override
@@ -31,24 +24,28 @@ public final class GiftOffered extends EventPayload<GiftAggregate> {
     }
 
     @Override
+    public EventPayloadIdentifier eventPayloadIdentifier() {
+        return new DefaultEventPayloadIdentifier(name,
+                EventPayloadTypeEnum.GIFT_BOUGHT_GIFT_PAYLOAD);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GiftOffered)) return false;
-        GiftOffered that = (GiftOffered) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(offeredTo, that.offeredTo);
+        if (!(o instanceof GiftBoughtPayload)) return false;
+        GiftBoughtPayload that = (GiftBoughtPayload) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, offeredTo);
+        return Objects.hash(name);
     }
 
     @Override
     public String toString() {
-        return "GiftOffered{" +
-                "offeredTo='" + offeredTo + '\'' +
+        return "GiftBoughtPayload{" +
+                "name='" + name + '\'' +
                 '}';
     }
-
 }
