@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 
 public class AggregateRootTest {
 
-    private static class TestAggregateRoot extends AggregateRoot {
+    public static class TestAggregateRoot extends AggregateRoot {
 
         public TestAggregateRoot(final String aggregateRootId) {
             this.aggregateRootId = aggregateRootId;
