@@ -9,8 +9,8 @@ import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import javax.transaction.UserTransaction;
@@ -31,6 +31,10 @@ public class KafkaEventConsumer {
 
     @Inject
     UserTransaction transaction;
+
+    @Inject
+    @Any
+    Instance<EventConsumer> eventConsumersBeans;
 
     private final class DefaultEvent implements Event {
 
@@ -129,7 +133,7 @@ public class KafkaEventConsumer {
 
     // je creer des commandes à partir d'un event ;)
     private void executeEventMessage(final Event event) throws Exception {
-        final Instance<EventConsumer> eventConsumers = CDI.current()
+        final Instance<EventConsumer> eventConsumers = eventConsumersBeans
                 .select(EventConsumer.class, new EventQualifierLiteral(event));
         if (eventConsumers.isResolvable()) {
             transaction.begin();
