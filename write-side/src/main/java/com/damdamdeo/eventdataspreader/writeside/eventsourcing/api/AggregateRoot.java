@@ -9,10 +9,6 @@ public abstract class AggregateRoot implements Serializable {
     protected String aggregateRootId;
     protected Long version = -1l;
 
-    protected void apply(final EventPayload eventPayload) {
-        this.apply(eventPayload, null);
-    }
-
     protected void apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
         eventPayload.apply(this);
         this.version++;
