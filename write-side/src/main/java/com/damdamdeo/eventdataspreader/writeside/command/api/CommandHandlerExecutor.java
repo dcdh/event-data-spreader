@@ -5,9 +5,10 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -22,6 +23,10 @@ public class CommandHandlerExecutor {
     private ExecutorService exactlyOnceCommandExecutor;
     private List<ExecutorService> threadPools;
     private Set<String> handledAggregateRootIdsInExactlyOnce;
+
+    @Inject
+    @Any
+    Instance<CommandHandler> commandHandlers;
 
     @PostConstruct
     public void init() {
@@ -84,7 +89,7 @@ public class CommandHandlerExecutor {
     }
 
     private Optional<AggregateRoot> executeCommand(final Command command) {
-        final Instance<CommandHandler> commandHandler = CDI.current()
+        final Instance<CommandHandler> commandHandler = commandHandlers
                 .select(CommandHandler.class, new CommandQualifierLiteral(command.getClass()));
         if (commandHandler.isResolvable()) {
             final AggregateRoot aggregateRoot = commandHandler.get().handle(command);
