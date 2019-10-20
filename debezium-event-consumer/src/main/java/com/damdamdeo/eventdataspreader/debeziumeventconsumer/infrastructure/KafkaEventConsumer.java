@@ -12,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Inject;
 import javax.transaction.UserTransaction;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -25,15 +26,11 @@ public class KafkaEventConsumer {
 
     private static final class NotAnEventPayloadException extends RuntimeException {}
 
-    final EventConsumedRepository eventConsumedRepository;
+    @Inject
+    EventConsumedRepository eventConsumedRepository;
 
-    final UserTransaction transaction;
-
-    public KafkaEventConsumer(final EventConsumedRepository eventConsumedRepository,
-                              final UserTransaction transaction) {
-        this.eventConsumedRepository = Objects.requireNonNull(eventConsumedRepository);
-        this.transaction = Objects.requireNonNull(transaction);
-    }
+    @Inject
+    UserTransaction transaction;
 
     private final class DefaultEvent implements Event {
 
