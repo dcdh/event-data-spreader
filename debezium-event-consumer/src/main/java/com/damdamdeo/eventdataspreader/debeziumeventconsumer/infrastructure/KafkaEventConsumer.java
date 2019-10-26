@@ -15,6 +15,7 @@ import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import javax.transaction.UserTransaction;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +25,8 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
 
-    private static final class NotAnEventPayloadException extends RuntimeException {}
+    private static final class NotAnEventPayloadException extends RuntimeException {
+    }
 
     @Inject
     EventConsumedRepository eventConsumedRepository;
@@ -101,61 +103,62 @@ public class KafkaEventConsumer {
     }
 
     @Incoming("event")
-    public CompletionStage<Void> onMessage(final KafkaMessage<JsonObject, JsonObject> message) throws Exception {
-        if (message.getPayload() == null) {
-            return message.ack();
-        }
-        try {
-            final UUID eventId = Optional.ofNullable(message.getKey().getJsonObject("payload"))
-                    .map(jsonObject -> jsonObject.getString("eventid"))
-                    .map(UUID::fromString)
-                    .orElseThrow(() -> new NotAnEventPayloadException());
-            if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
-                final JsonObject payload = message.getPayload().getJsonObject("payload");
-                if (payload != null) {
-                    final JsonObject after = payload.getJsonObject("after");
-                    if (after != null) {
-                        executeEventMessage(new DefaultEvent(after));
-                    } else {
-                        LOGGER.log(Level.INFO, String.format("Missing 'after' for eventId '%s'", eventId));
+    public CompletionStage<Void> onMessage(final KafkaMessage<JsonObject, JsonObject> message) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (message.getPayload() != null) {
+                    try {
+                        final UUID eventId = Optional.ofNullable(message.getKey().getJsonObject("payload"))
+                                .map(jsonObject -> jsonObject.getString("eventid"))
+                                .map(UUID::fromString)
+                                .orElseThrow(() -> new NotAnEventPayloadException());
+                        if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
+                            final JsonObject payload = message.getPayload().getJsonObject("payload");
+                            if (payload != null) {
+                                final JsonObject after = payload.getJsonObject("after");
+                                if (after != null) {
+                                    final Event event = new DefaultEvent(after);
+                                    final Instance<EventConsumer> eventConsumers = eventConsumersBeans
+                                            .select(EventConsumer.class, new EventQualifierLiteral(event));
+                                    if (eventConsumers.isResolvable()) {
+                                        transaction.begin();
+                                        final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
+                                        transaction.commit();
+
+                                        for (final EventConsumer eventConsumer : eventConsumers) {
+                                            if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
+                                                transaction.begin();
+                                                eventConsumer.consume(event);
+                                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass());
+                                                transaction.commit();
+                                            }
+                                        }
+                                    } else if (eventConsumers.isUnsatisfied()) {
+                                        // TODO log
+                                    } else if (eventConsumers.isAmbiguous()) {
+                                        throw new IllegalStateException("Ambigous command handlers for " + event.aggregateRootType() + " " + event.eventType());
+                                    }
+                                    transaction.begin();
+                                    eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date());
+                                    transaction.commit();
+                                } else {
+                                    LOGGER.log(Level.INFO, String.format("Missing 'after' for eventId '%s'", eventId));
+                                }
+                            } else {
+                                LOGGER.log(Level.INFO, String.format("Missing 'payload' for eventId '%s'", eventId));
+                            }
+                        } else {
+                            LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
+                        }
+                    } catch (final NotAnEventPayloadException notAnEventPayloadException) {
+                        LOGGER.log(Level.WARNING, String.format("Message not an event !"));// TODO better login
                     }
-                } else {
-                    LOGGER.log(Level.INFO, String.format("Missing 'payload' for eventId '%s'", eventId));
                 }
-            } else {
-                LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
+                return null;
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (final NotAnEventPayloadException notAnEventPayloadException) {
-            LOGGER.log(Level.WARNING, String.format("Message not an event !"));// TODO better login
-        }
-        return message.ack();
-    }
-
-    // je creer des commandes à partir d'un event ;)
-    private void executeEventMessage(final Event event) throws Exception {
-        final Instance<EventConsumer> eventConsumers = eventConsumersBeans
-                .select(EventConsumer.class, new EventQualifierLiteral(event));
-        if (eventConsumers.isResolvable()) {
-            transaction.begin();
-            final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-            transaction.commit();
-
-            for (final EventConsumer eventConsumer : eventConsumers) {
-                if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
-                    transaction.begin();
-                    eventConsumer.consume(event);
-                    eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass());
-                    transaction.commit();
-                }
-            }
-        } else if (eventConsumers.isUnsatisfied()) {
-//            TODO log
-        } else if (eventConsumers.isAmbiguous()) {
-            throw new IllegalStateException("Ambigous command handlers for " + event.aggregateRootType() + " " + event.eventType());
-        }
-        transaction.begin();
-        eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date());
-        transaction.commit();
+        });
     }
 
     private class EventQualifierLiteral extends AnnotationLiteral<EventQualifier> implements EventQualifier {
