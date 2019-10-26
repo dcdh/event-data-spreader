@@ -1,5 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
+import org.apache.commons.lang3.Validate;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -12,7 +14,9 @@ public abstract class AggregateRoot implements Serializable {
     protected void apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
         eventPayload.apply(this);
         this.version++;
-        this.aggregateRootId = eventPayload.eventPayloadIdentifier().aggregateRootId();
+        final String eventAggregateRootId = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootId(), "Aggregate root id can't be null");
+        Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(eventAggregateRootId), "Aggregate root id and event aggregate root id mismatch");
+        this.aggregateRootId = eventAggregateRootId;
         this.unsavedEvents.add(new Event(UUID.randomUUID(),
                 this.version,
                 new Date(),
@@ -22,6 +26,8 @@ public abstract class AggregateRoot implements Serializable {
     }
 
     public void loadFromHistory(final List<Event> events) {
+        Validate.validState(this.aggregateRootId == null, "Aggregate Root already loaded from history");
+        Validate.validState(events.stream().map(Event::aggregateRootId).distinct().count() <= 1, "Aggregate Root ids events mismatch");
         events.forEach(event -> {
             this.aggregateRootId = event.aggregateRootId();
             event.eventPayload().apply(this);
