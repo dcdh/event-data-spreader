@@ -72,7 +72,6 @@ public class KafkaEventConsumer {
                 } else {
                     LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                 }
-                return null;
             } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
                 throw new RuntimeException(e);
             } catch (final UnableToDecodeDebeziumEventMessageException e) {
