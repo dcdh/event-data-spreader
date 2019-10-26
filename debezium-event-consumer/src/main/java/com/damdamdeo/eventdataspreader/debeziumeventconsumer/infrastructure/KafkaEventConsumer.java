@@ -17,6 +17,8 @@ import javax.transaction.UserTransaction;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,6 +104,8 @@ public class KafkaEventConsumer {
 
     }
 
+    private final Executor executor = Executors.newSingleThreadExecutor();
+
     @Incoming("event")
     public CompletionStage<Void> onMessage(final KafkaMessage<JsonObject, JsonObject> message) {
         return CompletableFuture.supplyAsync(() -> {
@@ -158,7 +162,7 @@ public class KafkaEventConsumer {
             } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, executor);
     }
 
     private class EventQualifierLiteral extends AnnotationLiteral<EventQualifier> implements EventQualifier {
