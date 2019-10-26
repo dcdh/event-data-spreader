@@ -5,7 +5,9 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRe
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import io.smallrye.reactive.messaging.kafka.KafkaMessage;
+import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -13,7 +15,7 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
-import javax.transaction.UserTransaction;
+import javax.transaction.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -27,9 +29,6 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
 
-    private static final class NotAnEventPayloadException extends RuntimeException {
-    }
-
     @Inject
     EventConsumedRepository eventConsumedRepository;
 
@@ -40,128 +39,51 @@ public class KafkaEventConsumer {
     @Any
     Instance<EventConsumer> eventConsumersBeans;
 
-    private final class DefaultEvent implements Event {
-
-        private final UUID eventId;
-        private final String aggregateRootId;
-        private final String aggregateRootType;
-        private final Date creationDate;
-        private final String eventType;
-        private final JsonObject metadata;
-        private final JsonObject payload;
-        private final Long version;
-
-        public DefaultEvent(final JsonObject after) {
-            this.eventId = UUID.fromString(after.getString("eventid"));
-            this.aggregateRootId = after.getString("aggregaterootid");
-            this.aggregateRootType = after.getString("aggregateroottype");
-            this.creationDate = new Date(after.getLong("creationdate") / 1000);
-            this.eventType = after.getString("eventtype");
-            this.metadata = new JsonObject(after.getString("metadata"));
-            this.payload = new JsonObject(after.getString("eventpayload"));
-            this.version = after.getLong("version");
-        }
-
-        @Override
-        public UUID eventId() {
-            return eventId;
-        }
-
-        @Override
-        public String aggregateRootId() {
-            return aggregateRootId;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return aggregateRootType;
-        }
-
-        @Override
-        public Date creationDate() {
-            return creationDate;
-        }
-
-        @Override
-        public String eventType() {
-            return eventType;
-        }
-
-        @Override
-        public JsonObject metadata() {
-            return metadata;
-        }
-
-        @Override
-        public JsonObject payload() {
-            return payload;
-        }
-
-        @Override
-        public Long version() {
-            return version;
-        }
-
-    }
-
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     @Incoming("event")
     public CompletionStage<Void> onMessage(final KafkaMessage<JsonObject, JsonObject> message) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (message.getPayload() != null) {
-                    try {
-                        final UUID eventId = Optional.ofNullable(message.getKey().getJsonObject("payload"))
-                                .map(jsonObject -> jsonObject.getString("eventid"))
-                                .map(UUID::fromString)
-                                .orElseThrow(() -> new NotAnEventPayloadException());
-                        if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
-                            final JsonObject payload = message.getPayload().getJsonObject("payload");
-                            if (payload != null) {
-                                final JsonObject after = payload.getJsonObject("after");
-                                if (after != null) {
-                                    final Event event = new DefaultEvent(after);
-                                    final Instance<EventConsumer> eventConsumers = eventConsumersBeans
-                                            .select(EventConsumer.class, new EventQualifierLiteral(event));
-                                    if (eventConsumers.isResolvable()) {
-                                        transaction.begin();
-                                        final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                                        transaction.commit();
-
-                                        for (final EventConsumer eventConsumer : eventConsumers) {
-                                            if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
-                                                transaction.begin();
-                                                eventConsumer.consume(event);
-                                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass());
-                                                transaction.commit();
-                                            }
-                                        }
-                                    } else if (eventConsumers.isUnsatisfied()) {
-                                        // TODO log
-                                    } else if (eventConsumers.isAmbiguous()) {
-                                        throw new IllegalStateException("Ambigous command handlers for " + event.aggregateRootType() + " " + event.eventType());
-                                    }
-                                    transaction.begin();
-                                    eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date());
-                                    transaction.commit();
-                                } else {
-                                    LOGGER.log(Level.INFO, String.format("Missing 'after' for eventId '%s'", eventId));
-                                }
-                            } else {
-                                LOGGER.log(Level.INFO, String.format("Missing 'payload' for eventId '%s'", eventId));
+                final Event event = new DebeziumEventKafkaMessage(message);
+                final UUID eventId = event.eventId();
+                if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
+                    final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(event));
+                    if (eventConsumers.isResolvable()) {
+                        transaction.begin();
+                        final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
+                        transaction.commit();
+                        for (final EventConsumer eventConsumer : eventConsumers) {
+                            if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
+                                transaction.begin();
+                                eventConsumer.consume(event);
+                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass());
+                                transaction.commit();
                             }
-                        } else {
-                            LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                         }
-                    } catch (final NotAnEventPayloadException notAnEventPayloadException) {
-                        LOGGER.log(Level.WARNING, String.format("Message not an event !"));// TODO better login
+                    } else if (eventConsumers.isUnsatisfied()) {
+                        // TODO log
+                    } else if (eventConsumers.isAmbiguous()) {
+                        throw new IllegalStateException("Ambiguous command handlers for " + event.aggregateRootType() + " " + event.eventType());
                     }
+                    transaction.begin();
+                    eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date());
+                    transaction.commit();
+                } else {
+                    LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                 }
                 return null;
-            } catch (final Exception e) {
+            } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
                 throw new RuntimeException(e);
+            } catch (final UnableToDecodeDebeziumEventMessageException e) {
+                final ConsumerRecord<JsonObject, JsonObject> consumerRecord = ((ReceivedKafkaMessage<JsonObject, JsonObject>) message).unwrap();
+                final Long offset = consumerRecord.offset();
+                final Integer partition = consumerRecord.partition();
+                final String topic = consumerRecord.topic();
+                LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d'",
+                        topic, partition, offset));
             }
+            return null;
         }, executor);
     }
 
