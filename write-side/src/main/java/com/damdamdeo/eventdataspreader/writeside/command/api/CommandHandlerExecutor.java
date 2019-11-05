@@ -20,9 +20,9 @@ import java.util.stream.IntStream;
 @ApplicationScoped
 public class CommandHandlerExecutor {
 
-    private ExecutorService exactlyOnceCommandExecutor;
-    private List<ExecutorService> threadPools;
-    private Set<String> handledAggregateRootIdsInExactlyOnce;
+    ExecutorService exactlyOnceCommandExecutor;
+    List<ExecutorService> threadPools;
+    Set<String> handledAggregateRootIdsInExactlyOnce;
 
     @Inject
     @Any
@@ -61,9 +61,9 @@ public class CommandHandlerExecutor {
         try {
             return executorServiceToExecuteCommand.submit(() -> {
                 final Optional<AggregateRoot> aggregateRoot = executeCommand(command);
-                aggregateRoot.ifPresent(ar -> {
-                    this.handledAggregateRootIdsInExactlyOnce.remove(ar.aggregateRootId());
-                });
+                if (command.aggregateId() != null) {
+                    this.handledAggregateRootIdsInExactlyOnce.remove(command.aggregateId());
+                }
                 return aggregateRoot;
             }).get();
         } catch (final InterruptedException e) {
@@ -73,11 +73,11 @@ public class CommandHandlerExecutor {
         }
     }
 
-    private class CommandQualifierLiteral extends AnnotationLiteral<CommandQualifier> implements CommandQualifier {
+    public static class CommandQualifierLiteral extends AnnotationLiteral<CommandQualifier> implements CommandQualifier {
 
         private final Class value;
 
-        private CommandQualifierLiteral(final Class value) {
+        public CommandQualifierLiteral(final Class value) {
             this.value = value;
         }
 

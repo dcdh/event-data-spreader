@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import java.util.Objects;
 
-public class AggregateRootProjection {
+public final class AggregateRootProjection {
 
     private final String aggregateRootId;
 
@@ -33,5 +33,31 @@ public class AggregateRootProjection {
 
     public Long version() {
         return version;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AggregateRootProjection)) return false;
+        AggregateRootProjection that = (AggregateRootProjection) o;
+        return Objects.equals(aggregateRootId, that.aggregateRootId) &&
+                Objects.equals(aggregateRootType, that.aggregateRootType) &&
+                Objects.equals(aggregateRoot, that.aggregateRoot) &&
+                Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(aggregateRootId, aggregateRootType, aggregateRoot, version);
+    }
+
+    @Override
+    public String toString() {
+        return "AggregateRootProjection{" +
+                "aggregateRootId='" + aggregateRootId + '\'' +
+                ", aggregateRootType='" + aggregateRootType + '\'' +
+                ", aggregateRoot=" + aggregateRoot +
+                ", version=" + version +
+                '}';
     }
 }

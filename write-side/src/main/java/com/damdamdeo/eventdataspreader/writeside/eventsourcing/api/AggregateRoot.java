@@ -11,18 +11,20 @@ public abstract class AggregateRoot implements Serializable {
     protected String aggregateRootId;
     protected Long version = -1l;
 
-    protected void apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
+    protected Event apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
         eventPayload.apply(this);
         this.version++;
         final String eventAggregateRootId = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootId(), "Aggregate root id can't be null");
         Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(eventAggregateRootId), "Aggregate root id and event aggregate root id mismatch");
         this.aggregateRootId = eventAggregateRootId;
-        this.unsavedEvents.add(new Event(UUID.randomUUID(),
+        final Event eventToApply = new Event(UUID.randomUUID(),
                 this.version,
                 new Date(),
                 eventPayload,
                 eventMetaData
-        ));
+        );
+        this.unsavedEvents.add(eventToApply);
+        return eventToApply;
     }
 
     public void loadFromHistory(final List<Event> events) {
