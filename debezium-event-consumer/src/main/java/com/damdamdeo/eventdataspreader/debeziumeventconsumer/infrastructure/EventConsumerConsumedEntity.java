@@ -8,6 +8,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @Table(name = "EventConsumerConsumed")
@@ -26,8 +27,8 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
 
     public EventConsumerConsumedEntity(final EventConsumerId eventConsumerId,
                                        final Date consumedAt) {
-        this.eventConsumerId = eventConsumerId;
-        this.consumedAt = consumedAt;
+        this.eventConsumerId = Objects.requireNonNull(eventConsumerId);
+        this.consumedAt = Objects.requireNonNull(consumedAt);
     }
 
     public EventConsumerId eventConsumerId() {
@@ -49,4 +50,24 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
         return consumedAt;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EventConsumerConsumedEntity)) return false;
+        EventConsumerConsumedEntity that = (EventConsumerConsumedEntity) o;
+        return Objects.equals(eventConsumerId, that.eventConsumerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventConsumerId);
+    }
+
+    @Override
+    public String toString() {
+        return "EventConsumerConsumedEntity{" +
+                "eventConsumerId=" + eventConsumerId +
+                ", consumedAt=" + consumedAt +
+                '}';
+    }
 }

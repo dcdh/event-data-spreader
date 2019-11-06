@@ -7,10 +7,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Table(name = "EventConsumed")
 @Entity
@@ -32,7 +29,7 @@ public class EventConsumedEntity implements EventConsumed {
     public EventConsumedEntity() {}
 
     public EventConsumedEntity(final UUID eventId) {
-        this.eventId = eventId;
+        this.eventId = Objects.requireNonNull(eventId);
         this.consumed = Boolean.FALSE;
         this.eventConsumerEntities = new ArrayList<>();
     }
@@ -62,6 +59,19 @@ public class EventConsumedEntity implements EventConsumed {
     @Override
     public List<? extends EventConsumerConsumed> eventConsumerConsumeds() {
         return eventConsumerEntities;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EventConsumedEntity)) return false;
+        EventConsumedEntity that = (EventConsumedEntity) o;
+        return Objects.equals(eventId, that.eventId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId);
     }
 
     @Override

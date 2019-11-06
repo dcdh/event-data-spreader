@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class DebeziumEventKafkaMessage implements Event {
@@ -42,7 +43,7 @@ public final class DebeziumEventKafkaMessage implements Event {
             throw new UnableToDecodeDebeziumEventMessageException("Message Key 'payload' is missing");
         }
         if (message.getKey().getJsonObject(PAYLOAD).getString(EVENT_EVENT_ID) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException("Message Key 'payload' is missing");
+            throw new UnableToDecodeDebeziumEventMessageException("Message Key payload 'event_id' is missing");
         }
         if (message.getPayload() == null) {
             throw new UnableToDecodeDebeziumEventMessageException("'Message Payload' is missing");
@@ -54,7 +55,7 @@ public final class DebeziumEventKafkaMessage implements Event {
             throw new UnableToDecodeDebeziumEventMessageException("'after' is missing");
         }
         if (message.getPayload().getJsonObject(PAYLOAD).getString(OPERATION) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException("'oc' is missing");
+            throw new UnableToDecodeDebeziumEventMessageException("'op' is missing");
         }
         if (!Arrays.asList(CREATE_OPERATION, READ_OPERATION).contains(message.getPayload().getJsonObject(PAYLOAD).getString(OPERATION))) {
             throw new UnableToDecodeDebeziumEventMessageException("only debezium create or read operation - data inserted in database - are supported");
@@ -113,4 +114,37 @@ public final class DebeziumEventKafkaMessage implements Event {
         return version;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DebeziumEventKafkaMessage)) return false;
+        DebeziumEventKafkaMessage that = (DebeziumEventKafkaMessage) o;
+        return Objects.equals(eventId, that.eventId) &&
+                Objects.equals(aggregateRootId, that.aggregateRootId) &&
+                Objects.equals(aggregateRootType, that.aggregateRootType) &&
+                Objects.equals(creationDate, that.creationDate) &&
+                Objects.equals(eventType, that.eventType) &&
+                Objects.equals(metadata, that.metadata) &&
+                Objects.equals(payload, that.payload) &&
+                Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId, aggregateRootId, aggregateRootType, creationDate, eventType, metadata, payload, version);
+    }
+
+    @Override
+    public String toString() {
+        return "DebeziumEventKafkaMessage{" +
+                "eventId=" + eventId +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
+                ", aggregateRootType='" + aggregateRootType + '\'' +
+                ", creationDate=" + creationDate +
+                ", eventType='" + eventType + '\'' +
+                ", metadata=" + metadata +
+                ", payload=" + payload +
+                ", version=" + version +
+                '}';
+    }
 }

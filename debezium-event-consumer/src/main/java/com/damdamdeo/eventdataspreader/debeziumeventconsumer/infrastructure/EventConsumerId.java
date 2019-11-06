@@ -35,4 +35,25 @@ public class EventConsumerId implements Serializable {
         return consumerClassName;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EventConsumerId)) return false;
+        EventConsumerId that = (EventConsumerId) o;
+        return Objects.equals(eventId, that.eventId) &&
+                Objects.equals(consumerClassName, that.consumerClassName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId, consumerClassName);
+    }
+
+    @Override
+    public String toString() {
+        return "EventConsumerId{" +
+                "eventId=" + eventId +
+                ", consumerClassName='" + consumerClassName + '\'' +
+                '}';
+    }
 }
