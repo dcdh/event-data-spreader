@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 
 import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
@@ -19,14 +20,14 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void addEventConsumerConsumed(final UUID eventId, final Class consumerClass) {
+    public void addEventConsumerConsumed(final UUID eventId, final Class consumerClass, final KafkaSource kafkaSource) {
         EventConsumedEntity eventConsumedEntity;
         try {
             eventConsumedEntity = entityManager.createNamedQuery("Events.findByEventId", EventConsumedEntity.class)
                     .setParameter("eventId", eventId)
                     .getSingleResult();
         } catch (final NoResultException e) {
-            eventConsumedEntity = new EventConsumedEntity(eventId);
+            eventConsumedEntity = new EventConsumedEntity(eventId, kafkaSource);
         }
         eventConsumedEntity.addNewEventConsumerConsumed(consumerClass, new Date());
         entityManager.persist(eventConsumedEntity);
@@ -34,9 +35,9 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void markEventAsConsumed(final UUID eventId, final Date consumedAt) {
+    public void markEventAsConsumed(final UUID eventId, final Date consumedAt, final KafkaSource kafkaSource) {
         final EventConsumedEntity eventConsumedEntity = Optional.ofNullable(entityManager.find(EventConsumedEntity.class, eventId))
-                .orElseGet(() -> new EventConsumedEntity(eventId));
+                .orElseGet(() -> new EventConsumedEntity(eventId, kafkaSource));
         eventConsumedEntity.markAsConsumed();
         entityManager.persist(eventConsumedEntity);
     }

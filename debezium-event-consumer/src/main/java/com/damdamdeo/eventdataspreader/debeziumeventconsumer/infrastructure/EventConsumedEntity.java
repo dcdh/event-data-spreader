@@ -3,6 +3,7 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumed;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -26,12 +27,25 @@ public class EventConsumedEntity implements EventConsumed {
     @JoinColumn(name = "EventConsumerConsumedEntity_eventConsumerId")
     private List<EventConsumerConsumedEntity> eventConsumerEntities;
 
+    @NotNull
+    private Integer kafkaPartition;
+
+    @NotNull
+    @Column(columnDefinition="TEXT")
+    private String kafkaTopic;
+
+    @NotNull
+    private Long kafkaOffset;
+
     public EventConsumedEntity() {}
 
-    public EventConsumedEntity(final UUID eventId) {
+    public EventConsumedEntity(final UUID eventId, final KafkaSource kafkaSource) {
         this.eventId = Objects.requireNonNull(eventId);
         this.consumed = Boolean.FALSE;
         this.eventConsumerEntities = new ArrayList<>();
+        this.kafkaPartition = Objects.requireNonNull(kafkaSource.partition());
+        this.kafkaTopic = Objects.requireNonNull(kafkaSource.topic());
+        this.kafkaOffset = Objects.requireNonNull(kafkaSource.offset());
     }
 
     public void addNewEventConsumerConsumed(final Class consumerClass,
@@ -66,12 +80,17 @@ public class EventConsumedEntity implements EventConsumed {
         if (this == o) return true;
         if (!(o instanceof EventConsumedEntity)) return false;
         EventConsumedEntity that = (EventConsumedEntity) o;
-        return Objects.equals(eventId, that.eventId);
+        return Objects.equals(eventId, that.eventId) &&
+                Objects.equals(consumed, that.consumed) &&
+                Objects.equals(eventConsumerEntities, that.eventConsumerEntities) &&
+                Objects.equals(kafkaPartition, that.kafkaPartition) &&
+                Objects.equals(kafkaTopic, that.kafkaTopic) &&
+                Objects.equals(kafkaOffset, that.kafkaOffset);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId);
+        return Objects.hash(eventId, consumed, eventConsumerEntities, kafkaPartition, kafkaTopic, kafkaOffset);
     }
 
     @Override
@@ -80,6 +99,9 @@ public class EventConsumedEntity implements EventConsumed {
                 "eventId=" + eventId +
                 ", consumed=" + consumed +
                 ", eventConsumerEntities=" + eventConsumerEntities +
+                ", kafkaPartition=" + kafkaPartition +
+                ", kafkaTopic='" + kafkaTopic + '\'' +
+                ", kafkaOffset=" + kafkaOffset +
                 '}';
     }
 }

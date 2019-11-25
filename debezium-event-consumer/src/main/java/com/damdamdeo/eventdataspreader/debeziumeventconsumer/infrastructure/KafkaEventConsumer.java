@@ -4,10 +4,8 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
-import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -42,7 +40,7 @@ public class KafkaEventConsumer {
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     @Incoming("event")
-    public CompletionStage<Void> onMessage(final KafkaMessage<JsonObject, JsonObject> message) {
+    public CompletionStage<Void> onMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 final Event event = new DebeziumEventKafkaMessage(message);
@@ -57,7 +55,7 @@ public class KafkaEventConsumer {
                             if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
                                 transaction.begin();
                                 eventConsumer.consume(event);
-                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass());
+                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass(), new ConsumerRecordKafkaSource(message));
                                 transaction.commit();
                             }
                         }
@@ -67,20 +65,18 @@ public class KafkaEventConsumer {
                         throw new IllegalStateException("Ambiguous command handlers for " + event.aggregateRootType() + " " + event.eventType());
                     }
                     transaction.begin();
-                    eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date());
+                    eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date(), new ConsumerRecordKafkaSource(message));
                     transaction.commit();
                 } else {
                     LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                 }
             } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
                 throw new RuntimeException(e);
-            } catch (final UnableToDecodeDebeziumEventMessageException e) {
-                final ConsumerRecord<JsonObject, JsonObject> consumerRecord = ((ReceivedKafkaMessage<JsonObject, JsonObject>) message).unwrap();
-                final Long offset = consumerRecord.offset();
-                final Integer partition = consumerRecord.partition();
-                final String topic = consumerRecord.topic();
+            } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
                 LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d'",
-                        topic, partition, offset));
+                        unableToDecodeDebeziumEventMessageException.topic(),
+                        unableToDecodeDebeziumEventMessageException.partition(),
+                        unableToDecodeDebeziumEventMessageException.offset()));
             }
             return null;
         }, executor);

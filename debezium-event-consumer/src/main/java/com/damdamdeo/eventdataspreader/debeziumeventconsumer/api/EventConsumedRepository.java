@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public interface EventConsumedRepository {
 
-    void addEventConsumerConsumed(UUID eventId, Class consumerClass);
+    void addEventConsumerConsumed(UUID eventId, Class consumerClass, KafkaSource kafkaSource);
 
-    void markEventAsConsumed(UUID eventId, Date consumedAt);
+    void markEventAsConsumed(UUID eventId, Date consumedAt, KafkaSource kafkaSource);
 
     boolean hasConsumedEvent(UUID eventId);
 

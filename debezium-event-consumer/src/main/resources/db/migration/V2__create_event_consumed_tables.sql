@@ -4,7 +4,10 @@
 
 CREATE TABLE public.eventconsumed (
     eventid uuid NOT NULL,
-    consumed boolean NOT NULL
+    consumed boolean NOT NULL,
+    kafkapartition integer NOT NULL,
+    kafkatopic text NOT NULL,
+    kafkaoffset bigint NOT NULL
 );
 
 --
@@ -12,7 +15,7 @@ CREATE TABLE public.eventconsumed (
 --
 
 CREATE TABLE public.eventconsumerconsumed (
-    consumerclassname character varying(255) NOT NULL,
+    consumerclassname text NOT NULL,
     eventid uuid NOT NULL,
     consumedat timestamp without time zone NOT NULL,
     eventconsumerconsumedentity_eventconsumerid uuid

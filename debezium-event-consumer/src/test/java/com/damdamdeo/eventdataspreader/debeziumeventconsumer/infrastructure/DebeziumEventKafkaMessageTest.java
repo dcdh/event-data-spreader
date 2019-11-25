@@ -1,8 +1,9 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import io.smallrye.reactive.messaging.kafka.KafkaMessage;
+import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,8 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_key_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class);
+        when(message.unwrap()).thenReturn(mock(ConsumerRecord.class));
 
         // When && Then
         final Throwable throwable = assertThrows(UnableToDecodeDebeziumEventMessageException.class,
@@ -31,7 +33,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_key_payload_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(null);
 
@@ -46,7 +48,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_key_payload_eventId_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn(null);
@@ -63,7 +65,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -82,7 +84,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_payload_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -103,7 +105,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_payload_after_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -126,7 +128,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_payload_operation_is_missing() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -151,7 +153,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_payload_operation_is_deleted() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -176,7 +178,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_message_payload_payload_operation_is_updated() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("eventid");
@@ -201,7 +203,7 @@ public class DebeziumEventKafkaMessageTest {
     @Test
     public void should_fail_fast_when_eventids_mismatched() {
         // Given
-        final KafkaMessage<JsonObject, JsonObject> message = mock(KafkaMessage.class, RETURNS_DEEP_STUBS);
+        final ReceivedKafkaMessage<JsonObject, JsonObject> message = mock(ReceivedKafkaMessage.class, RETURNS_DEEP_STUBS);
         when(message.getKey()).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload")).thenReturn(mock(JsonObject.class));
         when(message.getKey().getJsonObject("payload").getString("eventid")).thenReturn("0123456789");
