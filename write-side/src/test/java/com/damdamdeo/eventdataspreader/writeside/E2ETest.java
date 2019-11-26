@@ -82,7 +82,10 @@ public class E2ETest {
             final List<EventEntity> events = entityManager.createQuery("SELECT e FROM EventEntity e").getResultList();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();
-            return events.size() == 3 && eventConsumedEntities.size() == 3;
+            return events.size() == 3 && eventConsumedEntities
+                    .stream()
+                    .filter(eventConsumedEntity -> eventConsumedEntity.consumed())
+                    .count() == 3;
         });
         transaction.begin();
         final List<EventEntity> events = entityManager.createQuery("SELECT e FROM EventEntity e").getResultList();
@@ -97,10 +100,10 @@ public class E2ETest {
         assertEquals("AccountAggregate", events.get(2).aggregateRootType());
         assertEquals("AccountDebited", events.get(2).eventType());
 
-        final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
+        final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e LEFT JOIN FETCH e.eventConsumerEntities ORDER BY e.kafkaOffset ASC").getResultList();
         transaction.commit();
 
-        eventConsumedEntities.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed()));
+        eventConsumedEntities.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed(), "Event not consumed " + eventConsumedEntity.toString()));
 
         assertEquals(events.get(0).eventId(), eventConsumedEntities.get(0).eventId());
         assertEquals(events.get(1).eventId(), eventConsumedEntities.get(1).eventId());

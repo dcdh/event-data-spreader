@@ -51,7 +51,9 @@ public class QuerySideTest {
             transaction.begin();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();
-            return eventConsumedEntities.size() == 3;
+            return eventConsumedEntities.stream()
+                    .filter(eventConsumedEntity -> eventConsumedEntity.consumed())
+                    .count() == 3;
         });
         transaction.begin();
         final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "Motorola G6");
