@@ -49,11 +49,12 @@ public class EventConsumedEntity implements EventConsumed {
     }
 
     public void addNewEventConsumerConsumed(final Class consumerClass,
-                                            final Date consumedAt) {
+                                            final Date consumedAt,
+                                            final String gitCommitId) {
         eventConsumerEntities.add(
                 new EventConsumerConsumedEntity(
                         new EventConsumerId(eventId, consumerClass),
-                        consumedAt));
+                        consumedAt, gitCommitId));
     }
 
     public void markAsConsumed() {

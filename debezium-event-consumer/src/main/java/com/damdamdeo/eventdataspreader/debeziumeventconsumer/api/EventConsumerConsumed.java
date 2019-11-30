@@ -11,4 +11,6 @@ public interface EventConsumerConsumed {
 
     Date consumedAt();
 
+    String gitCommitId();
+
 }

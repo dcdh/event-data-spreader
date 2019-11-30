@@ -18,6 +18,7 @@ CREATE TABLE public.eventconsumerconsumed (
     consumerclassname text NOT NULL,
     eventid uuid NOT NULL,
     consumedat timestamp without time zone NOT NULL,
+    gitcommitid character varying(255) NOT NULL,
     eventconsumerconsumedentity_eventconsumerid uuid
 );
 

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public interface EventConsumedRepository {
 
-    void addEventConsumerConsumed(UUID eventId, Class consumerClass, KafkaSource kafkaSource);
+    void addEventConsumerConsumed(UUID eventId, Class consumerClass, KafkaSource kafkaSource, String gitCommitId);
 
     void markEventAsConsumed(UUID eventId, Date consumedAt, KafkaSource kafkaSource);
 

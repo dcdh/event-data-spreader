@@ -8,12 +8,16 @@ import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
+import javax.json.JsonReader;
 import javax.transaction.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -21,6 +25,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.json.Json;
 
 @ApplicationScoped
 public class KafkaEventConsumer {
@@ -36,6 +41,19 @@ public class KafkaEventConsumer {
     @Inject
     @Any
     Instance<EventConsumer> eventConsumersBeans;
+
+    private String gitCommitId;
+
+    @PostConstruct
+    void onPostConstruct() {
+        try (final InputStream gitProperties = getClass().getClassLoader().getResourceAsStream("git.properties");
+             final JsonReader reader = Json.createReader(gitProperties)) {
+            final javax.json.JsonObject gitPropertiesObject = reader.readObject();
+            this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
@@ -55,7 +73,10 @@ public class KafkaEventConsumer {
                             if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
                                 transaction.begin();
                                 eventConsumer.consume(event);
-                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(), eventConsumer.getClass(), new ConsumerRecordKafkaSource(message));
+                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
+                                        eventConsumer.getClass(),
+                                        new ConsumerRecordKafkaSource(message),
+                                        gitCommitId);
                                 transaction.commit();
                             }
                         }

@@ -20,7 +20,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void addEventConsumerConsumed(final UUID eventId, final Class consumerClass, final KafkaSource kafkaSource) {
+    public void addEventConsumerConsumed(final UUID eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
         EventConsumedEntity eventConsumedEntity;
         try {
             eventConsumedEntity = entityManager.createNamedQuery("Events.findByEventId", EventConsumedEntity.class)
@@ -29,7 +29,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
         } catch (final NoResultException e) {
             eventConsumedEntity = new EventConsumedEntity(eventId, kafkaSource);
         }
-        eventConsumedEntity.addNewEventConsumerConsumed(consumerClass, new Date());
+        eventConsumedEntity.addNewEventConsumerConsumed(consumerClass, new Date(), gitCommitId);
         entityManager.persist(eventConsumedEntity);
     }
 

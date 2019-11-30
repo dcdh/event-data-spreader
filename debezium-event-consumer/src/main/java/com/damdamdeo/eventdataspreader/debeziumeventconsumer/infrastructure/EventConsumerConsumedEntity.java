@@ -23,12 +23,17 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
     @NotNull
     private Date consumedAt;
 
+    @NotNull
+    private String gitCommitId;
+
     public EventConsumerConsumedEntity() {}
 
     public EventConsumerConsumedEntity(final EventConsumerId eventConsumerId,
-                                       final Date consumedAt) {
+                                       final Date consumedAt,
+                                       final String gitCommitId) {
         this.eventConsumerId = Objects.requireNonNull(eventConsumerId);
         this.consumedAt = Objects.requireNonNull(consumedAt);
+        this.gitCommitId = Objects.requireNonNull(gitCommitId);
     }
 
     public EventConsumerId eventConsumerId() {
@@ -51,6 +56,11 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
     }
 
     @Override
+    public String gitCommitId() {
+        return gitCommitId;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof EventConsumerConsumedEntity)) return false;
@@ -68,6 +78,7 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
         return "EventConsumerConsumedEntity{" +
                 "eventConsumerId=" + eventConsumerId +
                 ", consumedAt=" + consumedAt +
+                ", gitCommitId='" + gitCommitId + '\'' +
                 '}';
     }
 }
