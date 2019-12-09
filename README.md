@@ -21,3 +21,10 @@
 git clone https://github.com/dcdh/event-data-spreader.git
 
 oc process -f templates/event-data-spreader-build-pipeline.yml | oc create -f - -n ci
+
+docker pull openshift/jenkins-agent-maven-35-centos7:v3.11 && \
+docker pull debezium/zookeeper:0.10 && \
+docker pull debezium/kafka:0.10 && \
+docker pull debezium/connect:0.10 && \
+docker pull dcdh1983/postgresql-10-debezium-centos7:latest && \
+docker pull giantswarm/tiny-tools
