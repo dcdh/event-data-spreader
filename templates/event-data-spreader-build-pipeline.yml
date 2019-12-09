@@ -74,8 +74,8 @@ objects:
                                         envVar(key: 'POSTGRESQL_PASSWORD', value: 'postgrespassword'),
                                         envVar(key: 'POSTGRESQL_DATABASE', value: 'db')
                                       ]),
-                    containerTemplate(name: 'debug',
-                                      image: 'busybox',
+                    containerTemplate(name: 'tools',
+                                      image: 'giantswarm/tiny-tools',
                                       resourceLimitMemory: '128Mi',
                                       command: "cat",
                                       ttyEnabled: true)
@@ -214,11 +214,36 @@ objects:
             """
                       sh "echo '${writeDebeziumJson}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/debezium.json"
                     }
+                    stage("wait for containers to be ready") {
+                      // The readiness probe is not available in containerTemplate. I do not know why ???
+                      // no need to test zookeper and kafka as they will be up when connect is ok :)
+                      container("connect") {
+                        sh """
+            while [ `curl --fail -o /dev/null -s -X GET -w "%{http_code}" http://localhost:8083` -ne 200 ]
+            do
+              echo "waiting for connect container"
+              sleep 2
+            done
+                        """
+                      }
+                      container("database") {
+                        sh """
+            while `/usr/libexec/check-container --live` ; [ \$? -ne 0 ]
+            do
+              echo "waiting for database container"
+              sleep 2
+            done
+                        """
+                      }
+                    }
                     stage("test, install and deploy") {
                       def status = sh(returnStatus: true, script: "mvn $mavenSettingsXmlPathOption clean install deploy")
                       if (status != 0) {
+                        containerLog 'jnlp'
+                        containerLog 'zookeeper'
                         containerLog 'kafka'
                         containerLog 'connect'
+                        containerLog 'database'
                         currentBuild.result = 'FAILURE'
                       }
                     }
