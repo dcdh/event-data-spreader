@@ -257,6 +257,13 @@ objects:
             } catch (err) {
               echo "in catch block"
               echo "Caught: ${err}"
+              containerLog 'jnlp'
+              containerLog 'maven'
+              containerLog 'zookeeper'
+              containerLog 'kafka'
+              containerLog 'connect'
+              containerLog 'database'
+              containerLog 'tools'
               currentBuild.result = 'FAILURE'
               throw err
             }
