@@ -166,7 +166,7 @@ objects:
 
             quarkus.swagger-ui.always-include=true
             """
-                      sh "echo '${queryApplicationProperties}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/query-side/src/test/resources/application.properties"
+                      writeFile(file: "query-side/src/test/resources/application.properties", text: "${queryApplicationProperties}")
                       String writeApplicationProperties = """
             smallrye.messaging.source.event.type=io.smallrye.reactive.messaging.kafka.Kafka
             smallrye.messaging.source.event.connector=smallrye-kafka
@@ -191,7 +191,7 @@ objects:
 
             quarkus.swagger-ui.always-include=true
             """
-                      sh "echo '${writeApplicationProperties}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/application.properties"
+                      writeFile(file: "write-side/src/test/resources/application.properties", text: "${writeApplicationProperties}")
                       String writeDebeziumJson = """
             {
               "name": "test-connector",
@@ -213,7 +213,7 @@ objects:
               }
             }
             """
-                      sh "echo '${writeDebeziumJson}' > $HOME/workspace/ci/ci-event-data-spreader-build-pipeline/write-side/src/test/resources/debezium.json"
+                      writeFile(file: "write-side/src/test/resources/debezium.json", text: "${writeDebeziumJson}")
                     }
                     stage("wait for containers to be ready") {
                       // The readiness probe is not available in containerTemplate. I do not know why ???
