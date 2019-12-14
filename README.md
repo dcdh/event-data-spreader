@@ -27,4 +27,5 @@ docker pull debezium/zookeeper:0.10 && \
 docker pull debezium/kafka:0.10 && \
 docker pull debezium/connect:0.10 && \
 docker pull dcdh1983/postgresql-10-debezium-centos7:latest && \
-docker pull giantswarm/tiny-tools
+docker pull giantswarm/tiny-tools && \
+docker pull maven:3.6.3-jdk-8-slim
