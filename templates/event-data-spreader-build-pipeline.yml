@@ -43,6 +43,7 @@ objects:
                                         //Heap for mvn and surefire process is 1/4 of resourceLimitMemory by default
                                         envVar(key: 'JNLP_MAX_HEAP_UPPER_BOUND_MB', value: '64')
                                       ]),
+                    containerTemplate(name: 'maven', image: 'maven:3.6.3-jdk-8-slim', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'zookeeper',
                                       image: 'debezium/zookeeper:0.10',
                                       resourceLimitMemory: '128Mi'),
@@ -237,14 +238,17 @@ objects:
                       }
                     }
                     stage("test, install and deploy") {
-                      def status = sh(returnStatus: true, script: "mvn $mavenSettingsXmlPathOption clean install deploy")
-                      if (status != 0) {
-                        containerLog 'jnlp'
-                        containerLog 'zookeeper'
-                        containerLog 'kafka'
-                        containerLog 'connect'
-                        containerLog 'database'
-                        currentBuild.result = 'FAILURE'
+                      container("maven") {
+                        def status = sh(returnStatus: true, script: "mvn $mavenSettingsXmlPathOption clean install deploy")
+                        if (status != 0) {
+                          containerLog 'jnlp'
+                          containerLog 'maven'
+                          containerLog 'zookeeper'
+                          containerLog 'kafka'
+                          containerLog 'connect'
+                          containerLog 'database'
+                          currentBuild.result = 'FAILURE'
+                        }
                       }
                     }
                   }
