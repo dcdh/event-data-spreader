@@ -85,7 +85,7 @@ objects:
                     persistentVolumeClaim(mountPath: '/home/jenkins/.m2/repository', claimName: 'maven-repo', readOnly: false)
                   ]) {
                   node(label) {
-                    String mavenSettingsXmlPathOption = "-s /home/jenkins/settings.xml"
+                    String mavenSettingsXmlPathOption = "-s $HOME/settings.xml"
                     stage("prepare env") {
                       container('jnlp') {
                         String settingsXml = """
