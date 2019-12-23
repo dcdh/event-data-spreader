@@ -1,20 +1,18 @@
-> docker kill $(docker ps -aq); docker rm $(docker ps -aq); docker-compose up
+# Goal
 
-> docker exec -it eventdataspreader_eventstore_1 bash
+Create a sample cqrs library.
 
-> pg_dump -d eventstore -U postgres
+keywords: **Openshift 3.11**, **cqrs**, **Quarkus**, **Kafka**, **Debezium**  
 
-> psql -d eventstore -U postgres
+## CQRS
 
-
-> docker exec -it queryside_query_1 bash
-
-> pg_dump -d query -U postgres
-
-> psql -d query -U postgres
-
-
-> DROP SCHEMA public CASCADE;CREATE SCHEMA public;
+Split in three modules:
+1. debezium-event-consumer
+Module used by write side and query side to consume message sent in kafka.
+1. write-side
+Write side module: allow to create event and push them by using Debezium in a Kafka topic.
+1. query-side
+Query side module: consume events from Kafka.
 
 ## Openshift
 
