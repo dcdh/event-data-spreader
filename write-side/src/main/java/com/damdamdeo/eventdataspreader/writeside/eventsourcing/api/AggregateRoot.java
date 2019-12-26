@@ -4,6 +4,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AggregateRoot implements Serializable {
 
@@ -38,7 +39,9 @@ public abstract class AggregateRoot implements Serializable {
     }
 
     public List<Event> unsavedEvents() {
-        return new ArrayList<Event>(unsavedEvents);
+        return unsavedEvents.stream()
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        Collections::unmodifiableList));
     }
 
     public void deleteUnsavedEvents() {

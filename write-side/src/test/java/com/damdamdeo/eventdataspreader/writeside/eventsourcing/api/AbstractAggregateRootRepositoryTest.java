@@ -3,8 +3,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-import java.util.Collections;
-
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -72,7 +71,7 @@ public class AbstractAggregateRootRepositoryTest {
         testAbstractAggregateRootRepository.save(testAggregateRoot);
 
         // Then
-        verify(eventRepository).save(Collections.singletonList(eventToApply));
+        verify(eventRepository).save(asList(eventToApply));
         inOrder.verify(testAggregateRoot).unsavedEvents();
         inOrder.verify(testAggregateRoot).deleteUnsavedEvents();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootId();
