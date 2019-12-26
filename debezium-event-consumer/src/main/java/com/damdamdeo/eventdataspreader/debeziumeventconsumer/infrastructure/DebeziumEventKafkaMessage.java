@@ -9,7 +9,6 @@ import java.util.*;
 
 public final class DebeziumEventKafkaMessage implements Event {
 
-    private static final String PAYLOAD = "payload";
     private static final String AFTER = "after";
     private static final String OPERATION = "op";
     private static final String CREATE_OPERATION = "c";
@@ -39,11 +38,7 @@ public final class DebeziumEventKafkaMessage implements Event {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'Message Key' is missing");
         }
-        if (message.getKey().getJsonObject(PAYLOAD) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
-                    "Message Key 'payload' is missing");
-        }
-        if (message.getKey().getJsonObject(PAYLOAD).getString(EVENT_EVENT_ID) == null) {
+        if (message.getKey().getString(EVENT_EVENT_ID) == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "Message Key payload 'event_id' is missing");
         }
@@ -51,27 +46,23 @@ public final class DebeziumEventKafkaMessage implements Event {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'Message Payload' is missing");
         }
-        if (message.getPayload().getJsonObject(PAYLOAD) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
-                    "Message Payload 'payload' is missing");
-        }
-        if (message.getPayload().getJsonObject(PAYLOAD).getJsonObject(AFTER) == null) {
+        if (message.getPayload().getJsonObject(AFTER) == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'after' is missing");
         }
-        if (message.getPayload().getJsonObject(PAYLOAD).getString(OPERATION) == null) {
+        if (message.getPayload().getString(OPERATION) == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'op' is missing");
         }
-        if (!Arrays.asList(CREATE_OPERATION, READ_OPERATION).contains(message.getPayload().getJsonObject(PAYLOAD).getString(OPERATION))) {
+        if (!Arrays.asList(CREATE_OPERATION, READ_OPERATION).contains(message.getPayload().getString(OPERATION))) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "only debezium create or read operation - data inserted in database - are supported");
         }
-        if (!message.getKey().getJsonObject(PAYLOAD).getString(EVENT_EVENT_ID).equals(message.getPayload().getJsonObject(PAYLOAD).getJsonObject(AFTER).getString(EVENT_EVENT_ID))) {
+        if (!message.getKey().getString(EVENT_EVENT_ID).equals(message.getPayload().getJsonObject(AFTER).getString(EVENT_EVENT_ID))) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "events mismatch");
         }
-        final JsonObject after = message.getPayload().getJsonObject(PAYLOAD).getJsonObject(AFTER);
+        final JsonObject after = message.getPayload().getJsonObject(AFTER);
         this.eventId = UUID.fromString(after.getString(EVENT_EVENT_ID));
         this.aggregateRootId = after.getString(EVENT_AGGREGATE_ROOT_ID);
         this.aggregateRootType = after.getString(EVENT_AGGREGATE_ROOT_TYPE);
