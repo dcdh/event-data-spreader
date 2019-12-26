@@ -94,10 +94,11 @@ public class KafkaEventConsumer {
             } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
                 throw new RuntimeException(e);
             } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d'",
+                LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'",
                         unableToDecodeDebeziumEventMessageException.topic(),
                         unableToDecodeDebeziumEventMessageException.partition(),
-                        unableToDecodeDebeziumEventMessageException.offset()));
+                        unableToDecodeDebeziumEventMessageException.offset(),
+                        unableToDecodeDebeziumEventMessageException.getMessage()));
             }
             return null;
         }, executor);
