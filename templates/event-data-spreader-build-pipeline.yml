@@ -209,7 +209,12 @@ objects:
                 "transforms": "route",
                 "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
                 "transforms.route.regex": "([^.]+)\\\\.([^.]+)\\\\.([^.]+)",
-                "transforms.route.replacement": "\$3"
+                "transforms.route.replacement": "\$3",
+                "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "key.converter.schemas.enable": "false",
+                "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "value.converter.schemas.enable": "false",
+                "include.schema.changes": "false"
               }
             }
             """
