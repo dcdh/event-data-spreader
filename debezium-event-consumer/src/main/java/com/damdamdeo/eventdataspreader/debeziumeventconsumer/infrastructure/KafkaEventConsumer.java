@@ -58,6 +58,7 @@ public class KafkaEventConsumer {
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     @Incoming("event")
+    @Transactional(Transactional.TxType.NEVER)
     public CompletionStage<Void> onMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -66,9 +67,7 @@ public class KafkaEventConsumer {
                 if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
                     final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(event));
                     if (eventConsumers.isResolvable()) {
-                        transaction.begin();
                         final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                        transaction.commit();
                         for (final EventConsumer eventConsumer : eventConsumers) {
                             if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
                                 transaction.begin();
@@ -85,9 +84,7 @@ public class KafkaEventConsumer {
                     } else if (eventConsumers.isAmbiguous()) {
                         throw new IllegalStateException("Ambiguous command handlers for " + event.aggregateRootType() + " " + event.eventType());
                     }
-                    transaction.begin();
                     eventConsumedRepository.markEventAsConsumed(event.eventId(), new Date(), new ConsumerRecordKafkaSource(message));
-                    transaction.commit();
                 } else {
                     LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                 }
