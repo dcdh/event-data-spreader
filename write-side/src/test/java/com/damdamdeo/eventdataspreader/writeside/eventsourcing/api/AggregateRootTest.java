@@ -28,7 +28,7 @@ public class AggregateRootTest {
         final EventMetadata eventMetadata = mock(EventMetadata.class);
         when(eventPayload.eventPayloadIdentifier().aggregateRootId()).thenReturn("0123456789");
         when(eventPayload.eventPayloadIdentifier().aggregateRootType()).thenReturn("aggregateRootType");
-        when(eventPayload.eventPayloadIdentifier().eventPayloadType()).thenReturn("eventPayloadType");
+        when(eventPayload.eventPayloadIdentifier().eventType()).thenReturn("eventType");
 
         // When
         aggregateRoot.apply(eventPayload, eventMetadata);
@@ -38,7 +38,7 @@ public class AggregateRootTest {
 
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootId();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootType();
-        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventPayloadType();
+        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventType();
     }
 
     @Test
@@ -49,7 +49,7 @@ public class AggregateRootTest {
         final EventMetadata eventMetadata = mock(EventMetadata.class);
         when(eventPayload.eventPayloadIdentifier().aggregateRootId()).thenReturn("0123456789");
         when(eventPayload.eventPayloadIdentifier().aggregateRootType()).thenReturn("aggregateRootType");
-        when(eventPayload.eventPayloadIdentifier().eventPayloadType()).thenReturn("eventPayloadType");
+        when(eventPayload.eventPayloadIdentifier().eventType()).thenReturn("eventType");
 
         // When
         aggregateRoot.apply(eventPayload, eventMetadata);
@@ -68,7 +68,7 @@ public class AggregateRootTest {
 
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootId();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootType();
-        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventPayloadType();
+        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventType();
     }
 
     @Test
@@ -172,7 +172,7 @@ public class AggregateRootTest {
 
         when(eventPayload.eventPayloadIdentifier().aggregateRootId()).thenReturn("0123456789");
         when(eventPayload.eventPayloadIdentifier().aggregateRootType()).thenReturn("aggregateRootType");
-        when(eventPayload.eventPayloadIdentifier().eventPayloadType()).thenReturn("eventPayloadType");
+        when(eventPayload.eventPayloadIdentifier().eventType()).thenReturn("eventType");
 
         aggregateRoot.apply(eventPayload, eventMetadata);
 
@@ -183,7 +183,7 @@ public class AggregateRootTest {
         assertEquals(0l, aggregateRoot.unsavedEvents().size());
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootId();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootType();
-        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventPayloadType();
+        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventType();
     }
 
 }

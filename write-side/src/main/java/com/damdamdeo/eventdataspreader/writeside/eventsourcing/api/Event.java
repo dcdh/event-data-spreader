@@ -27,9 +27,7 @@ public final class Event {
         this.eventMetaData = Objects.requireNonNull(eventMetaData);
         this.aggregateRootId = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootId());
         this.aggregateRootType = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootType());
-        this.eventType = Objects.requireNonNull(eventPayload.eventPayloadIdentifier()
-                .eventPayloadType()
-                .replaceFirst("(^.+)Payload$", "$1"));
+        this.eventType = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().eventType());
     }
 
     public UUID eventId() {

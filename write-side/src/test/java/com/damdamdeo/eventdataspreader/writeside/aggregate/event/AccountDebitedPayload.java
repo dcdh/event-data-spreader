@@ -39,6 +39,7 @@ public final class AccountDebitedPayload extends EventPayload<AccountAggregate> 
     @Override
     public EventPayloadIdentifier eventPayloadIdentifier() {
         return new DefaultEventPayloadIdentifier(owner,
+                "AccountDebited",
                 EventPayloadTypeEnum.ACCOUNT_DEBITED_ACCOUNT_PAYLOAD);
     }
 

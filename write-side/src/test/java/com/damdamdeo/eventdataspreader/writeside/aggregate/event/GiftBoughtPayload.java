@@ -26,6 +26,7 @@ public final class GiftBoughtPayload extends EventPayload<GiftAggregate> {
     @Override
     public EventPayloadIdentifier eventPayloadIdentifier() {
         return new DefaultEventPayloadIdentifier(name,
+                "GiftBought",
                 EventPayloadTypeEnum.GIFT_BOUGHT_GIFT_PAYLOAD);
     }
 

@@ -62,6 +62,7 @@ public class AbstractAggregateRootRepositoryTest {
                 testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
         final EventPayload eventPayload = mock(EventPayload.class, RETURNS_DEEP_STUBS);
         when(eventPayload.eventPayloadIdentifier().aggregateRootId()).thenReturn("aggregateRootId");
+        when(eventPayload.eventPayloadIdentifier().eventType()).thenReturn("eventPayload");
         when(eventPayload.eventPayloadIdentifier().eventPayloadType()).thenReturn("eventPayloadType");
         when(eventPayload.eventPayloadIdentifier().aggregateRootType()).thenReturn("aggregateRootType");
         final Event eventToApply = testAggregateRoot.apply(eventPayload, mock(EventMetadata.class));
@@ -76,7 +77,7 @@ public class AbstractAggregateRootRepositoryTest {
         inOrder.verify(testAggregateRoot).deleteUnsavedEvents();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootId();
         verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).aggregateRootType();
-        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventPayloadType();
+        verify(eventPayload.eventPayloadIdentifier(), atLeastOnce()).eventType();
     }
 
     @Test
@@ -89,6 +90,7 @@ public class AbstractAggregateRootRepositoryTest {
                 testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
         final EventPayload eventPayload = mock(EventPayload.class, RETURNS_DEEP_STUBS);
         when(eventPayload.eventPayloadIdentifier().aggregateRootId()).thenReturn("aggregateRootId");
+        when(eventPayload.eventPayloadIdentifier().eventType()).thenReturn("eventPayload");
         when(eventPayload.eventPayloadIdentifier().eventPayloadType()).thenReturn("eventPayloadType");
         when(eventPayload.eventPayloadIdentifier().aggregateRootType()).thenReturn("aggregateRootType");
         testAggregateRoot.apply(eventPayload, mock(EventMetadata.class));

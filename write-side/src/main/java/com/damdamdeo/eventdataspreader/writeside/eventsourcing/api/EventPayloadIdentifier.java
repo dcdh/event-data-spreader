@@ -4,6 +4,8 @@ public interface EventPayloadIdentifier {
 
     String aggregateRootType();
 
+    String eventType();
+
     String eventPayloadType();
 
     String aggregateRootId();
