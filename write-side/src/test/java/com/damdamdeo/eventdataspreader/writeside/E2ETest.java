@@ -16,7 +16,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -40,7 +39,10 @@ public class E2ETest {
 
     @BeforeEach
     @Transactional
-    public void setup() throws IOException {
+    public void setup() throws Exception {
+        given()
+                .when()
+                .delete("http://localhost:8083/connectors/test-connector");
         entityManager.createQuery("DELETE FROM EventEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM AggregateRootProjectionEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
@@ -56,14 +58,21 @@ public class E2ETest {
                     .when()
                     .post("http://localhost:8083/connectors/")
                     .then()
-//                    .statusCode(201)
+                    .log()
+                    .all()
+                    .statusCode(201)
             ;
         }
+        Thread.sleep(1000);// It seems that I had to introduce a delay to ensure connector is well working
     }
 
     @AfterEach
     public void teardown() {
-        given().delete("http://localhost:8083/connectors/test-connector");
+        given()
+                .when()
+                .delete("http://localhost:8083/connectors/test-connector")
+                .then()
+                .statusCode(204);
     }
 
     @Test
