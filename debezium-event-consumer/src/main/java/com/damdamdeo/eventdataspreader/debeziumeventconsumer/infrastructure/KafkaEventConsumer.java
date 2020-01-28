@@ -70,6 +70,7 @@ public class KafkaEventConsumer {
     @Incoming("event")
     @Transactional(Transactional.TxType.NEVER)
     public CompletionStage<Void> onMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
+        LOGGER.log(Level.FINE, String.format("Receiving event '%s'", message.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
             try {
                 final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
@@ -83,7 +84,6 @@ public class KafkaEventConsumer {
                         final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
                         final String eventId = decryptableEvent.eventId();
                         if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
-                            final String aggregateRootId = decryptableEvent.aggregateRootId();
                             final String aggregateRootType = decryptableEvent.aggregateRootType();
                             final String eventType = decryptableEvent.eventType();
                             final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
