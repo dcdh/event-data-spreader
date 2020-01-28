@@ -4,11 +4,15 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMet
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBoughtPayload;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOfferedPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftBoughtEventPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GiftAggregate extends AggregateRoot {
 
     private String name;
@@ -17,10 +21,11 @@ public class GiftAggregate extends AggregateRoot {
 
     public GiftAggregate() {}
 
-    public GiftAggregate(final String aggregateRootId,
-                         final String name,
-                         final String offeredTo,
-                         final Long version) {
+    @JsonCreator
+    public GiftAggregate(@JsonProperty("aggregateRootId") final String aggregateRootId,
+                         @JsonProperty("name") final String name,
+                         @JsonProperty("offeredTo") final String offeredTo,
+                         @JsonProperty("version") final Long version) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
         this.name = Objects.requireNonNull(name);
         this.offeredTo = offeredTo;
@@ -28,20 +33,20 @@ public class GiftAggregate extends AggregateRoot {
     }
 
     public void handle(final BuyGiftCommand buyGiftCommand) {
-        apply(new GiftBoughtPayload(buyGiftCommand.name()),
+        apply(new GiftAggregateGiftBoughtEventPayload(buyGiftCommand.name()),
                 new DefaultEventMetadata(buyGiftCommand.executedBy()));
     }
 
     public void handle(final OfferGiftCommand offerGiftCommand) {
-        apply(new GiftOfferedPayload(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
+        apply(new GiftAggregateGiftOfferedEventPayload(offerGiftCommand.name(), offerGiftCommand.offeredTo()),
                 new DefaultEventMetadata(offerGiftCommand.executedBy()));
     }
 
-    public void on(final GiftBoughtPayload giftBoughtPayload) {
+    public void on(final GiftAggregateGiftBoughtEventPayload giftBoughtPayload) {
         this.name = giftBoughtPayload.name();
     }
 
-    public void on(final GiftOfferedPayload giftOfferedPayload) {
+    public void on(final GiftAggregateGiftOfferedEventPayload giftOfferedPayload) {
         this.offeredTo = giftOfferedPayload.offeredTo();
     }
 
@@ -51,6 +56,20 @@ public class GiftAggregate extends AggregateRoot {
 
     public String offeredTo() {
         return offeredTo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GiftAggregate)) return false;
+        GiftAggregate that = (GiftAggregate) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(offeredTo, that.offeredTo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, offeredTo);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.damdamdeo.eventdataspreader.queryside.interfaces;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
+import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftBoughtEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 
 import javax.enterprise.context.Dependent;
@@ -21,10 +22,10 @@ public class GiftBoughtEventConsumer implements EventConsumer {
 
     @Override
     public void consume(final Event event) {
-        final String name = event.payload().getString("name");
+        final GiftAggregateGiftBoughtEventPayload giftAggregateGiftBoughtEventPayload = (GiftAggregateGiftBoughtEventPayload) event.eventPayload();
         final Long version = event.version();
         final GiftEntity giftEntity = new GiftEntity();
-        giftEntity.onGiftBought(name, version);
+        giftEntity.onGiftBought(giftAggregateGiftBoughtEventPayload.name(), version);
         entityManager.persist(giftEntity);
     }
 

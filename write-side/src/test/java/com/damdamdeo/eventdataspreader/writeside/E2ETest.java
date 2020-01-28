@@ -5,7 +5,7 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EventEntity;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EncryptedEventEntity;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -43,8 +43,8 @@ public class E2ETest {
         given()
                 .when()
                 .delete("http://localhost:8083/connectors/test-connector");
-        entityManager.createQuery("DELETE FROM EventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootProjectionEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
 
@@ -63,6 +63,11 @@ public class E2ETest {
                     .statusCode(201)
             ;
         }
+        // TODO use Debezium rest API with Awaitability
+//        given()
+//                .get("http://localhost:8083/connectors/test-connector/status")
+//                .then().log().all();
+        // cf. https://docs.confluent.io/current/connect/references/restapi.html#get--connectors-(string-name)-status
         Thread.sleep(1000);// It seems that I had to introduce a delay to ensure connector is well working
     }
 
@@ -88,7 +93,7 @@ public class E2ETest {
         // Then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
             transaction.begin();
-            final List<EventEntity> events = entityManager.createQuery("SELECT e FROM EventEntity e").getResultList();
+            final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e WHERE e.encryptedEventType = com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventType.ENCRYPTED_EVENT").getResultList();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();
             return events.size() == 3 && eventConsumedEntities
@@ -97,7 +102,9 @@ public class E2ETest {
                     .count() == 3;
         });
         transaction.begin();
-        final List<EventEntity> events = entityManager.createQuery("SELECT e FROM EventEntity e").getResultList();
+        final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e " +
+                "WHERE e.encryptedEventType = com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventType.ENCRYPTED_EVENT " +
+                "ORDER BY e.creationDate ASC").getResultList();
 
         // -- GiftBought
         assertEquals("GiftAggregate", events.get(0).aggregateRootType());

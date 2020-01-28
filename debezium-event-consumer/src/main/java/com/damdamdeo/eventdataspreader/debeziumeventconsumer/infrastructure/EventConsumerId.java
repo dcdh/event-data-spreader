@@ -1,19 +1,16 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.UUID;
 
 @Embeddable
 public class EventConsumerId implements Serializable {
 
-    @Type(type = "pg-uuid")
-    private UUID eventId;
+    @NotNull
+    private String eventId;
 
     @NotNull
     @Column(columnDefinition="TEXT")
@@ -21,13 +18,13 @@ public class EventConsumerId implements Serializable {
 
     public EventConsumerId() {}
 
-    public EventConsumerId(final UUID eventId,
+    public EventConsumerId(final String eventId,
                            final Class consumerClassName) {
         this.eventId = Objects.requireNonNull(eventId);
         this.consumerClassName = Objects.requireNonNull(consumerClassName.getName());
     }
 
-    public UUID eventId() {
+    public String eventId() {
         return eventId;
     }
 

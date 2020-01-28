@@ -1,5 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
+import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.AggregateRootEntity;
+
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
@@ -11,10 +15,11 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
     public T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
         final EventRepository eventRepository = eventRepository();
-        final AggregateRootProjectionRepository aggregateRootProjectionRepository = aggregateRootProjectionRepository();
-        eventRepository.save(aggregateRoot.unsavedEvents());
+        final EncryptedEventSecret encryptedEventSecret = eventRepository.save(aggregateRoot.unsavedEvents());
         aggregateRoot.deleteUnsavedEvents();
-        aggregateRootProjectionRepository.save(new AggregateRootProjection(aggregateRoot));
+        final EntityManager entityManager = entityManager();
+        final AggregateRootSerializer aggregateRootSerializer = aggregateRootSerializer();
+        entityManager.merge(new AggregateRootEntity(aggregateRoot, aggregateRootSerializer, encryptedEventSecret));
         return aggregateRoot;
     }
 
@@ -36,6 +41,8 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
 
     protected abstract EventRepository eventRepository();
 
-    protected abstract AggregateRootProjectionRepository aggregateRootProjectionRepository();
+    protected abstract EntityManager entityManager();
+
+    protected abstract AggregateRootSerializer aggregateRootSerializer();
 
 }

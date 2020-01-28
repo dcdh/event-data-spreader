@@ -6,7 +6,7 @@
 -- Name: aggregaterootprojection; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.aggregaterootprojection (
+CREATE TABLE public.aggregateroot (
     aggregaterootid character varying(255) NOT NULL,
     aggregateroottype character varying(255) NOT NULL,
     aggregateroot jsonb,
@@ -18,22 +18,24 @@ CREATE TABLE public.aggregaterootprojection (
 --
 
 CREATE TABLE public.event (
-    eventid uuid NOT NULL,
+    id character varying(255),
     aggregaterootid character varying(255),
     aggregateroottype character varying(255),
+    version bigint,
     creationdate timestamp without time zone,
+    encryptedeventtype character varying(255),
+    secret character varying(255),
     eventtype character varying(255),
-    metadata jsonb,
-    eventPayload jsonb,
-    version bigint
+    eventmetadata jsonb,
+    eventpayload jsonb
 );
 
 --
--- Name: aggregaterootprojection aggregaterootprojection_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregateroot aggregateroot_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.aggregaterootprojection
-    ADD CONSTRAINT aggregaterootprojection_pkey PRIMARY KEY (aggregaterootid, aggregateroottype);
+ALTER TABLE ONLY public.aggregateroot
+    ADD CONSTRAINT aggregateroot_pkey PRIMARY KEY (aggregaterootid, aggregateroottype);
 
 
 --
@@ -41,7 +43,7 @@ ALTER TABLE ONLY public.aggregaterootprojection
 --
 
 ALTER TABLE ONLY public.event
-    ADD CONSTRAINT event_pkey PRIMARY KEY (eventid);
+    ADD CONSTRAINT event_pkey PRIMARY KEY (id);
 
 
 --

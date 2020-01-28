@@ -1,19 +1,21 @@
 {
   "topic": "event-query",
   "key": {
-    "eventid": "800ee705-2370-43d7-b77c-78cef5806a12"
+    "id": "*********************damdamdeo|************************************AccountDebited|0000000000"
   },
   "value": {
     "before": null,
     "after": {
-      "eventid": "800ee705-2370-43d7-b77c-78cef5806a12",
+      "id": "*********************damdamdeo|************************************AccountDebited|0000000000",
       "aggregaterootid": "damdamdeo",
       "aggregateroottype": "AccountAggregate",
+      "version": 0,
       "creationdate": 1569174260987000,
+      "encryptedeventtype": "ENCRYPTED_EVENT",
+      "secret": null,
       "eventtype": "AccountDebited",
-      "metadata": "{\"executedBy\": \"damdamdeo\"}",
-      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100\", \"@payloadType\": \"AccountDebitedPayload\", \"@aggregaterootType\": \"AccountAggregate\", \"balance\": \"900\"}",
-      "version": 0
+      "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
+      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}"
     },
     "source": {
       "version": "0.10.0.Beta2",

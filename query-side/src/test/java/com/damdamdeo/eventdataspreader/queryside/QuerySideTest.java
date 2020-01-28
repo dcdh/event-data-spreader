@@ -56,11 +56,11 @@ public class QuerySideTest {
                     .count() == 3;
         });
         transaction.begin();
-        final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "Motorola G6");
+        final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "MotorolaG6");
         final AccountEntity accountEntity = entityManager.find(AccountEntity.class, "damdamdeo");
         transaction.commit();
 
-        assertEquals("Motorola G6", giftEntity.name());
+        assertEquals("MotorolaG6", giftEntity.name());
         assertEquals("toto", giftEntity.offeredTo());
         assertEquals(1l, giftEntity.version());
 

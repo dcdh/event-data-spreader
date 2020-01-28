@@ -20,7 +20,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void addEventConsumerConsumed(final UUID eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
+    public void addEventConsumerConsumed(final String eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
         EventConsumedEntity eventConsumedEntity;
         try {
             eventConsumedEntity = entityManager.createNamedQuery("Events.findByEventId", EventConsumedEntity.class)
@@ -35,7 +35,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void markEventAsConsumed(final UUID eventId, final Date consumedAt, final KafkaSource kafkaSource) {
+    public void markEventAsConsumed(final String eventId, final Date consumedAt, final KafkaSource kafkaSource) {
         final EventConsumedEntity eventConsumedEntity = Optional.ofNullable(entityManager.find(EventConsumedEntity.class, eventId))
                 .orElseGet(() -> new EventConsumedEntity(eventId, kafkaSource));
         eventConsumedEntity.markAsConsumed();
@@ -44,7 +44,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public boolean hasConsumedEvent(final UUID eventId) {
+    public boolean hasConsumedEvent(final String eventId) {
         return Optional.ofNullable(entityManager.find(EventConsumedEntity.class, eventId))
                 .map(EventConsumedEntity::consumed)
                 .orElse(Boolean.FALSE);
@@ -52,7 +52,7 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public List<String> getConsumedEventsForEventId(final UUID eventId) {
+    public List<String> getConsumedEventsForEventId(final String eventId) {
         return entityManager.createNamedQuery("EventConsumerConsumed.getConsumedEventsForEventId",
                 String.class)
                 .setParameter("eventId", eventId)

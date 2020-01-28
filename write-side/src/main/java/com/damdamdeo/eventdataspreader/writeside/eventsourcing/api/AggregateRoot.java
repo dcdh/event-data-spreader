@@ -1,29 +1,39 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.Validate;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "aggregateRootType")
 public abstract class AggregateRoot implements Serializable {
 
     private final transient List<Event> unsavedEvents = new LinkedList<>();
     protected String aggregateRootId;
     protected Long version = -1l;
+    private String aggregateRootType;
 
-    protected Event apply(final EventPayload eventPayload, final EventMetadata eventMetaData) {
-        eventPayload.apply(this);
+    protected Event apply(final AggregateRootEventPayload aggregateRootEventPayload, final EventMetadata eventMetaData) {
+        aggregateRootEventPayload.apply(this);
         this.version++;
-        final String eventAggregateRootId = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootId(), "Aggregate root id can't be null");
+        final String eventAggregateRootId = Objects.requireNonNull(aggregateRootEventPayload.aggregateRootId(), "Aggregate root id can't be null");
         Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(eventAggregateRootId), "Aggregate root id and event aggregate root id mismatch");
         this.aggregateRootId = eventAggregateRootId;
-        final Event eventToApply = new Event(UUID.randomUUID(),
+        this.aggregateRootType = aggregateRootEventPayload.aggregateRootType();
+        final Event eventToApply = new Event(String.format("%30s|%50s|%010d", this.aggregateRootId, this.aggregateRootType, this.version).replace(' ', '*'),
+                this.aggregateRootId,
+                this.aggregateRootType,
+                aggregateRootEventPayload.eventName(),
                 this.version,
                 new Date(),
-                eventPayload,
-                eventMetaData
-        );
+                aggregateRootEventPayload,
+                eventMetaData);
         this.unsavedEvents.add(eventToApply);
         return eventToApply;
     }
@@ -54,6 +64,10 @@ public abstract class AggregateRoot implements Serializable {
 
     public String aggregateRootId() {
         return aggregateRootId;
+    }
+
+    public String aggregateRootType() {
+        return aggregateRootType;
     }
 
 }

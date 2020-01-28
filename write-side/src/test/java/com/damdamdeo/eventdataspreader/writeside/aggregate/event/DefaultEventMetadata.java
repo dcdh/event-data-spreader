@@ -1,14 +1,19 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class DefaultEventMetadata implements EventMetadata {
 
     private final String executedBy;
 
-    public DefaultEventMetadata(final String executedBy) {
+    @JsonCreator
+    public DefaultEventMetadata(@JsonProperty("executedBy") final String executedBy) {
         this.executedBy = Objects.requireNonNull(executedBy);
     }
 

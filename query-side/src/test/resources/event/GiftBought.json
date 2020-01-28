@@ -1,19 +1,21 @@
 {
   "topic": "event-query",
   "key": {
-    "eventid": "a50a9d7a-c7be-43e5-b37e-24ad54791e01"
+    "id": "**********************MotorolaG6|***************GiftAggregateGiftBoughtEventPayload|0000000000"
   },
   "value": {
     "before": null,
     "after": {
-      "eventid": "a50a9d7a-c7be-43e5-b37e-24ad54791e01",
-      "aggregaterootid": "Motorola G6",
+      "id": "**********************MotorolaG6|***************GiftAggregateGiftBoughtEventPayload|0000000000",
+      "aggregaterootid": "MotorolaG6",
       "aggregateroottype": "GiftAggregate",
+      "version": 0,
       "creationdate": 1569174258217000,
+      "encryptedeventtype": "ENCRYPTED_EVENT",
+      "secret": null,
       "eventtype": "GiftBought",
-      "metadata": "{\"executedBy\": \"damdamdeo\"}",
-      "eventpayload": "{\"name\": \"Motorola G6\", \"@payloadType\": \"GiftBoughtPayload\", \"@aggregaterootType\": \"GiftAggregate\"}",
-      "version": 0
+      "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
+      "eventpayload": "{\"name\": \"MotorolaG6\", \"@type\": \"GiftAggregateGiftBoughtEventPayload\"}"
     },
     "source": {
       "version": "0.10.0.Beta2",

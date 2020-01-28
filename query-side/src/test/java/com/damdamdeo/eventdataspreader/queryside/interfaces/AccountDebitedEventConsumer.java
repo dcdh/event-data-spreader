@@ -3,11 +3,11 @@ package com.damdamdeo.eventdataspreader.queryside.interfaces;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
+import com.damdamdeo.eventdataspreader.queryside.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 
 import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
-import java.math.BigDecimal;
 import java.util.Objects;
 
 @Dependent
@@ -22,11 +22,11 @@ public class AccountDebitedEventConsumer implements EventConsumer {
 
     @Override
     public void consume(final Event event) {
-        final String owner = event.payload().getString("owner");
-        final BigDecimal balance = new BigDecimal(event.payload().getString("balance"));
+        final AccountAggregateAccountDebitedEventPayload accountAggregateAccountDebitedEventPayload = (AccountAggregateAccountDebitedEventPayload) event.eventPayload();
         final Long version = event.version();
         final AccountEntity accountEntity = new AccountEntity();
-        accountEntity.onAccountDebited(owner, balance, version);
+        accountEntity.onAccountDebited(accountAggregateAccountDebitedEventPayload.owner(),
+                accountAggregateAccountDebitedEventPayload.balance(), version);
         entityManager.persist(accountEntity);
     }
 

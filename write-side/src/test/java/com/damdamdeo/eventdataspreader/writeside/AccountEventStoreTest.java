@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebitedPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
@@ -35,8 +35,8 @@ public class AccountEventStoreTest {
     @BeforeEach
     @Transactional
     public void setup() {
-        entityManager.createQuery("DELETE FROM EventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootProjectionEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
     }
@@ -66,7 +66,7 @@ public class AccountEventStoreTest {
         assertEquals(0L, events.get(0).version());
         assertNotNull(events.get(0).creationDate());
         assertEquals(new DefaultEventMetadata("executedBy"), events.get(0).eventMetaData());
-        assertEquals(new AccountDebitedPayload("owner", new BigDecimal("100.01"), new BigDecimal("899.99")), events.get(0).eventPayload());
+        assertEquals(new AccountAggregateAccountDebitedEventPayload("owner", new BigDecimal("100.01"), new BigDecimal("899.99")), events.get(0).eventPayload());
     }
 
 }

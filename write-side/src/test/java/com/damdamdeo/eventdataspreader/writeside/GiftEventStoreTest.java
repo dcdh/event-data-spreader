@@ -3,8 +3,8 @@ package com.damdamdeo.eventdataspreader.writeside;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftBoughtPayload;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftOfferedPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftBoughtEventPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
@@ -37,8 +37,8 @@ public class GiftEventStoreTest {
     @BeforeEach
     @Transactional
     public void setup() {
-        entityManager.createQuery("DELETE FROM EventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootProjectionEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
+        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
     }
@@ -68,7 +68,7 @@ public class GiftEventStoreTest {
         assertEquals(0L, events.get(0).version());
         assertNotNull(events.get(0).creationDate());
         assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(0).eventMetaData());
-        assertEquals(new GiftBoughtPayload("Motorola G6"), events.get(0).eventPayload());
+        assertEquals(new GiftAggregateGiftBoughtEventPayload("Motorola G6"), events.get(0).eventPayload());
         // -- GiftOffered
         assertNotNull(events.get(1).eventId());
         assertEquals("Motorola G6", events.get(1).aggregateRootId());
@@ -77,7 +77,7 @@ public class GiftEventStoreTest {
         assertEquals(1L, events.get(1).version());
         assertNotNull(events.get(1).creationDate());
         assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(1).eventMetaData());
-        assertEquals(new GiftOfferedPayload("Motorola G6", "toto"), events.get(1).eventPayload());
+        assertEquals(new GiftAggregateGiftOfferedEventPayload("Motorola G6", "toto"), events.get(1).eventPayload());
     }
 
 }

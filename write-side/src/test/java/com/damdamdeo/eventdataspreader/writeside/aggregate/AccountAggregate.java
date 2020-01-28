@@ -1,14 +1,18 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountDebitedPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class AccountAggregate extends AggregateRoot {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public final class AccountAggregate extends AggregateRoot {
 
     private String owner;
 
@@ -16,10 +20,11 @@ public class AccountAggregate extends AggregateRoot {
 
     public AccountAggregate() {}
 
-    public AccountAggregate(final String aggregateRootId,
-                            final String owner,
-                            final BigDecimal balance,
-                            final Long version) {
+    @JsonCreator
+    public AccountAggregate(@JsonProperty("aggregateRootId") final String aggregateRootId,
+                            @JsonProperty("owner") final String owner,
+                            @JsonProperty("balance") final BigDecimal balance,
+                            @JsonProperty("version") final Long version) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
         this.owner = Objects.requireNonNull(owner);
         this.balance = balance;
@@ -27,13 +32,13 @@ public class AccountAggregate extends AggregateRoot {
     }
 
     public void handle(final DebitAccountCommand debitAccountCommand) {
-        apply(new AccountDebitedPayload(debitAccountCommand.owner(),
+        apply(new AccountAggregateAccountDebitedEventPayload(debitAccountCommand.owner(),
                         debitAccountCommand.price(),
                         this.balance.add(debitAccountCommand.price().negate())),
                 new DefaultEventMetadata(debitAccountCommand.executedBy()));
     }
 
-    public void on(final AccountDebitedPayload accountDebitedPayload) {
+    public void on(final AccountAggregateAccountDebitedEventPayload accountDebitedPayload) {
         this.owner = accountDebitedPayload.owner();
         this.balance = accountDebitedPayload.balance();
     }
@@ -44,6 +49,20 @@ public class AccountAggregate extends AggregateRoot {
 
     public BigDecimal balance() {
         return balance;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccountAggregate)) return false;
+        AccountAggregate that = (AccountAggregate) o;
+        return Objects.equals(owner, that.owner) &&
+                Objects.equals(balance, that.balance);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(owner, balance);
     }
 
     @Override

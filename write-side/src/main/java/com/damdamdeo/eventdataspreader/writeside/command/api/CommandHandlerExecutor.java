@@ -55,8 +55,8 @@ public class CommandHandlerExecutor {
         } else if (command.aggregateId() == null) {
             executorServiceToExecuteCommand = this.threadPools.get(0);
         } else {
-            final int threadIdx = Math.abs(command.aggregateId().hashCode()) % threadPools.size();
-            executorServiceToExecuteCommand = threadPools.get(threadIdx);
+            final int threadIdx = Math.abs(command.aggregateId().hashCode()) % this.threadPools.size();
+            executorServiceToExecuteCommand = this.threadPools.get(threadIdx);
         }
         try {
             return executorServiceToExecuteCommand.submit(() -> {

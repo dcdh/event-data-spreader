@@ -1,36 +1,61 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
+import org.apache.commons.lang3.Validate;
+
 import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 
 public final class Event {
 
-    private final UUID eventId;
+    private final String eventId;
     private final String aggregateRootId;
     private final String aggregateRootType;
     private final String eventType;
     private final Long version;
     private final Date creationDate;
     private final EventMetadata eventMetaData;
-    private final EventPayload eventPayload;
+    private final AggregateRootEventPayload aggregateRootEventPayload;
 
-    public Event(final UUID eventId,
+    public Event(final String eventId,
+                 final String aggregateRootId,
+                 final String aggregateRootType,
+                 final String eventType,
                  final Long version,
                  final Date creationDate,
-                 final EventPayload eventPayload,
+                 final AggregateRootEventPayload aggregateRootEventPayload,
                  final EventMetadata eventMetaData) {
         this.eventId = Objects.requireNonNull(eventId);
+        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+        this.eventType = Objects.requireNonNull(eventType);
         this.version = Objects.requireNonNull(version);
         this.creationDate = Objects.requireNonNull(creationDate);
-        this.eventPayload = Objects.requireNonNull(eventPayload);
+        this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
         this.eventMetaData = Objects.requireNonNull(eventMetaData);
-        this.aggregateRootId = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootId());
-        this.aggregateRootType = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().aggregateRootType());
-        this.eventType = Objects.requireNonNull(eventPayload.eventPayloadIdentifier().eventType());
     }
 
-    public UUID eventId() {
+    public Event(final DecryptableEvent decryptableEvent,
+                 final EncryptedEventSecret encryptedEventSecret,
+                 final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
+                 final EventMetadataSerializer eventMetadataSerializer) {
+        Validate.notNull(decryptableEvent);
+        Validate.notNull(encryptedEventSecret);
+        Validate.notNull(aggregateRootEventPayloadSerializer);
+        Validate.notNull(eventMetadataSerializer);
+        this.eventId = decryptableEvent.eventId();
+        this.aggregateRootId = decryptableEvent.aggregateRootId();
+        this.aggregateRootType = decryptableEvent.aggregateRootType();
+        this.eventType = decryptableEvent.eventType();
+        this.version = decryptableEvent.version();
+        this.creationDate = decryptableEvent.creationDate();
+        this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadSerializer);
+        this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataSerializer);
+    }
+
+    public String eventId() {
         return eventId;
     }
 
@@ -54,8 +79,8 @@ public final class Event {
         return creationDate;
     }
 
-    public EventPayload eventPayload() {
-        return eventPayload;
+    public AggregateRootEventPayload eventPayload() {
+        return aggregateRootEventPayload;
     }
 
     public EventMetadata eventMetaData() {
@@ -74,25 +99,25 @@ public final class Event {
                 Objects.equals(version, event.version) &&
                 Objects.equals(creationDate, event.creationDate) &&
                 Objects.equals(eventMetaData, event.eventMetaData) &&
-                Objects.equals(eventPayload, event.eventPayload);
+                Objects.equals(aggregateRootEventPayload, event.aggregateRootEventPayload);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, aggregateRootId, aggregateRootType, eventType, version, creationDate, eventMetaData, eventPayload);
+        return Objects.hash(eventId, aggregateRootId, aggregateRootType, eventType, version, creationDate, eventMetaData, aggregateRootEventPayload);
     }
 
     @Override
     public String toString() {
         return "Event{" +
-                "eventId=" + eventId +
+                "eventId='" + eventId + '\'' +
                 ", aggregateRootId='" + aggregateRootId + '\'' +
                 ", aggregateRootType='" + aggregateRootType + '\'' +
                 ", eventType='" + eventType + '\'' +
                 ", version=" + version +
                 ", creationDate=" + creationDate +
                 ", eventMetaData=" + eventMetaData +
-                ", eventPayload=" + eventPayload +
+                ", aggregateRootEventPayload=" + aggregateRootEventPayload +
                 '}';
     }
 }

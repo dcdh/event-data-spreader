@@ -3,7 +3,7 @@ package com.damdamdeo.eventdataspreader.writeside.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AbstractAggregateRootRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 
 import javax.enterprise.context.Dependent;
@@ -14,14 +14,14 @@ public class DefaultAccountAggregateRepository extends AbstractAggregateRootRepo
 
     final EntityManager entityManager;
     final EventRepository eventRepository;
-    final AggregateRootProjectionRepository aggregateRootProjectionRepository;
+    final AggregateRootSerializer aggregateRootSerializer;
 
     public DefaultAccountAggregateRepository(final EntityManager entityManager,
                                              final EventRepository eventRepository,
-                                             final AggregateRootProjectionRepository aggregateRootProjectionRepository) {
+                                             final AggregateRootSerializer aggregateRootSerializer) {
         this.entityManager = entityManager;
         this.eventRepository = eventRepository;
-        this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
+        this.aggregateRootSerializer = aggregateRootSerializer;
     }
 
     @Override
@@ -35,8 +35,13 @@ public class DefaultAccountAggregateRepository extends AbstractAggregateRootRepo
     }
 
     @Override
-    protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
-        return aggregateRootProjectionRepository;
+    protected EntityManager entityManager() {
+        return entityManager;
+    }
+
+    @Override
+    protected AggregateRootSerializer aggregateRootSerializer() {
+        return aggregateRootSerializer;
     }
 
 }

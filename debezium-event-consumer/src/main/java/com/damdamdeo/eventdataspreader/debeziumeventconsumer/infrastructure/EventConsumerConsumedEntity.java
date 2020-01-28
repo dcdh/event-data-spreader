@@ -9,7 +9,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 
 @Table(name = "EventConsumerConsumed")
 @NamedQuery(name = "EventConsumerConsumed.getConsumedEventsForEventId",
@@ -41,7 +40,7 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
     }
 
     @Override
-    public UUID eventId() {
+    public String eventId() {
         return eventConsumerId.eventId();
     }
 

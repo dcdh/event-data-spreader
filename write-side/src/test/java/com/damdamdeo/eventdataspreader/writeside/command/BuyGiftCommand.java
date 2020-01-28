@@ -4,7 +4,7 @@ import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 
 import java.util.Objects;
 
-public class BuyGiftCommand implements Command {
+public final class BuyGiftCommand implements Command {
 
     private final String name;
 
@@ -34,4 +34,25 @@ public class BuyGiftCommand implements Command {
         return false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BuyGiftCommand)) return false;
+        BuyGiftCommand that = (BuyGiftCommand) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(executedBy, that.executedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, executedBy);
+    }
+
+    @Override
+    public String toString() {
+        return "BuyGiftCommand{" +
+                "name='" + name + '\'' +
+                ", executedBy='" + executedBy + '\'' +
+                '}';
+    }
 }

@@ -5,7 +5,7 @@ import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class DebitAccountCommand implements Command {
+public final class DebitAccountCommand implements Command {
 
     private final String owner;
 
@@ -41,4 +41,27 @@ public class DebitAccountCommand implements Command {
         return false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DebitAccountCommand)) return false;
+        DebitAccountCommand that = (DebitAccountCommand) o;
+        return Objects.equals(owner, that.owner) &&
+                Objects.equals(price, that.price) &&
+                Objects.equals(executedBy, that.executedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(owner, price, executedBy);
+    }
+
+    @Override
+    public String toString() {
+        return "DebitAccountCommand{" +
+                "owner='" + owner + '\'' +
+                ", price=" + price +
+                ", executedBy='" + executedBy + '\'' +
+                '}';
+    }
 }

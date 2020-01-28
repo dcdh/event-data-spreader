@@ -4,7 +4,6 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumed;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -17,8 +16,7 @@ import java.util.*;
 public class EventConsumedEntity implements EventConsumed {
 
     @Id
-    @Type(type = "pg-uuid")
-    private UUID eventId;
+    private String eventId;
 
     @NotNull
     private Boolean consumed;
@@ -39,7 +37,7 @@ public class EventConsumedEntity implements EventConsumed {
 
     public EventConsumedEntity() {}
 
-    public EventConsumedEntity(final UUID eventId, final KafkaSource kafkaSource) {
+    public EventConsumedEntity(final String eventId, final KafkaSource kafkaSource) {
         this.eventId = Objects.requireNonNull(eventId);
         this.consumed = Boolean.FALSE;
         this.eventConsumerEntities = new ArrayList<>();
@@ -62,7 +60,7 @@ public class EventConsumedEntity implements EventConsumed {
     }
 
     @Override
-    public UUID eventId() {
+    public String eventId() {
         return eventId;
     }
 
