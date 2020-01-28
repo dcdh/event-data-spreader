@@ -63,12 +63,11 @@ public class E2ETest {
                     .statusCode(201)
             ;
         }
-        // TODO use Debezium rest API with Awaitability
-//        given()
-//                .get("http://localhost:8083/connectors/test-connector/status")
-//                .then().log().all();
-        // cf. https://docs.confluent.io/current/connect/references/restapi.html#get--connectors-(string-name)-status
-        Thread.sleep(1000);// It seems that I had to introduce a delay to ensure connector is well working
+        await().atMost(30, TimeUnit.SECONDS).until(() -> given()
+                .get("http://localhost:8083/connectors/test-connector/status")
+                .then().log().all()
+                .extract()
+                .body().jsonPath().getString("tasks[0].state").equals("RUNNING"));
     }
 
     @AfterEach
