@@ -2,6 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
+import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootSerializer;
@@ -56,13 +57,14 @@ public class AccountAggregateTest {
     public void should_serialize() {
         // Given
         final AggregateRootSerializer aggregateRootSerializer = new JacksonAggregateRootSerializer(new DefaultJacksonAggregateRootSubtypes());
+        final AccountAggregate accountAggregate = new AccountAggregate();
+        accountAggregate.handle(new DebitAccountCommand("owner", BigDecimal.TEN, "executedBy"));
 
         // When
-        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(),
-                new AccountAggregate("aggregateRootId","owner", new BigDecimal("100.01"),1L));
+        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(), accountAggregate);
 
         // Then
-        assertEquals("{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"aggregateRootId\",\"owner\":\"owner\",\"balance\":100.01,\"version\":1}", serialized);
+        assertEquals("{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"owner\",\"owner\":\"owner\",\"balance\":990,\"version\":0,\"aggregateRootType\":\"AccountAggregate\"}", serialized);
     }
 
     @Test
@@ -72,10 +74,10 @@ public class AccountAggregateTest {
 
         // When
         final AggregateRoot deserialized = aggregateRootSerializer.deserialize(new DefaultEncryptedEventSecret(),
-                "{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"aggregateRootId\",\"owner\":\"owner\",\"balance\":100.01,\"version\":1}");
+                "{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"owner\",\"owner\":\"owner\",\"balance\":990,\"version\":0,\"aggregateRootType\":\"AccountAggregate\"}");
 
         // Then
-        assertEquals(new AccountAggregate("aggregateRootId","owner", new BigDecimal("100.01"), 1L), deserialized);
+        assertEquals(new AccountAggregate("aggregateRootId","owner", new BigDecimal("990"), 1L), deserialized);
     }
 
 }

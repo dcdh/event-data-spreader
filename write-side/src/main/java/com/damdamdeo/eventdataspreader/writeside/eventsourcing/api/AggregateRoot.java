@@ -10,8 +10,7 @@ import java.util.stream.Collectors;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "aggregateRootType")
+        property = "@type")
 public abstract class AggregateRoot implements Serializable {
 
     private final transient List<Event> unsavedEvents = new LinkedList<>();

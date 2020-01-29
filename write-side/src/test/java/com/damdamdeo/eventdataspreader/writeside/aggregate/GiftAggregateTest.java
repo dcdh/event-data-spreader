@@ -2,6 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
+import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootSerializer;
@@ -54,13 +55,14 @@ public class GiftAggregateTest {
     public void should_serialize() {
         // Given
         final AggregateRootSerializer aggregateRootSerializer = new JacksonAggregateRootSerializer(new DefaultJacksonAggregateRootSubtypes());
+        final GiftAggregate giftAggregate = new GiftAggregate();
+        giftAggregate.handle(new BuyGiftCommand("name", "executedBy"));
 
         // When
-        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(),
-                new GiftAggregate("aggregateRootId","name", "offeredTo",1L));
+        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(), giftAggregate);
 
         // Then
-        assertEquals("{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"aggregateRootId\",\"name\":\"name\",\"offeredTo\":\"offeredTo\",\"version\":1}", serialized);
+        assertEquals("{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"name\",\"name\":\"name\",\"offeredTo\":null,\"version\":0,\"aggregateRootType\":\"GiftAggregate\"}", serialized);
     }
 
     @Test
@@ -70,7 +72,7 @@ public class GiftAggregateTest {
 
         // When
         final AggregateRoot deserialized = aggregateRootSerializer.deserialize(new DefaultEncryptedEventSecret(),
-                "{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"aggregateRootId\",\"name\":\"name\",\"offeredTo\":\"offeredTo\",\"version\":1}");
+                "{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"name\",\"name\":\"name\",\"offeredTo\":\"offeredTo\",\"version\":0,\"aggregateRootType\":\"GiftAggregate\"}");
 
         // Then
         assertEquals(new GiftAggregate("aggregateRootId","name", "offeredTo",1L), deserialized);
