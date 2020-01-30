@@ -67,6 +67,11 @@ public class E2ETest {
                 .get("http://localhost:8083/connectors/test-connector/status")
                 .then().log().all()
                 .extract()
+                .body().jsonPath().getList("tasks").isEmpty() == false);
+        await().atMost(30, TimeUnit.SECONDS).until(() -> given()
+                .get("http://localhost:8083/connectors/test-connector/status")
+                .then().log().all()
+                .extract()
                 .body().jsonPath().getString("tasks[0].state").equals("RUNNING"));
     }
 
