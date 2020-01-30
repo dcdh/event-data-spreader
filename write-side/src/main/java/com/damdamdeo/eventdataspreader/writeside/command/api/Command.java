@@ -4,6 +4,4 @@ public interface Command {
 
     String aggregateId();
 
-    boolean exactlyOnceCommandExecution();
-
 }

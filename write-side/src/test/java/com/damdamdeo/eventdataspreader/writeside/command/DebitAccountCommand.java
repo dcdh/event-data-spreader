@@ -37,11 +37,6 @@ public final class DebitAccountCommand implements Command {
     }
 
     @Override
-    public boolean exactlyOnceCommandExecution() {
-        return false;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DebitAccountCommand)) return false;

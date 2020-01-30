@@ -30,11 +30,6 @@ public final class BuyGiftCommand implements Command {
     }
 
     @Override
-    public boolean exactlyOnceCommandExecution() {
-        return false;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof BuyGiftCommand)) return false;
