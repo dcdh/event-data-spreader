@@ -10,6 +10,7 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,7 +34,11 @@ public class CommandHandlerExecutor {
     }
 
     public Optional<AggregateRoot> execute(final Command command) throws Throwable {
-        return exactlyOnceCommandExecutor.submit(() -> executeCommand(command)).get();
+        try {
+            return exactlyOnceCommandExecutor.submit(() -> executeCommand(command)).get();
+        } catch (final InterruptedException | ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     public static class CommandQualifierLiteral extends AnnotationLiteral<CommandQualifier> implements CommandQualifier {
