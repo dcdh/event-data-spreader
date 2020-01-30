@@ -6,6 +6,4 @@ public interface AggregateRootSerializer {
 
     String serialize(EncryptedEventSecret encryptedEventSecret, AggregateRoot aggregateRoot);
 
-    AggregateRoot deserialize(EncryptedEventSecret encryptedEventSecret, String aggregateRoot);
-
 }

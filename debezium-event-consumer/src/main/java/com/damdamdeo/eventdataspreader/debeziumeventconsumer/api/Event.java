@@ -18,16 +18,16 @@ public final class Event {
 
     public Event(final DecryptableEvent decryptableEvent,
                  final EncryptedEventSecret encryptedEventSecret,
-                 final EventPayloadSerializer eventPayloadSerializer,
-                 final EventMetadataSerializer eventMetadataSerializer) {
+                 final EventMetadataDeserializer eventMetadataDeserializer,
+                 final EventPayloadDeserializer eventPayloadDeserializer) {
         eventId = decryptableEvent.eventId();
         aggregateRootId = decryptableEvent.aggregateRootId();
         aggregateRootType = decryptableEvent.aggregateRootType();
         eventType = decryptableEvent.eventType();
         version = decryptableEvent.version();
         creationDate = decryptableEvent.creationDate();
-        eventPayload = decryptableEvent.eventPayload(encryptedEventSecret, eventPayloadSerializer);
-        eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataSerializer);
+        eventPayload = decryptableEvent.eventPayload(encryptedEventSecret, eventPayloadDeserializer);
+        eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
     }
 
     public String eventId() {

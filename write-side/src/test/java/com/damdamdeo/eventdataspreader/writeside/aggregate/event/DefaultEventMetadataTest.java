@@ -1,7 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
@@ -73,10 +75,10 @@ public class DefaultEventMetadataTest {
     @Test
     public void should_deserialize() {
         // Given
-        final EventMetadataSerializer eventMetadataSerializer = new JacksonEventMetadataSerializer(new DefaultJacksonEventMetadataSubtypes());
+        final EventMetadataDeserializer eventMetadataDeserializer = new JacksonEventMetadataDeserializer(new DefaultJacksonEventMetadataSubtypes());
 
         // When
-        final EventMetadata deserialized = eventMetadataSerializer.deserialize(new DefaultEncryptedEventSecret(),
+        final EventMetadata deserialized = eventMetadataDeserializer.deserialize(new DefaultEncryptedEventSecret(),
                 "{\"@type\":\"DefaultEventMetadata\",\"executedBy\":\"executedBy\"}");
 
         // Then

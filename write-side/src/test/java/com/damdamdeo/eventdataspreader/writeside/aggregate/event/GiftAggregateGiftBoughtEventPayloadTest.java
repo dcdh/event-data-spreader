@@ -3,8 +3,8 @@ package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayload;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadSerializer;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootEventPayloadSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootEventPayloadSubtypes;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Disabled;
@@ -60,10 +60,10 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
     @Test
     public void should_serialize() {
         // Given
-        final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer = new JacksonAggregateRootEventPayloadSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
+        final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer = new JacksonAggregateRootEventPayloadDeSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
 
         // When
-        final String serialized = aggregateRootEventPayloadSerializer.serialize(new DefaultEncryptedEventSecret(),
+        final String serialized = aggregateRootEventPayloadDeSerializer.serialize(new DefaultEncryptedEventSecret(),
                 new GiftAggregateGiftBoughtEventPayload("name"));
 
         // Then
@@ -73,10 +73,10 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
     @Test
     public void should_deserialize() {
         // Given
-        final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer = new JacksonAggregateRootEventPayloadSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
+        final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer = new JacksonAggregateRootEventPayloadDeSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
 
         // When
-        final AggregateRootEventPayload deserialized = aggregateRootEventPayloadSerializer.deserialize(new DefaultEncryptedEventSecret(),
+        final AggregateRootEventPayload deserialized = aggregateRootEventPayloadDeSerializer.deserialize(new DefaultEncryptedEventSecret(),
                 "{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"name\"}");
 
         // Then

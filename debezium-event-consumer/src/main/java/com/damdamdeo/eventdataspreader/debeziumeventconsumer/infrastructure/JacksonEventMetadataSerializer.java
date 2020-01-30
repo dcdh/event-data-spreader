@@ -37,16 +37,4 @@ public class JacksonEventMetadataSerializer implements EventMetadataSerializer {
         }
     }
 
-    @Override
-    public EventMetadata deserialize(final EncryptedEventSecret encryptedEventSecret, final String eventMetadata) {
-        try {
-            return OBJECT_MAPPER
-                    .readerFor(EventMetadata.class)
-                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret.secret())
-                    .readValue(eventMetadata);
-        } catch (final Exception e) {
-            throw new SerializationException(e);
-        }
-    }
-
 }

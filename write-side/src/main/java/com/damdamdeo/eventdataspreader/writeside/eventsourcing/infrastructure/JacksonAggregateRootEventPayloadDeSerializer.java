@@ -3,7 +3,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.JacksonEncryptionSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayload;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootEventPayloadSubtypes;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -12,11 +12,11 @@ import com.fasterxml.jackson.databind.*;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class JacksonAggregateRootEventPayloadSerializer implements AggregateRootEventPayloadSerializer {
+public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRootEventPayloadDeSerializer {
 
     private final ObjectMapper OBJECT_MAPPER;
 
-    public JacksonAggregateRootEventPayloadSerializer(final JacksonAggregateRootEventPayloadSubtypes jacksonAggregateRootEventPayloadSubtypesBean) {
+    public JacksonAggregateRootEventPayloadDeSerializer(final JacksonAggregateRootEventPayloadSubtypes jacksonAggregateRootEventPayloadSubtypesBean) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.registerSubtypes(jacksonAggregateRootEventPayloadSubtypesBean.namedTypes());

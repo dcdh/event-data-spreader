@@ -65,17 +65,4 @@ public class GiftAggregateTest {
         assertEquals("{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"name\",\"name\":\"name\",\"offeredTo\":null,\"version\":0,\"aggregateRootType\":\"GiftAggregate\"}", serialized);
     }
 
-    @Test
-    public void should_deserialize() {
-        // Given
-        final AggregateRootSerializer aggregateRootSerializer = new JacksonAggregateRootSerializer(new DefaultJacksonAggregateRootSubtypes());
-
-        // When
-        final AggregateRoot deserialized = aggregateRootSerializer.deserialize(new DefaultEncryptedEventSecret(),
-                "{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"name\",\"name\":\"name\",\"offeredTo\":\"offeredTo\",\"version\":0,\"aggregateRootType\":\"GiftAggregate\"}");
-
-        // Then
-        assertEquals(new GiftAggregate("aggregateRootId","name", "offeredTo",1L), deserialized);
-    }
-
 }

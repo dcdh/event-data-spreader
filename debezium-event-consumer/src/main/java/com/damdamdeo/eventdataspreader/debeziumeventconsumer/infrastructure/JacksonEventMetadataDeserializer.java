@@ -1,11 +1,11 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
+package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SerializationException;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.JacksonEncryptionSerializer;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootSubtypes;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,28 +14,27 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class JacksonAggregateRootSerializer implements AggregateRootSerializer {
+public class JacksonEventMetadataDeserializer implements EventMetadataDeserializer {
 
     private final ObjectMapper OBJECT_MAPPER;
 
-    public JacksonAggregateRootSerializer(final JacksonAggregateRootSubtypes jacksonAggregateRootSubtypesBean) {
+    public JacksonEventMetadataDeserializer(final JacksonEventMetadataSubtypes jacksonEventMetadataSubtypesBean) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        OBJECT_MAPPER.registerSubtypes(jacksonAggregateRootSubtypesBean.namedTypes());
+        OBJECT_MAPPER.registerSubtypes(jacksonEventMetadataSubtypesBean.namedTypes());
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     }
 
     @Override
-    public String serialize(final EncryptedEventSecret encryptedEventSecret, final AggregateRoot aggregateRoot) {
+    public EventMetadata deserialize(final EncryptedEventSecret encryptedEventSecret, final String eventMetadata) {
         try {
             return OBJECT_MAPPER
-                    .writer()
+                    .readerFor(EventMetadata.class)
                     .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret.secret())
-                    .writeValueAsString(aggregateRoot);
+                    .readValue(eventMetadata);
         } catch (final Exception e) {
             throw new SerializationException(e);
         }
     }
 
 }
-

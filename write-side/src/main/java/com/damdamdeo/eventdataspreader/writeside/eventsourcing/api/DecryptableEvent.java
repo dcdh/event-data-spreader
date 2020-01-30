@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 
 import java.util.Date;
@@ -20,8 +20,8 @@ public interface DecryptableEvent {
 
     Date creationDate();
 
-    AggregateRootEventPayload eventPayload(EncryptedEventSecret encryptedEventSecret, AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer);
+    AggregateRootEventPayload eventPayload(EncryptedEventSecret encryptedEventSecret, AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer);
 
-    EventMetadata eventMetaData(EncryptedEventSecret encryptedEventSecret, EventMetadataSerializer eventMetadataSerializer);
+    EventMetadata eventMetaData(EncryptedEventSecret encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
 
 }

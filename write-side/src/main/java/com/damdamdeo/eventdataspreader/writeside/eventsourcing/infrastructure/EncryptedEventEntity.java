@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.*;
@@ -72,12 +73,12 @@ public class EncryptedEventEntity implements DecryptableEvent, EncryptedEventSec
 
     private EncryptedEventEntity(final EncryptedEventBuilder builder,
                                  final EncryptedEventSecret encryptedEventSecret,
-                                 final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
+                                 final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
                                  final EventMetadataSerializer eventMetadataSerializer) {
         this(builder.eventId, builder.aggregateRootId, builder.aggregateRootType, builder.version);
         this.eventType = builder.eventType;
         this.creationDate = builder.creationDate;
-        this.eventPayload = aggregateRootEventPayloadSerializer.serialize(encryptedEventSecret, builder.aggregateRootEventPayload);
+        this.eventPayload = aggregateRootEventPayloadDeSerializer.serialize(encryptedEventSecret, builder.aggregateRootEventPayload);
         this.eventMetaData = eventMetadataSerializer.serialize(encryptedEventSecret, builder.eventMetaData);
         this.encryptedEventType = EncryptedEventType.ENCRYPTED_EVENT;
     }
@@ -144,7 +145,7 @@ public class EncryptedEventEntity implements DecryptableEvent, EncryptedEventSec
         }
 
         public EncryptedEventEntity build(final EncryptedEventSecret encryptedEventSecret,
-                                          final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
+                                          final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
                                           final EventMetadataSerializer eventMetadataSerializer) {
             Validate.notNull(eventId);
             Validate.notNull(aggregateRootId);
@@ -155,11 +156,11 @@ public class EncryptedEventEntity implements DecryptableEvent, EncryptedEventSec
             Validate.notNull(aggregateRootEventPayload);
             Validate.notNull(eventMetaData);
             Validate.notNull(encryptedEventSecret);
-            Validate.notNull(aggregateRootEventPayloadSerializer);
+            Validate.notNull(aggregateRootEventPayloadDeSerializer);
             Validate.notNull(eventMetadataSerializer);
             Validate.validState(encryptedEventSecret.aggregateRootId().equals(aggregateRootId));
             Validate.validState(encryptedEventSecret.aggregateRootType().equals(aggregateRootType));
-            return new EncryptedEventEntity(this, encryptedEventSecret, aggregateRootEventPayloadSerializer, eventMetadataSerializer);
+            return new EncryptedEventEntity(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataSerializer);
         }
 
     }
@@ -247,30 +248,30 @@ public class EncryptedEventEntity implements DecryptableEvent, EncryptedEventSec
 
     @Override
     public AggregateRootEventPayload eventPayload(final EncryptedEventSecret encryptedEventSecret,
-                                                  final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer) {
+                                                  final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer) {
         Validate.validState(encryptedEventSecret.aggregateRootId().equals(aggregateRootId));
         Validate.validState(encryptedEventSecret.aggregateRootType().equals(aggregateRootType));
-        return aggregateRootEventPayloadSerializer.deserialize(encryptedEventSecret, eventPayload);
+        return aggregateRootEventPayloadDeSerializer.deserialize(encryptedEventSecret, eventPayload);
     }
 
     @Override
     public EventMetadata eventMetaData(final EncryptedEventSecret encryptedEventSecret,
-                                       final EventMetadataSerializer eventMetadataSerializer) {
+                                       final EventMetadataDeserializer eventMetadataDeserializer) {
         Validate.validState(encryptedEventSecret.aggregateRootId().equals(aggregateRootId));
         Validate.validState(encryptedEventSecret.aggregateRootType().equals(aggregateRootType));
-        return eventMetadataSerializer.deserialize(encryptedEventSecret, eventMetaData);
+        return eventMetadataDeserializer.deserialize(encryptedEventSecret, eventMetaData);
     }
 
     public Event toEvent(final EncryptedEventSecret encryptedEventSecret,
-                         final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
-                         final EventMetadataSerializer eventMetadataSerializer) {
+                         final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                         final EventMetadataDeserializer eventMetadataDeserializer) {
         Validate.notNull(encryptedEventSecret);
-        Validate.notNull(aggregateRootEventPayloadSerializer);
-        Validate.notNull(eventMetadataSerializer);
+        Validate.notNull(aggregateRootEventPayloadDeSerializer);
+        Validate.notNull(eventMetadataDeserializer);
         Validate.validState(encryptedEventSecret.aggregateRootId().equals(aggregateRootId));
         Validate.validState(encryptedEventSecret.aggregateRootType().equals(aggregateRootType));
         Validate.validState(EncryptedEventType.ENCRYPTED_EVENT.equals(encryptedEventType));
-        return new Event(this, encryptedEventSecret, aggregateRootEventPayloadSerializer, eventMetadataSerializer);
+        return new Event(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer);
     }
 
     @Override

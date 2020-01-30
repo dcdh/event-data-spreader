@@ -18,8 +18,8 @@ public interface DecryptableEvent {
 
     Date creationDate();
 
-    EventPayload eventPayload(EncryptedEventSecret encryptedEventSecret, EventPayloadSerializer eventPayloadSerializer);
+    EventPayload eventPayload(EncryptedEventSecret encryptedEventSecret, EventPayloadDeserializer eventPayloadDeserializer);
 
-    EventMetadata eventMetaData(EncryptedEventSecret encryptedEventSecret, EventMetadataSerializer eventMetadataSerializer);
+    EventMetadata eventMetaData(EncryptedEventSecret encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
 
 }

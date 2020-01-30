@@ -1,8 +1,8 @@
 package com.damdamdeo.eventdataspreader.queryside.event;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayload;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadSerializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventPayloadSerializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDeserializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventPayloadDeserializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventPayloadSubtypes;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
@@ -58,25 +58,12 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
     }
 
     @Test
-    public void should_serialized() {
-        // Given
-        final EventPayloadSerializer eventPayloadSerializer = new JacksonEventPayloadSerializer(new DefaultJacksonEventPayloadSubtypes());
-
-        // When
-        final String serialized = eventPayloadSerializer.serialize(new DefaultEncryptedEventSecret(),
-                new GiftAggregateGiftBoughtEventPayload("damdamdeo"));
-
-        // Then
-        assertEquals("{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"damdamdeo\"}", serialized);
-    }
-
-    @Test
     public void should_deserialize() {
         // Given
-        final EventPayloadSerializer eventPayloadSerializer = new JacksonEventPayloadSerializer(new DefaultJacksonEventPayloadSubtypes());
+        final EventPayloadDeserializer eventPayloadDeserializer = new JacksonEventPayloadDeserializer(new DefaultJacksonEventPayloadSubtypes());
 
         // When
-        final EventPayload deserialized = eventPayloadSerializer.deserialize(new DefaultEncryptedEventSecret(),
+        final EventPayload deserialized = eventPayloadDeserializer.deserialize(new DefaultEncryptedEventSecret(),
                 "{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"damdamdeo\"}");
 
         // Then

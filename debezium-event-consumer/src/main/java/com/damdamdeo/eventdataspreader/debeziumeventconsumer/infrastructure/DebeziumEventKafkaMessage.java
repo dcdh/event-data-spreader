@@ -117,14 +117,14 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
 
     @Override
     public EventMetadata eventMetaData(final EncryptedEventSecret encryptedEventSecret,
-                                       final EventMetadataSerializer eventMetadataSerializer) {
-        return eventMetadataSerializer.deserialize(encryptedEventSecret, eventMetaData);
+                                       final EventMetadataDeserializer eventMetadataDeserializer) {
+        return eventMetadataDeserializer.deserialize(encryptedEventSecret, eventMetaData);
     }
 
     @Override
     public EventPayload eventPayload(final EncryptedEventSecret encryptedEventSecret,
-                                     final EventPayloadSerializer eventPayloadSerializer) {
-        return eventPayloadSerializer.deserialize(encryptedEventSecret, eventPayload);
+                                     final EventPayloadDeserializer eventPayloadDeserializer) {
+        return eventPayloadDeserializer.deserialize(encryptedEventSecret, eventPayload);
     }
 
     @Override

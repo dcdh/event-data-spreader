@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import org.apache.commons.lang3.Validate;
 
@@ -39,20 +39,20 @@ public final class Event {
 
     public Event(final DecryptableEvent decryptableEvent,
                  final EncryptedEventSecret encryptedEventSecret,
-                 final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
-                 final EventMetadataSerializer eventMetadataSerializer) {
+                 final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                 final EventMetadataDeserializer eventMetadataDeserializer) {
         Validate.notNull(decryptableEvent);
         Validate.notNull(encryptedEventSecret);
-        Validate.notNull(aggregateRootEventPayloadSerializer);
-        Validate.notNull(eventMetadataSerializer);
+        Validate.notNull(aggregateRootEventPayloadDeSerializer);
+        Validate.notNull(eventMetadataDeserializer);
         this.eventId = decryptableEvent.eventId();
         this.aggregateRootId = decryptableEvent.aggregateRootId();
         this.aggregateRootType = decryptableEvent.aggregateRootType();
         this.eventType = decryptableEvent.eventType();
         this.version = decryptableEvent.version();
         this.creationDate = decryptableEvent.creationDate();
-        this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadSerializer);
-        this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataSerializer);
+        this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadDeSerializer);
+        this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
     }
 
     public String eventId() {

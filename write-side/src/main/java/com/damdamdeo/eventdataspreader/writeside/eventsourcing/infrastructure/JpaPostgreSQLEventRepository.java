@@ -1,8 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.AESEncryption;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
@@ -22,16 +23,19 @@ public class JpaPostgreSQLEventRepository implements EventRepository {
 
     final EntityManager entityManager;
     final Encryption encryption;
-    final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer;
+    final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
     final EventMetadataSerializer eventMetadataSerializer;
+    final EventMetadataDeserializer eventMetadataDeserializer;
 
     public JpaPostgreSQLEventRepository(final EntityManager entityManager,
-                                        final AggregateRootEventPayloadSerializer aggregateRootEventPayloadSerializer,
-                                        final EventMetadataSerializer eventMetadataSerializer) {
+                                        final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                                        final EventMetadataSerializer eventMetadataSerializer,
+                                        final EventMetadataDeserializer eventMetadataDeserializer) {
         this.entityManager = Objects.requireNonNull(entityManager);
         this.encryption = new AESEncryption();
-        this.aggregateRootEventPayloadSerializer = aggregateRootEventPayloadSerializer;
+        this.aggregateRootEventPayloadDeSerializer = aggregateRootEventPayloadDeSerializer;
         this.eventMetadataSerializer = eventMetadataSerializer;
+        this.eventMetadataDeserializer = eventMetadataDeserializer;
     }
 
     @Transactional
@@ -54,7 +58,7 @@ public class JpaPostgreSQLEventRepository implements EventRepository {
                         .withCreationDate(event.creationDate())
                         .withEventPayload(event.eventPayload())
                         .withEventMetaData(event.eventMetaData())
-                        .build(encryptedEventSecret, aggregateRootEventPayloadSerializer, eventMetadataSerializer))
+                        .build(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataSerializer))
                 .forEach(eventEntity -> entityManager.persist(eventEntity));
         return encryptedEventSecret;
     }
@@ -99,7 +103,7 @@ public class JpaPostgreSQLEventRepository implements EventRepository {
                 .setParameter(AGGREGATE_ROOT_ID, aggregateRootId)
                 .setParameter(AGGREGATE_ROOT_TYPE, aggregateRootType)
                 .getResultStream()
-                .map(encryptedEvent -> encryptedEvent.toEvent(encryptedEventSecret, aggregateRootEventPayloadSerializer, eventMetadataSerializer))
+                .map(encryptedEvent -> encryptedEvent.toEvent(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer))
                 .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 

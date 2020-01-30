@@ -3,8 +3,7 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.DecryptableEvent;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadSerializer;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDeserializer;
 import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -40,10 +39,10 @@ public class KafkaEventConsumer {
     EncryptedEventSecretRepository encryptedEventSecretRepository;
 
     @Inject
-    EventPayloadSerializer eventPayloadSerializer;
+    EventPayloadDeserializer eventPayloadDeserializer;
 
     @Inject
-    EventMetadataSerializer eventMetadataSerializer;
+    EventMetadataDeserializer eventMetadataDeserializer;
 
     @Inject
     UserTransaction transaction;
@@ -90,7 +89,7 @@ public class KafkaEventConsumer {
                                     aggregateRootType,
                                     eventType));
                             if (eventConsumers.isResolvable()) {
-                                final Event event = new Event(decryptableEvent, encryptedEventSecret, eventPayloadSerializer, eventMetadataSerializer);
+                                final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
                                 final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
                                 for (final EventConsumer eventConsumer : eventConsumers) {
                                     if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {

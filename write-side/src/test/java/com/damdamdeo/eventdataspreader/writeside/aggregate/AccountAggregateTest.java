@@ -67,17 +67,4 @@ public class AccountAggregateTest {
         assertEquals("{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"owner\",\"owner\":\"owner\",\"balance\":990,\"version\":0,\"aggregateRootType\":\"AccountAggregate\"}", serialized);
     }
 
-    @Test
-    public void should_deserialize() {
-        // Given
-        final AggregateRootSerializer aggregateRootSerializer = new JacksonAggregateRootSerializer(new DefaultJacksonAggregateRootSubtypes());
-
-        // When
-        final AggregateRoot deserialized = aggregateRootSerializer.deserialize(new DefaultEncryptedEventSecret(),
-                "{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"owner\",\"owner\":\"owner\",\"balance\":990,\"version\":0,\"aggregateRootType\":\"AccountAggregate\"}");
-
-        // Then
-        assertEquals(new AccountAggregate("aggregateRootId","owner", new BigDecimal("990"), 1L), deserialized);
-    }
-
 }
