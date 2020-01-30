@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-public class AggregateRootProjectionId implements Serializable {
+public class AggregateRootId implements Serializable {
 
     @Column(name="aggregateRootId")
     private String aggregateRootId;
@@ -14,10 +14,10 @@ public class AggregateRootProjectionId implements Serializable {
     @Column(name="aggregateRootType")
     private String aggregateRootType;
 
-    public AggregateRootProjectionId() {}
+    public AggregateRootId() {}
 
-    public AggregateRootProjectionId(final String aggregateRootId,
-                                     final String aggregateRootType) {
+    public AggregateRootId(final String aggregateRootId,
+                           final String aggregateRootType) {
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootType = aggregateRootType;
     }
@@ -26,7 +26,7 @@ public class AggregateRootProjectionId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AggregateRootProjectionId that = (AggregateRootProjectionId) o;
+        AggregateRootId that = (AggregateRootId) o;
         return Objects.equals(aggregateRootId, that.aggregateRootId) &&
                 Objects.equals(aggregateRootType, that.aggregateRootType);
     }

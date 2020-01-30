@@ -3,7 +3,7 @@
 --
 
 --
--- Name: aggregaterootprojection; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregateroot; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.aggregateroot (

@@ -14,7 +14,7 @@ import java.util.Objects;
 public class AggregateRootEntity {
 
     @EmbeddedId
-    private AggregateRootProjectionId aggregateRootProjectionId;
+    private AggregateRootId aggregateRootId;
 
     @NotNull
     @Type(type = "com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.hibernate.JsonbAsStringUserType")
@@ -29,7 +29,7 @@ public class AggregateRootEntity {
     public AggregateRootEntity(final AggregateRoot aggregateRoot,
                                final AggregateRootSerializer aggregateRootSerializer,
                                final EncryptedEventSecret encryptedEventSecret) {
-        this.aggregateRootProjectionId = new AggregateRootProjectionId(aggregateRoot.aggregateRootId(),
+        this.aggregateRootId = new AggregateRootId(aggregateRoot.aggregateRootId(),
                 aggregateRoot.aggregateRootType());
         this.aggregateRoot = aggregateRootSerializer.serialize(encryptedEventSecret, aggregateRoot);
         this.version = aggregateRoot.version();
@@ -40,11 +40,11 @@ public class AggregateRootEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AggregateRootEntity that = (AggregateRootEntity) o;
-        return Objects.equals(aggregateRootProjectionId, that.aggregateRootProjectionId);
+        return Objects.equals(aggregateRootId, that.aggregateRootId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootProjectionId);
+        return Objects.hash(aggregateRootId);
     }
 }
