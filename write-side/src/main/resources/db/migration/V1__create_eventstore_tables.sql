@@ -44,7 +44,8 @@ ALTER TABLE ONLY public.aggregateroot
 
 ALTER TABLE ONLY public.event
     ADD CONSTRAINT event_pkey PRIMARY KEY (id);
-
+ALTER TABLE ONLY public.event
+    ADD CONSTRAINT event_unique UNIQUE (aggregaterootid,aggregateroottype,version);
 
 --
 -- PostgreSQL database dump complete
