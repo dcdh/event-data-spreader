@@ -92,7 +92,7 @@ public class CommandHandlerExecutorTest {
         doReturn(commandHandlerInstance).when(commandHandlerExecutor.commandHandlers).select(CommandHandler.class, new CommandHandlerExecutor.CommandQualifierLiteral(command.getClass()));
 
         // When
-        assertThrows(ExecutionException.class, () -> commandHandlerExecutor.execute(command));
+        assertThrows(IllegalStateException.class, () -> commandHandlerExecutor.execute(command));
 
         // Then
         verify(commandHandler, never()).handle(command);
