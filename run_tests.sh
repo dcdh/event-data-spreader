@@ -1,3 +1,28 @@
 #!/bin/bash
+# delete kafka connector
 curl -X DELETE http://localhost:8083/connectors/todo-connector;
+# setup vault account
+curl --header "X-Vault-Token: myroot" \
+  --request POST \
+  --data '{"type": "userpass"}' \
+  http://127.0.0.1:8200/v1/sys/auth/userpass;
+curl --header "X-Vault-Token: myroot" \
+  --request POST \
+  --data '{"password": "sinclair", "policies": "vault-quickstart-policy"}' \
+  http://127.0.0.1:8200/v1/auth/userpass/users/bob;
+curl --header "X-Vault-Token: myroot" \
+  --request DELETE \
+  http://127.0.0.1:8200/v1/sys/mounts/secret;
+curl --header "X-Vault-Token: myroot" \
+  --request POST \
+  --data '{ "type": "kv" }' \
+  http://127.0.0.1:8200/v1/sys/mounts/secret;
+curl --header "X-Vault-Token: myroot" \
+  --request PUT \
+  --data '{"policy": "path \"secret/encryption\" {capabilities = [\"read\"]}"}' \
+  http://127.0.0.1:8200/v1/sys/policy/vault-quickstart-policy;
+curl --header "X-Vault-Token: myroot" \
+  --request POST \
+  --data '{"private-key":"123456"}' \
+  http://127.0.0.1:8200/v1/secret/encryption;
 mvn clean test

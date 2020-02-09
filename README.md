@@ -26,7 +26,8 @@ docker pull debezium/kafka:1.0.0.Final && \
 docker pull debezium/connect:1.0.0.Final && \
 docker pull dcdh1983/postgresql-10-debezium-centos7:latest && \
 docker pull giantswarm/tiny-tools && \
-docker pull maven:3.6.3-jdk-8-slim
+docker pull maven:3.6.3-jdk-8-slim && \
+docker pull vault:1.3.2
 
 ### Fix jenkins build
 > An issue is present following the last version of **openshift/jenkins-agent-maven-35-centos7:v3.11**
