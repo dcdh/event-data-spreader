@@ -28,9 +28,8 @@ public class AESEncryptionTest {
         final String secret = encryption.generateNewSecret();
 
         // When
-        final String decryptedMessage = encryption.decrypt(
-                encryption.encrypt("Hello World", secret),
-                secret);
+        final String encryptedMessage = encryption.encrypt("Hello World", secret);
+        final String decryptedMessage = encryption.decrypt(encryptedMessage, secret);
 
         // Then
         assertEquals("Hello World", decryptedMessage);
