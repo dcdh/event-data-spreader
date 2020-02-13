@@ -37,7 +37,7 @@ public class VaultSecretStore implements SecretStore {
     }
 
     @Override
-    public Optional<String> get(final String path) {
+    public Optional<String> read(final String path) {
         final String clientToken = vaultAuthManager.getClientToken();
         final String mount = vaultRuntimeConfig.kvSecretEngineMountPath;
         try {

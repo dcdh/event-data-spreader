@@ -6,6 +6,6 @@ public interface SecretStore {
 
     void store(String path, String secret);
 
-    Optional<String> get(String path);
+    Optional<String> read(String path);
 
 }

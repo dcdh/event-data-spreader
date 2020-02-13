@@ -29,7 +29,7 @@ public class VaultSecretStoreTest {
 
         // When
         secretStore.store("encryption/test", secret);
-        final String actualSecret = secretStore.get("encryption/test").get();
+        final String actualSecret = secretStore.read("encryption/test").get();
 
         // Then
         assertEquals("Hello World", actualSecret);
@@ -37,7 +37,7 @@ public class VaultSecretStoreTest {
 
     @Test
     public void should_return_optional_empty_if_secret_does_not_exists() {
-        assertFalse(secretStore.get("encryption/unknownSecret").isPresent());
+        assertFalse(secretStore.read("encryption/unknownSecret").isPresent());
     }
 
 }
