@@ -4,8 +4,8 @@ import java.util.Optional;
 
 public interface SecretStore {
 
-    void store(String path, String secret);
+    void store(String aggregateRootType, String aggregateRootId, String secret);
 
-    Optional<String> read(String path);
+    Optional<EncryptedEventSecret> read(String aggregateRootType, String aggregateRootId);
 
 }

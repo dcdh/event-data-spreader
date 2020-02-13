@@ -1,5 +1,6 @@
 package com.damdamdeo.eventdataspreader.eventsourcing.infrastructure;
 
+import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretException;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
 import io.quarkus.vault.runtime.VaultAuthManager;
@@ -29,25 +30,33 @@ public class VaultSecretStore implements SecretStore {
     }
 
     @Override
-    public void store(final String path, final String secret) {
+    public void store(final String aggregateRootType, final String aggregateRootId, final String secret) {
         final String clientToken = vaultAuthManager.getClientToken();
         final String mount = vaultRuntimeConfig.kvSecretEngineMountPath;
 
+        final String path = createPath(aggregateRootType, aggregateRootId);
         this.vaultClient.storeSecretV1(clientToken, mount, path, Collections.singletonMap(SECRET, secret));
     }
 
     @Override
-    public Optional<String> read(final String path) {
+    public Optional<EncryptedEventSecret> read(final String aggregateRootType, final String aggregateRootId) {
         final String clientToken = vaultAuthManager.getClientToken();
         final String mount = vaultRuntimeConfig.kvSecretEngineMountPath;
         try {
-            return Optional.ofNullable(vaultClient.getSecretV1(clientToken, mount, path).data.get(SECRET));
+            final String path = createPath(aggregateRootType, aggregateRootId);
+            return Optional.ofNullable(vaultClient.getSecretV1(clientToken, mount, path).data.get(SECRET))
+                    .filter(secret -> !"".equals(secret))
+                    .map(secret -> new VaultEncryptedEventSecret(aggregateRootId, aggregateRootType, secret));
         } catch (final VaultClientException e) {
             if (e.getStatus() != 404) {
                 throw new SecretException(e);
             }
             return Optional.empty();
         }
+    }
+
+    private String createPath(final String aggregateRootType, final String aggregateRootId) {
+        return "encryption/" + aggregateRootType + "/" + aggregateRootId;
     }
 
 }
