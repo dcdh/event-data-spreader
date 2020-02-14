@@ -3,6 +3,9 @@ package com.damdamdeo.eventdataspreader.eventsourcing.infrastructure;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretException;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
+import io.quarkus.cache.CacheInvalidate;
+import io.quarkus.cache.CacheKey;
+import io.quarkus.cache.CacheResult;
 import io.quarkus.vault.runtime.VaultAuthManager;
 import io.quarkus.vault.runtime.VaultManager;
 import io.quarkus.vault.runtime.client.VaultClientException;
@@ -30,7 +33,10 @@ public class VaultSecretStore implements SecretStore {
     }
 
     @Override
-    public void store(final String aggregateRootType, final String aggregateRootId, final String secret) {
+    @CacheInvalidate(cacheName = "secret-cache")
+    public void store(@CacheKey final String aggregateRootType,
+                      @CacheKey final String aggregateRootId,
+                      final String secret) {
         final String clientToken = vaultAuthManager.getClientToken();
         final String mount = vaultRuntimeConfig.kvSecretEngineMountPath;
 
@@ -39,6 +45,7 @@ public class VaultSecretStore implements SecretStore {
     }
 
     @Override
+    @CacheResult(cacheName = "secret-cache")
     public Optional<EncryptedEventSecret> read(final String aggregateRootType, final String aggregateRootId) {
         final String clientToken = vaultAuthManager.getClientToken();
         final String mount = vaultRuntimeConfig.kvSecretEngineMountPath;
