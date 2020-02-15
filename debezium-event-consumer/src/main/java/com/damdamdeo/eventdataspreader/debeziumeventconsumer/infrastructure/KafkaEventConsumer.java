@@ -72,54 +72,69 @@ public class KafkaEventConsumer {
     public CompletionStage<Void> onMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
         LOGGER.log(Level.FINE, String.format("Receiving event '%s'", message.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
-            try {
-                final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
-                final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootId(),
-                        debeziumEventKafkaMessage.aggregateRootType());
-                final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
-                final EventId eventId = decryptableEvent.eventId();
-                if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
-                    final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
-                    final String eventType = decryptableEvent.eventType();
-                    final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
-                            aggregateRootType,
-                            eventType));
-                    if (eventConsumers.isResolvable()) {
-                        final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
-                        final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                        for (final EventConsumer eventConsumer : eventConsumers) {
-                            if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
-                                transaction.begin();
-                                eventConsumer.consume(event);
-                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
-                                        eventConsumer.getClass(),
-                                        new ConsumerRecordKafkaSource(message),
-                                        gitCommitId);
-                                transaction.commit();
+            boolean processedSuccessfully = true;
+            do {
+                processedSuccessfully = true;
+                try {
+                    final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
+                    final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootId(),
+                            debeziumEventKafkaMessage.aggregateRootType());
+                    final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
+                    final EventId eventId = decryptableEvent.eventId();
+                    if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
+                        final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
+                        final String eventType = decryptableEvent.eventType();
+                        final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
+                                aggregateRootType,
+                                eventType));
+                        if (eventConsumers.isResolvable()) {
+                            final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
+                            final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
+                            for (final EventConsumer eventConsumer : eventConsumers) {
+                                if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
+                                    transaction.begin();
+                                    eventConsumer.consume(event);
+                                    eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
+                                            eventConsumer.getClass(),
+                                            new ConsumerRecordKafkaSource(message),
+                                            gitCommitId);
+                                    transaction.commit();
+                                }
                             }
+                        } else if (eventConsumers.isUnsatisfied()) {
+                            // TODO log
+                        } else if (eventConsumers.isAmbiguous()) {
+                            throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
                         }
-                    } else if (eventConsumers.isUnsatisfied()) {
-                        // TODO log
-                    } else if (eventConsumers.isAmbiguous()) {
-                        throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
+                        eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(message));
+                    } else {
+                        LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                     }
-                    eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(message));
-                } else {
-                    LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
+                } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
+                    waitSomeTime();
+                    LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
+                            unableToDecodeDebeziumEventMessageException.topic(),
+                            unableToDecodeDebeziumEventMessageException.partition(),
+                            unableToDecodeDebeziumEventMessageException.offset(),
+                            unableToDecodeDebeziumEventMessageException.getMessage()));
+                    processedSuccessfully = false;
+                } catch (final Exception exception) {
+                    waitSomeTime();
+                    LOGGER.log(Level.WARNING, "Message processing failure. Will try once again.", exception);
+                    processedSuccessfully = false;
                 }
-            } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
-                throw new RuntimeException(e);
-            } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'",
-                        unableToDecodeDebeziumEventMessageException.topic(),
-                        unableToDecodeDebeziumEventMessageException.partition(),
-                        unableToDecodeDebeziumEventMessageException.offset(),
-                        unableToDecodeDebeziumEventMessageException.getMessage()));
-            }
+            } while (!processedSuccessfully);
             return null;
         }, executor);
     }
 
+    private void waitSomeTime() {
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     private class EventQualifierLiteral extends AnnotationLiteral<EventQualifier> implements EventQualifier {
 
         private final String aggregateRootType;
