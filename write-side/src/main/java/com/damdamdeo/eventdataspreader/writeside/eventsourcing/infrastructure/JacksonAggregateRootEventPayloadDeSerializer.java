@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.*;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRootEventPayloadDeSerializer {
@@ -24,11 +25,11 @@ public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRo
     }
 
     @Override
-    public String serialize(final EncryptedEventSecret encryptedEventSecret, final AggregateRootEventPayload aggregateRootEventPayload) {
+    public String serialize(final Optional<EncryptedEventSecret> encryptedEventSecret, final AggregateRootEventPayload aggregateRootEventPayload) {
         try {
             return OBJECT_MAPPER
                     .writer()
-                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret.secret())
+                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret)
                     .writeValueAsString(aggregateRootEventPayload);
         } catch (final Exception e) {
             throw new SerializationException(e);
@@ -36,11 +37,11 @@ public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRo
     }
 
     @Override
-    public AggregateRootEventPayload deserialize(final EncryptedEventSecret encryptedEventSecret, final String eventPayload) {
+    public AggregateRootEventPayload deserialize(final Optional<EncryptedEventSecret> encryptedEventSecret, final String eventPayload) {
         try {
             return OBJECT_MAPPER
                     .readerFor(AggregateRootEventPayload.class)
-                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret.secret())
+                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret)
                     .readValue(eventPayload);
         } catch (final Exception e) {
             throw new SerializationException(e);

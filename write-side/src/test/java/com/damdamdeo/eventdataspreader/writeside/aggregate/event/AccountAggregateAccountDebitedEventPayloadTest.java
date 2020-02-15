@@ -1,7 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootEventPayloadDeSerializer;
@@ -11,8 +10,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,37 +33,13 @@ public class AccountAggregateAccountDebitedEventPayloadTest {
 
     }
 
-    private static class DefaultEncryptedEventSecret implements EncryptedEventSecret {
-
-        @Override
-        public String aggregateRootId() {
-            return null;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return null;
-        }
-
-        @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
-        public String secret() {
-            return null;
-        }
-
-    }
-
     @Test
     public void should_serialize() {
         // Given
         final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer = new JacksonAggregateRootEventPayloadDeSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
 
         // When
-        final String serialized = aggregateRootEventPayloadDeSerializer.serialize(new DefaultEncryptedEventSecret(),
+        final String serialized = aggregateRootEventPayloadDeSerializer.serialize(Optional.empty(),
                 new AccountAggregateAccountDebitedEventPayload("owner", new BigDecimal("100.01"), new BigDecimal("899.99")));
 
         // Then
@@ -77,7 +52,7 @@ public class AccountAggregateAccountDebitedEventPayloadTest {
         final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer = new JacksonAggregateRootEventPayloadDeSerializer(new DefaultJacksonAggregateRootEventPayloadSubtypes());
 
         // When
-        final AggregateRootEventPayload deserialized = aggregateRootEventPayloadDeSerializer.deserialize(new DefaultEncryptedEventSecret(),
+        final AggregateRootEventPayload deserialized = aggregateRootEventPayloadDeSerializer.deserialize(Optional.empty(),
                 "{\"@type\":\"AccountAggregateAccountDebitedEventPayload\",\"owner\":\"owner\",\"price\":100.01,\"balance\":899.99}");
 
         // Then

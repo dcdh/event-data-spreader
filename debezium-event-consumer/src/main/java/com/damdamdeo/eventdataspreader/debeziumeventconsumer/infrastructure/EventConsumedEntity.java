@@ -1,8 +1,8 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumed;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 
 import javax.persistence.*;
@@ -12,17 +12,24 @@ import java.util.*;
 @Table(name = "EventConsumed")
 @Entity
 @NamedQuery(name = "Events.findByEventId",
-        query = "SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities WHERE e.eventId = :eventId")
+        query = "SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities " +
+                "WHERE e.eventConsumedId.aggregateRootId = :aggregateRootId " +
+                "AND e.eventConsumedId.aggregateRootType = :aggregateRootType " +
+                "AND e.eventConsumedId.version = :version")
 public class EventConsumedEntity implements EventConsumed {
 
-    @Id
-    private String eventId;
+    @EmbeddedId
+    private EventConsumedId eventConsumedId;
 
     @NotNull
     private Boolean consumed;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "EventConsumerConsumedEntity_eventConsumerId")
+    @JoinColumns({
+            @JoinColumn(name = "aggregateRootId"),
+            @JoinColumn(name = "aggregateRootType"),
+            @JoinColumn(name = "version")
+    })
     private List<EventConsumerConsumedEntity> eventConsumerEntities;
 
     @NotNull
@@ -37,8 +44,8 @@ public class EventConsumedEntity implements EventConsumed {
 
     public EventConsumedEntity() {}
 
-    public EventConsumedEntity(final String eventId, final KafkaSource kafkaSource) {
-        this.eventId = Objects.requireNonNull(eventId);
+    public EventConsumedEntity(final EventId eventId, final KafkaSource kafkaSource) {
+        this.eventConsumedId = new EventConsumedId(eventId);
         this.consumed = Boolean.FALSE;
         this.eventConsumerEntities = new ArrayList<>();
         this.kafkaPartition = Objects.requireNonNull(kafkaSource.partition());
@@ -51,7 +58,7 @@ public class EventConsumedEntity implements EventConsumed {
                                             final String gitCommitId) {
         eventConsumerEntities.add(
                 new EventConsumerConsumedEntity(
-                        new EventConsumerId(eventId, consumerClass),
+                        new EventConsumerId(eventConsumedId, consumerClass),
                         consumedAt, gitCommitId));
     }
 
@@ -60,8 +67,8 @@ public class EventConsumedEntity implements EventConsumed {
     }
 
     @Override
-    public String eventId() {
-        return eventId;
+    public EventId eventId() {
+        return eventConsumedId;
     }
 
     @Override
@@ -79,23 +86,18 @@ public class EventConsumedEntity implements EventConsumed {
         if (this == o) return true;
         if (!(o instanceof EventConsumedEntity)) return false;
         EventConsumedEntity that = (EventConsumedEntity) o;
-        return Objects.equals(eventId, that.eventId) &&
-                Objects.equals(consumed, that.consumed) &&
-                Objects.equals(eventConsumerEntities, that.eventConsumerEntities) &&
-                Objects.equals(kafkaPartition, that.kafkaPartition) &&
-                Objects.equals(kafkaTopic, that.kafkaTopic) &&
-                Objects.equals(kafkaOffset, that.kafkaOffset);
+        return Objects.equals(eventConsumedId, that.eventConsumedId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, consumed, eventConsumerEntities, kafkaPartition, kafkaTopic, kafkaOffset);
+        return Objects.hash(eventConsumedId);
     }
 
     @Override
     public String toString() {
         return "EventConsumedEntity{" +
-                "eventId=" + eventId +
+                "eventConsumedId=" + eventConsumedId +
                 ", consumed=" + consumed +
                 ", eventConsumerEntities=" + eventConsumerEntities +
                 ", kafkaPartition=" + kafkaPartition +

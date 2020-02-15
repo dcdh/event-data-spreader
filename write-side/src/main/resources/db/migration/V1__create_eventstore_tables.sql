@@ -18,7 +18,6 @@ CREATE TABLE public.aggregateroot (
 --
 
 CREATE TABLE public.event (
-    id character varying(255),
     aggregaterootid character varying(255),
     aggregateroottype character varying(255),
     version bigint,
@@ -43,9 +42,9 @@ ALTER TABLE ONLY public.aggregateroot
 --
 
 ALTER TABLE ONLY public.event
-    ADD CONSTRAINT event_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT event_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version);
 ALTER TABLE ONLY public.event
-    ADD CONSTRAINT event_unique UNIQUE (aggregaterootid,aggregateroottype,version);
+    ADD CONSTRAINT event_unique UNIQUE (aggregaterootid, aggregateroottype, version);
 
 --
 -- PostgreSQL database dump complete

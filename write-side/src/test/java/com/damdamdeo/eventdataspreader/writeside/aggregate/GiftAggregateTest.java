@@ -1,7 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
@@ -9,7 +8,6 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.Ja
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootSubtypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -27,30 +25,6 @@ public class GiftAggregateTest {
 
     }
 
-    private static class DefaultEncryptedEventSecret implements EncryptedEventSecret {
-
-        @Override
-        public String aggregateRootId() {
-            return null;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return null;
-        }
-
-        @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
-        public String secret() {
-            return null;
-        }
-
-    }
-
     @Test
     public void should_serialize() {
         // Given
@@ -59,7 +33,7 @@ public class GiftAggregateTest {
         giftAggregate.handle(new BuyGiftCommand("name", "executedBy"));
 
         // When
-        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(), giftAggregate);
+        final String serialized = aggregateRootSerializer.serialize(giftAggregate);
 
         // Then
         assertEquals("{\"@type\":\"GiftAggregate\",\"aggregateRootId\":\"name\",\"name\":\"name\",\"offeredTo\":null,\"version\":0,\"aggregateRootType\":\"GiftAggregate\"}", serialized);

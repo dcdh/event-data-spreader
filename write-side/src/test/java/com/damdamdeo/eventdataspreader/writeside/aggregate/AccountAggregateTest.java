@@ -1,7 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -29,30 +27,6 @@ public class AccountAggregateTest {
 
     }
 
-    private static class DefaultEncryptedEventSecret implements EncryptedEventSecret {
-
-        @Override
-        public String aggregateRootId() {
-            return null;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return null;
-        }
-
-        @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
-        public String secret() {
-            return null;
-        }
-
-    }
-
     @Test
     public void should_serialize() {
         // Given
@@ -61,7 +35,7 @@ public class AccountAggregateTest {
         accountAggregate.handle(new DebitAccountCommand("owner", BigDecimal.TEN, "executedBy"));
 
         // When
-        final String serialized = aggregateRootSerializer.serialize(new DefaultEncryptedEventSecret(), accountAggregate);
+        final String serialized = aggregateRootSerializer.serialize(accountAggregate);
 
         // Then
         assertEquals("{\"@type\":\"AccountAggregate\",\"aggregateRootId\":\"owner\",\"owner\":\"owner\",\"balance\":990,\"version\":0,\"aggregateRootType\":\"AccountAggregate\"}", serialized);

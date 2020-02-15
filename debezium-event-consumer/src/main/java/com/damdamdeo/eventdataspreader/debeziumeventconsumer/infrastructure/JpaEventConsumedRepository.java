@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 
 import javax.enterprise.context.Dependent;
@@ -20,11 +21,13 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void addEventConsumerConsumed(final String eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
+    public void addEventConsumerConsumed(final EventId eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
         EventConsumedEntity eventConsumedEntity;
         try {
             eventConsumedEntity = entityManager.createNamedQuery("Events.findByEventId", EventConsumedEntity.class)
-                    .setParameter("eventId", eventId)
+                    .setParameter("aggregateRootId", eventId.aggregateRootId())
+                    .setParameter("aggregateRootType", eventId.aggregateRootType())
+                    .setParameter("version", eventId.version())
                     .getSingleResult();
         } catch (final NoResultException e) {
             eventConsumedEntity = new EventConsumedEntity(eventId, kafkaSource);
@@ -35,8 +38,8 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public void markEventAsConsumed(final String eventId, final Date consumedAt, final KafkaSource kafkaSource) {
-        final EventConsumedEntity eventConsumedEntity = Optional.ofNullable(entityManager.find(EventConsumedEntity.class, eventId))
+    public void markEventAsConsumed(final EventId eventId, final Date consumedAt, final KafkaSource kafkaSource) {
+        final EventConsumedEntity eventConsumedEntity = Optional.ofNullable(entityManager.find(EventConsumedEntity.class, new EventConsumedId(eventId)))
                 .orElseGet(() -> new EventConsumedEntity(eventId, kafkaSource));
         eventConsumedEntity.markAsConsumed();
         entityManager.persist(eventConsumedEntity);
@@ -44,18 +47,20 @@ public class JpaEventConsumedRepository implements EventConsumedRepository {
 
     @Override
     @Transactional
-    public boolean hasConsumedEvent(final String eventId) {
-        return Optional.ofNullable(entityManager.find(EventConsumedEntity.class, eventId))
+    public boolean hasConsumedEvent(final EventId eventId) {
+        return Optional.ofNullable(entityManager.find(EventConsumedEntity.class, new EventConsumedId(eventId)))
                 .map(EventConsumedEntity::consumed)
                 .orElse(Boolean.FALSE);
     }
 
     @Override
     @Transactional
-    public List<String> getConsumedEventsForEventId(final String eventId) {
+    public List<String> getConsumedEventsForEventId(final EventId eventId) {
         return entityManager.createNamedQuery("EventConsumerConsumed.getConsumedEventsForEventId",
                 String.class)
-                .setParameter("eventId", eventId)
+                .setParameter("aggregateRootId", eventId.aggregateRootId())
+                .setParameter("aggregateRootType", eventId.aggregateRootType())
+                .setParameter("version", eventId.version())
                 .getResultList();
     }
 

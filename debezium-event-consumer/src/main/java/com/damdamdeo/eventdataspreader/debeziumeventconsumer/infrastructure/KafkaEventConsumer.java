@@ -4,6 +4,7 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.DecryptableEvent;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDeserializer;
+import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
 import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -33,10 +34,10 @@ public class KafkaEventConsumer {
     private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
 
     @Inject
-    EventConsumedRepository eventConsumedRepository;
+    SecretStore secretStore;
 
     @Inject
-    EncryptedEventSecretRepository encryptedEventSecretRepository;
+    EventConsumedRepository eventConsumedRepository;
 
     @Inject
     EventPayloadDeserializer eventPayloadDeserializer;
@@ -73,47 +74,38 @@ public class KafkaEventConsumer {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
-                switch (debeziumEventKafkaMessage.encryptedEventType()) {
-                    case SECRET:// can be a DELETED_SECRET !
-                        encryptedEventSecretRepository.merge(debeziumEventKafkaMessage);
-                        break;
-                    case ENCRYPTED_EVENT:
-                        final EncryptedEventSecret encryptedEventSecret = encryptedEventSecretRepository.find(debeziumEventKafkaMessage.aggregateRootId(),
-                                debeziumEventKafkaMessage.aggregateRootType());
-                        final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
-                        final String eventId = decryptableEvent.eventId();
-                        if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
-                            final String aggregateRootType = decryptableEvent.aggregateRootType();
-                            final String eventType = decryptableEvent.eventType();
-                            final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
-                                    aggregateRootType,
-                                    eventType));
-                            if (eventConsumers.isResolvable()) {
-                                final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
-                                final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                                for (final EventConsumer eventConsumer : eventConsumers) {
-                                    if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
-                                        transaction.begin();
-                                        eventConsumer.consume(event);
-                                        eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
-                                                eventConsumer.getClass(),
-                                                new ConsumerRecordKafkaSource(message),
-                                                gitCommitId);
-                                        transaction.commit();
-                                    }
-                                }
-                            } else if (eventConsumers.isUnsatisfied()) {
-                                // TODO log
-                            } else if (eventConsumers.isAmbiguous()) {
-                                throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
+                final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootId(),
+                        debeziumEventKafkaMessage.aggregateRootType());
+                final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
+                final EventId eventId = decryptableEvent.eventId();
+                if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
+                    final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
+                    final String eventType = decryptableEvent.eventType();
+                    final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
+                            aggregateRootType,
+                            eventType));
+                    if (eventConsumers.isResolvable()) {
+                        final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
+                        final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
+                        for (final EventConsumer eventConsumer : eventConsumers) {
+                            if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
+                                transaction.begin();
+                                eventConsumer.consume(event);
+                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
+                                        eventConsumer.getClass(),
+                                        new ConsumerRecordKafkaSource(message),
+                                        gitCommitId);
+                                transaction.commit();
                             }
-                            eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(message));
-                        } else {
-                            LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                         }
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown type " + debeziumEventKafkaMessage.encryptedEventType());
+                    } else if (eventConsumers.isUnsatisfied()) {
+                        // TODO log
+                    } else if (eventConsumers.isAmbiguous()) {
+                        throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
+                    }
+                    eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(message));
+                } else {
+                    LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                 }
             } catch (final NotSupportedException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException | SystemException e) {
                 throw new RuntimeException(e);

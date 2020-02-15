@@ -4,42 +4,37 @@ import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Event {
 
-    private final String eventId;
-    private final String aggregateRootId;
-    private final String aggregateRootType;
+    private final EventId eventId;
     private final String eventType;
-    private final Long version;
     private final Date creationDate;
     private final EventPayload eventPayload;
     private final EventMetadata eventMetaData;
 
     public Event(final DecryptableEvent decryptableEvent,
-                 final EncryptedEventSecret encryptedEventSecret,
+                 final Optional<EncryptedEventSecret> encryptedEventSecret,
                  final EventMetadataDeserializer eventMetadataDeserializer,
                  final EventPayloadDeserializer eventPayloadDeserializer) {
         eventId = decryptableEvent.eventId();
-        aggregateRootId = decryptableEvent.aggregateRootId();
-        aggregateRootType = decryptableEvent.aggregateRootType();
         eventType = decryptableEvent.eventType();
-        version = decryptableEvent.version();
         creationDate = decryptableEvent.creationDate();
         eventPayload = decryptableEvent.eventPayload(encryptedEventSecret, eventPayloadDeserializer);
         eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
     }
 
-    public String eventId() {
+    public EventId eventId() {
         return eventId;
     }
 
     public String aggregateRootId() {
-        return aggregateRootId;
+        return eventId.aggregateRootId();
     }
 
     public String aggregateRootType() {
-        return aggregateRootType;
+        return eventId.aggregateRootType();
     }
 
     public String eventType() {
@@ -47,7 +42,7 @@ public final class Event {
     }
 
     public Long version() {
-        return version;
+        return eventId.version();
     }
 
     public Date creationDate() {
@@ -68,10 +63,7 @@ public final class Event {
         if (!(o instanceof Event)) return false;
         Event event = (Event) o;
         return Objects.equals(eventId, event.eventId) &&
-                Objects.equals(aggregateRootId, event.aggregateRootId) &&
-                Objects.equals(aggregateRootType, event.aggregateRootType) &&
                 Objects.equals(eventType, event.eventType) &&
-                Objects.equals(version, event.version) &&
                 Objects.equals(creationDate, event.creationDate) &&
                 Objects.equals(eventPayload, event.eventPayload) &&
                 Objects.equals(eventMetaData, event.eventMetaData);
@@ -79,17 +71,14 @@ public final class Event {
 
     @Override
     public int hashCode() {
-        return Objects.hash(eventId, aggregateRootId, aggregateRootType, eventType, version, creationDate, eventPayload, eventMetaData);
+        return Objects.hash(eventId, eventType, creationDate, eventPayload, eventMetaData);
     }
 
     @Override
     public String toString() {
         return "Event{" +
-                "eventId='" + eventId + '\'' +
-                ", aggregateRootId='" + aggregateRootId + '\'' +
-                ", aggregateRootType='" + aggregateRootType + '\'' +
+                "eventId=" + eventId +
                 ", eventType='" + eventType + '\'' +
-                ", version=" + version +
                 ", creationDate=" + creationDate +
                 ", eventPayload=" + eventPayload +
                 ", eventMetaData=" + eventMetaData +

@@ -5,6 +5,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 
+@Deprecated
 @ApplicationScoped
 public class VaultPrivateKeyProvider implements PrivateKeyProvider {
 

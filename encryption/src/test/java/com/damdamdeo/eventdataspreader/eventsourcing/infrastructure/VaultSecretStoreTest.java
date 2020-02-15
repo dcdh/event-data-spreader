@@ -29,12 +29,13 @@ public class VaultSecretStoreTest {
         final String secret = "Hello World";
 
         // When
-        secretStore.store("aggregateRootType", "aggregateRootId", secret);
-        final EncryptedEventSecret actualSecret = secretStore.read("aggregateRootType", "aggregateRootId").get();
+        final EncryptedEventSecret storedSecret = secretStore.store("aggregateRootType", "aggregateRootId", secret);
+        final EncryptedEventSecret readSecret = secretStore.read("aggregateRootType", "aggregateRootId").get();
 
         // Then
         assertEquals(new VaultEncryptedEventSecret("aggregateRootId", "aggregateRootType", "Hello World"),
-                actualSecret);
+                readSecret);
+        assertEquals(storedSecret, readSecret);
     }
 
     @Test

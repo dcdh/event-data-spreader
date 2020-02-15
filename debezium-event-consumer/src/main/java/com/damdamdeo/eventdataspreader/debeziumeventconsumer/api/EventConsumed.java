@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface EventConsumed {
 
-    String eventId();
+    EventId eventId();
 
     Boolean consumed();
 

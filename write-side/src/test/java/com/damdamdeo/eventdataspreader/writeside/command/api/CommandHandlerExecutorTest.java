@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.enterprise.inject.Instance;
 
-import java.util.concurrent.ExecutionException;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

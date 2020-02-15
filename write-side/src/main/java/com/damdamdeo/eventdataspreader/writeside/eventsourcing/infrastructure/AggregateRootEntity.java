@@ -1,6 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import org.hibernate.annotations.Type;
@@ -27,11 +26,10 @@ public class AggregateRootEntity {
     public AggregateRootEntity() {}
 
     public AggregateRootEntity(final AggregateRoot aggregateRoot,
-                               final AggregateRootSerializer aggregateRootSerializer,
-                               final EncryptedEventSecret encryptedEventSecret) {
+                               final AggregateRootSerializer aggregateRootSerializer) {
         this.aggregateRootId = new AggregateRootId(aggregateRoot.aggregateRootId(),
                 aggregateRoot.aggregateRootType());
-        this.aggregateRoot = aggregateRootSerializer.serialize(encryptedEventSecret, aggregateRoot);
+        this.aggregateRoot = aggregateRootSerializer.serialize(aggregateRoot);
         this.version = aggregateRoot.version();
     }
 

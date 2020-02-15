@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedId;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
@@ -98,7 +99,7 @@ public class E2ETest {
         // Then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
             transaction.begin();
-            final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e WHERE e.encryptedEventType = com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventType.ENCRYPTED_EVENT").getResultList();
+            final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e").getResultList();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();
             return events.size() == 3 && eventConsumedEntities
@@ -108,7 +109,6 @@ public class E2ETest {
         });
         transaction.begin();
         final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e " +
-                "WHERE e.encryptedEventType = com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventType.ENCRYPTED_EVENT " +
                 "ORDER BY e.creationDate ASC").getResultList();
 
         // -- GiftBought
@@ -126,9 +126,9 @@ public class E2ETest {
 
         eventConsumedEntities.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed(), "Event not consumed " + eventConsumedEntity.toString()));
 
-        assertEquals(events.get(0).eventId(), eventConsumedEntities.get(0).eventId());
-        assertEquals(events.get(1).eventId(), eventConsumedEntities.get(1).eventId());
-        assertEquals(events.get(2).eventId(), eventConsumedEntities.get(2).eventId());
+        assertEquals(new EventConsumedId(events.get(0).eventId()), eventConsumedEntities.get(0).eventId());
+        assertEquals(new EventConsumedId(events.get(1).eventId()), eventConsumedEntities.get(1).eventId());
+        assertEquals(new EventConsumedId(events.get(2).eventId()), eventConsumedEntities.get(2).eventId());
     }
 
 }

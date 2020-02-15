@@ -1,6 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.AggregateRootEntity;
 
 import javax.persistence.EntityManager;
@@ -15,11 +14,11 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
     public T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
         final EventRepository eventRepository = eventRepository();
-        final EncryptedEventSecret encryptedEventSecret = eventRepository.save(aggregateRoot.unsavedEvents());
+        eventRepository.save(aggregateRoot.unsavedEvents());
         aggregateRoot.deleteUnsavedEvents();
         final EntityManager entityManager = entityManager();
         final AggregateRootSerializer aggregateRootSerializer = aggregateRootSerializer();
-        entityManager.merge(new AggregateRootEntity(aggregateRoot, aggregateRootSerializer, encryptedEventSecret));
+        entityManager.merge(new AggregateRootEntity(aggregateRoot, aggregateRootSerializer));
         return aggregateRoot;
     }
 

@@ -3,23 +3,18 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 
 import java.util.Date;
+import java.util.Optional;
 
 public interface DecryptableEvent {
 
-    String eventId();
-
-    String aggregateRootId();
-
-    String aggregateRootType();
+    EventId eventId();
 
     String eventType();
 
-    Long version();
-
     Date creationDate();
 
-    EventPayload eventPayload(EncryptedEventSecret encryptedEventSecret, EventPayloadDeserializer eventPayloadDeserializer);
+    EventPayload eventPayload(Optional<EncryptedEventSecret> encryptedEventSecret, EventPayloadDeserializer eventPayloadDeserializer);
 
-    EventMetadata eventMetaData(EncryptedEventSecret encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
+    EventMetadata eventMetaData(Optional<EncryptedEventSecret> encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
 
 }

@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -12,7 +13,10 @@ import java.util.Objects;
 
 @Table(name = "EventConsumerConsumed")
 @NamedQuery(name = "EventConsumerConsumed.getConsumedEventsForEventId",
-        query = "SELECT e.eventConsumerId.consumerClassName FROM EventConsumerConsumedEntity e WHERE e.eventConsumerId.eventId = :eventId")
+        query = "SELECT e.eventConsumerId.consumerClassName FROM EventConsumerConsumedEntity e " +
+                "WHERE e.eventConsumerId.aggregateRootId = :aggregateRootId " +
+                "AND e.eventConsumerId.aggregateRootType = :aggregateRootType " +
+                "AND e.eventConsumerId.version = :version")
 @Entity
 public class EventConsumerConsumedEntity implements EventConsumerConsumed {
 
@@ -40,8 +44,8 @@ public class EventConsumerConsumedEntity implements EventConsumerConsumed {
     }
 
     @Override
-    public String eventId() {
-        return eventConsumerId.eventId();
+    public EventId eventId() {
+        return eventConsumerId;
     }
 
     @Override

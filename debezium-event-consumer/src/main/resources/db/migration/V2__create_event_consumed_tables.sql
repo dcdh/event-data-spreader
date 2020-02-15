@@ -3,7 +3,9 @@
 --
 
 CREATE TABLE public.eventconsumed (
-    eventid character varying(255) NOT NULL,
+    aggregaterootid character varying(255) NOT NULL,
+    aggregateroottype character varying(255) NOT NULL,
+    version bigint,
     consumed boolean NOT NULL,
     kafkapartition integer NOT NULL,
     kafkatopic text NOT NULL,
@@ -16,18 +18,11 @@ CREATE TABLE public.eventconsumed (
 
 CREATE TABLE public.eventconsumerconsumed (
     consumerclassname text NOT NULL,
-    eventid character varying(255) NOT NULL,
-    consumedat timestamp without time zone NOT NULL,
-    gitcommitid character varying(255) NOT NULL,
-    eventconsumerconsumedentity_eventconsumerid character varying(255)
-);
-
-
-CREATE TABLE public.encryptedeventsecret (
     aggregaterootid character varying(255) NOT NULL,
     aggregateroottype character varying(255) NOT NULL,
-    creationdate timestamp without time zone NOT NULL,
-    secret character varying(255)
+    version bigint,
+    consumedat timestamp without time zone NOT NULL,
+    gitcommitid character varying(255) NOT NULL
 );
 
 --
@@ -35,7 +30,7 @@ CREATE TABLE public.encryptedeventsecret (
 --
 
 ALTER TABLE ONLY public.eventconsumed
-    ADD CONSTRAINT eventconsumed_pkey PRIMARY KEY (eventid);
+    ADD CONSTRAINT eventconsumed_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version);
 
 
 --
@@ -43,7 +38,7 @@ ALTER TABLE ONLY public.eventconsumed
 --
 
 ALTER TABLE ONLY public.eventconsumerconsumed
-    ADD CONSTRAINT eventconsumerconsumed_pkey PRIMARY KEY (consumerclassname, eventid);
+    ADD CONSTRAINT eventconsumerconsumed_pkey PRIMARY KEY (consumerclassname, aggregaterootid, aggregateroottype, version);
 
 
 --
@@ -51,7 +46,4 @@ ALTER TABLE ONLY public.eventconsumerconsumed
 --
 
 ALTER TABLE ONLY public.eventconsumerconsumed
-    ADD CONSTRAINT fk370195q9777rhhfx09b2hy6r8 FOREIGN KEY (eventconsumerconsumedentity_eventconsumerid) REFERENCES public.eventconsumed(eventid);
-
-ALTER TABLE ONLY public.encryptedeventsecret
-    ADD CONSTRAINT encryptedeventsecret_pkey PRIMARY KEY (aggregaterootid, aggregateroottype);
+    ADD CONSTRAINT fk370195q9777rhhfx09b2hy6r8 FOREIGN KEY (aggregaterootid, aggregateroottype, version) REFERENCES public.eventconsumed(aggregaterootid, aggregateroottype, version);

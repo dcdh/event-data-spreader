@@ -4,8 +4,10 @@ import java.util.Optional;
 
 public interface SecretStore {
 
-    void store(String aggregateRootType, String aggregateRootId, String secret);
+    EncryptedEventSecret store(String aggregateRootType, String aggregateRootId, String secret);
 
     Optional<EncryptedEventSecret> read(String aggregateRootType, String aggregateRootId);
+
+    // TODO method void anonymize(String aggregateRootType, String aggregateRootId)
 
 }

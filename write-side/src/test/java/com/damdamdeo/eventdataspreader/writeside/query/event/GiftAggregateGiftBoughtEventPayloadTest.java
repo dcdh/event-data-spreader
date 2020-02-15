@@ -10,8 +10,8 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,11 +46,6 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
         }
 
         @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
         public String secret() {
             return null;
         }
@@ -63,7 +58,7 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
         final EventPayloadDeserializer eventPayloadDeserializer = new JacksonEventPayloadDeserializer(new DefaultJacksonEventPayloadSubtypes());
 
         // When
-        final EventPayload deserialized = eventPayloadDeserializer.deserialize(new DefaultEncryptedEventSecret(),
+        final EventPayload deserialized = eventPayloadDeserializer.deserialize(Optional.empty(),
                 "{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"name\"}");
 
         // Then

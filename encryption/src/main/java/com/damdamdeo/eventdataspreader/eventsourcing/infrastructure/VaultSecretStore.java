@@ -34,7 +34,7 @@ public class VaultSecretStore implements SecretStore {
 
     @Override
     @CacheInvalidate(cacheName = "secret-cache")
-    public void store(@CacheKey final String aggregateRootType,
+    public EncryptedEventSecret store(@CacheKey final String aggregateRootType,
                       @CacheKey final String aggregateRootId,
                       final String secret) {
         final String clientToken = vaultAuthManager.getClientToken();
@@ -42,6 +42,7 @@ public class VaultSecretStore implements SecretStore {
 
         final String path = createPath(aggregateRootType, aggregateRootId);
         this.vaultClient.storeSecretV1(clientToken, mount, path, Collections.singletonMap(SECRET, secret));
+        return new VaultEncryptedEventSecret(aggregateRootId, aggregateRootType, secret);
     }
 
     @Override

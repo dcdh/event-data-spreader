@@ -67,7 +67,6 @@ public class GiftCommandHandlersTest {
         final List<Event> events = eventRepository.load("Motorola G6", "GiftAggregate");
         assertEquals(2, events.size());
         // -- GiftBought
-        assertNotNull(events.get(0).eventId());
         assertEquals("Motorola G6", events.get(0).aggregateRootId());
         assertEquals("GiftAggregate", events.get(0).aggregateRootType());
         assertEquals("GiftBought", events.get(0).eventType());
@@ -76,7 +75,6 @@ public class GiftCommandHandlersTest {
         assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(0).eventMetaData());
         assertEquals(new GiftAggregateGiftBoughtEventPayload("Motorola G6"), events.get(0).eventPayload());
         // -- GiftOffered
-        assertNotNull(events.get(1).eventId());
         assertEquals("Motorola G6", events.get(1).aggregateRootId());
         assertEquals("GiftAggregate", events.get(1).aggregateRootType());
         assertEquals("GiftOffered", events.get(1).eventType());

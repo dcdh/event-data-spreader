@@ -8,32 +8,19 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.*;
 
-public final class DebeziumEventKafkaMessage implements DecryptableEvent, EncryptedEventSecret {
+public final class DebeziumEventKafkaMessage implements DecryptableEvent {
 
     private static final String AFTER = "after";
     private static final String OPERATION = "op";;
 
-    private static final String EVENT_ID = "id";
-    private static final String EVENT_AGGREGATE_ROOT_ID = "aggregaterootid";
-    private static final String EVENT_AGGREGATE_ROOT_TYPE = "aggregateroottype";
-    private static final String EVENT_VERSION = "version";
     private static final String EVENT_CREATION_DATE = "creationdate";
-    private static final String EVENT_ENCRYPTED_EVENT_TYPE = "encryptedeventtype";
-
-    private static final String EVENT_SECRET = "secret";
 
     private static final String EVENT_EVENT_TYPE = "eventtype";
     private static final String EVENT_EVENT_METADATA = "eventmetadata";
     private static final String EVENT_EVENT_PAYLOAD = "eventpayload";
 
-    private final String id;
-    private final String aggregateRootId;
-    private final String aggregateRootType;
-    private final Long version;
+    private final EventId eventId;
     private final Date creationDate;
-    private final EncryptedEventType encryptedEventType;
-
-    private final String secret;
 
     private final String eventType;
     private final String eventMetaData;
@@ -45,10 +32,6 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
         if (message.getKey() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'Message Key' is missing");
-        }
-        if (message.getKey().getString(EVENT_ID) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
-                    "Message Key payload 'id' is missing");
         }
         if (message.getPayload() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
@@ -62,19 +45,9 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
                     "'op' is missing");
         }
-        if (!message.getKey().getString(EVENT_ID).equals(message.getPayload().getJsonObject(AFTER).getString(EVENT_ID))) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
-                    "events mismatch");
-        }
         final JsonObject after = message.getPayload().getJsonObject(AFTER);
-        this.id = after.getString(EVENT_ID);
-        this.aggregateRootId = after.getString(EVENT_AGGREGATE_ROOT_ID);
-        this.aggregateRootType = after.getString(EVENT_AGGREGATE_ROOT_TYPE);
-        this.version = after.getLong(EVENT_VERSION);
+        this.eventId = new DebeziumEventId(after);
         this.creationDate = new Date(after.getLong(EVENT_CREATION_DATE) / 1000);
-        this.encryptedEventType = EncryptedEventType.valueOf(after.getString(EVENT_ENCRYPTED_EVENT_TYPE));
-
-        this.secret = after.getString(EVENT_SECRET);
 
         this.eventType = after.getString(EVENT_EVENT_TYPE);
         this.eventMetaData = after.getString(EVENT_EVENT_METADATA);
@@ -82,18 +55,8 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
     }
 
     @Override
-    public String eventId() {
-        return id;
-    }
-
-    @Override
-    public String aggregateRootId() {
-        return aggregateRootId;
-    }
-
-    @Override
-    public String aggregateRootType() {
-        return aggregateRootType;
+    public EventId eventId() {
+        return eventId;
     }
 
     @Override
@@ -102,34 +65,28 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
     }
 
     @Override
-    public String secret() {
-        return secret;
-    }
-
-    @Override
     public String eventType() {
         return eventType;
     }
 
-    public EncryptedEventType encryptedEventType() {
-        return encryptedEventType;
+    public String aggregateRootId() {
+        return eventId.aggregateRootId();
+    }
+
+    public String aggregateRootType() {
+        return eventId.aggregateRootType();
     }
 
     @Override
-    public EventMetadata eventMetaData(final EncryptedEventSecret encryptedEventSecret,
+    public EventMetadata eventMetaData(final Optional<EncryptedEventSecret> encryptedEventSecret,
                                        final EventMetadataDeserializer eventMetadataDeserializer) {
         return eventMetadataDeserializer.deserialize(encryptedEventSecret, eventMetaData);
     }
 
     @Override
-    public EventPayload eventPayload(final EncryptedEventSecret encryptedEventSecret,
+    public EventPayload eventPayload(final Optional<EncryptedEventSecret> encryptedEventSecret,
                                      final EventPayloadDeserializer eventPayloadDeserializer) {
         return eventPayloadDeserializer.deserialize(encryptedEventSecret, eventPayload);
-    }
-
-    @Override
-    public Long version() {
-        return version;
     }
 
     @Override
@@ -137,13 +94,8 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
         if (this == o) return true;
         if (!(o instanceof DebeziumEventKafkaMessage)) return false;
         DebeziumEventKafkaMessage that = (DebeziumEventKafkaMessage) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(aggregateRootId, that.aggregateRootId) &&
-                Objects.equals(aggregateRootType, that.aggregateRootType) &&
-                Objects.equals(version, that.version) &&
+        return Objects.equals(eventId, that.eventId) &&
                 Objects.equals(creationDate, that.creationDate) &&
-                encryptedEventType == that.encryptedEventType &&
-                Objects.equals(secret, that.secret) &&
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(eventMetaData, that.eventMetaData) &&
                 Objects.equals(eventPayload, that.eventPayload);
@@ -151,19 +103,14 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent, Encryp
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, aggregateRootId, aggregateRootType, version, creationDate, encryptedEventType, secret, eventType, eventMetaData, eventPayload);
+        return Objects.hash(eventId, creationDate, eventType, eventMetaData, eventPayload);
     }
 
     @Override
     public String toString() {
         return "DebeziumEventKafkaMessage{" +
-                "id='" + id + '\'' +
-                ", aggregateRootId='" + aggregateRootId + '\'' +
-                ", aggregateRootType='" + aggregateRootType + '\'' +
-                ", version=" + version +
+                "eventId=" + eventId +
                 ", creationDate=" + creationDate +
-                ", encryptedEventType=" + encryptedEventType +
-                ", secret='" + secret + '\'' +
                 ", eventType='" + eventType + '\'' +
                 ", eventMetaData='" + eventMetaData + '\'' +
                 ", eventPayload='" + eventPayload + '\'' +

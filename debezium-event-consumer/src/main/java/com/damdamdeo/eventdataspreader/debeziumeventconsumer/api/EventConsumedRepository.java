@@ -5,12 +5,12 @@ import java.util.List;
 
 public interface EventConsumedRepository {
 
-    void addEventConsumerConsumed(String eventId, Class consumerClass, KafkaSource kafkaSource, String gitCommitId);
+    void addEventConsumerConsumed(EventId eventId, Class consumerClass, KafkaSource kafkaSource, String gitCommitId);
 
-    void markEventAsConsumed(String eventId, Date consumedAt, KafkaSource kafkaSource);
+    void markEventAsConsumed(EventId eventId, Date consumedAt, KafkaSource kafkaSource);
 
-    boolean hasConsumedEvent(String eventId);
+    boolean hasConsumedEvent(EventId eventId);
 
-    List<String> getConsumedEventsForEventId(String eventId);
+    List<String> getConsumedEventsForEventId(EventId eventId);
 
 }

@@ -5,13 +5,12 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDes
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventPayloadDeserializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventPayloadSubtypes;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,37 +32,13 @@ public class GiftAggregateGiftOfferedEventPayloadTest {
 
     }
 
-    private static class DefaultEncryptedEventSecret implements EncryptedEventSecret {
-
-        @Override
-        public String aggregateRootId() {
-            return null;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return null;
-        }
-
-        @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
-        public String secret() {
-            return null;
-        }
-
-    }
-
     @Test
     public void should_deserialize() {
         // Given
         final EventPayloadDeserializer eventPayloadDeserializer = new JacksonEventPayloadDeserializer(new DefaultJacksonEventPayloadSubtypes());
 
         // When
-        final EventPayload deserialized = eventPayloadDeserializer.deserialize(new DefaultEncryptedEventSecret(),
+        final EventPayload deserialized = eventPayloadDeserializer.deserialize(Optional.empty(),
                 "{\"@type\":\"GiftAggregateGiftOfferedEventPayload\",\"name\":\"MotorolaG6\",\"offeredTo\":\"damdamdeo\"}");
 
         // Then

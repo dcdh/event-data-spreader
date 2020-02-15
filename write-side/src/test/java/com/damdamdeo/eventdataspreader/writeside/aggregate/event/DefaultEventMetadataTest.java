@@ -7,14 +7,13 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.Jack
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,37 +34,13 @@ public class DefaultEventMetadataTest {
 
     }
 
-    private static class DefaultEncryptedEventSecret implements EncryptedEventSecret {
-
-        @Override
-        public String aggregateRootId() {
-            return null;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return null;
-        }
-
-        @Override
-        public Date creationDate() {
-            return null;
-        }
-
-        @Override
-        public String secret() {
-            return null;
-        }
-
-    }
-
     @Test
     public void should_serialize() {
         // Given
         final EventMetadataSerializer eventMetadataSerializer = new JacksonEventMetadataSerializer(new DefaultJacksonEventMetadataSubtypes());
 
         // When
-        final String serialized = eventMetadataSerializer.serialize(new DefaultEncryptedEventSecret(),
+        final String serialized = eventMetadataSerializer.serialize(Optional.empty(),
                 new DefaultEventMetadata("executedBy"));
 
         // Then
@@ -78,7 +53,7 @@ public class DefaultEventMetadataTest {
         final EventMetadataDeserializer eventMetadataDeserializer = new JacksonEventMetadataDeserializer(new DefaultJacksonEventMetadataSubtypes());
 
         // When
-        final EventMetadata deserialized = eventMetadataDeserializer.deserialize(new DefaultEncryptedEventSecret(),
+        final EventMetadata deserialized = eventMetadataDeserializer.deserialize(Optional.empty(),
                 "{\"@type\":\"DefaultEventMetadata\",\"executedBy\":\"executedBy\"}");
 
         // Then

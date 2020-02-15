@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonEventMetadataDeserializer implements EventMetadataDeserializer {
@@ -26,11 +27,11 @@ public class JacksonEventMetadataDeserializer implements EventMetadataDeserializ
     }
 
     @Override
-    public EventMetadata deserialize(final EncryptedEventSecret encryptedEventSecret, final String eventMetadata) {
+    public EventMetadata deserialize(final Optional<EncryptedEventSecret> encryptedEventSecret, final String eventMetadata) {
         try {
             return OBJECT_MAPPER
                     .readerFor(EventMetadata.class)
-                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret.secret())
+                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret)
                     .readValue(eventMetadata);
         } catch (final Exception e) {
             throw new SerializationException(e);

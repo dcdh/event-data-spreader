@@ -4,7 +4,7 @@ import java.util.Date;
 
 public interface EventConsumerConsumed {
 
-    String eventId();
+    EventId eventId();
 
     String consumerClassName();
 

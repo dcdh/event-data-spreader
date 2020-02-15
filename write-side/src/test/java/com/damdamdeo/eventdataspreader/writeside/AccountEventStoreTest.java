@@ -59,7 +59,6 @@ public class AccountEventStoreTest {
         final List<Event> events = eventRepository.load("owner", "AccountAggregate");
         assertEquals(1, events.size());
         // -- AccountDebited
-        assertNotNull(events.get(0).eventId());
         assertEquals("owner", events.get(0).aggregateRootId());
         assertEquals("AccountAggregate", events.get(0).aggregateRootType());
         assertEquals("AccountDebited", events.get(0).eventType());
