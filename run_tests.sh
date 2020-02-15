@@ -29,4 +29,4 @@ curl --header "X-Vault-Token: myroot" \
   --request POST \
   --data '{"private-key":"123456"}' \
   http://127.0.0.1:8200/v1/secret/encryption;
-mvn clean test
+mvn clean test install
