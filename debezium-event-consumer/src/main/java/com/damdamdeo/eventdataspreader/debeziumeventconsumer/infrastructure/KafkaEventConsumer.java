@@ -77,8 +77,8 @@ public class KafkaEventConsumer {
                 processedSuccessfully = true;
                 try {
                     final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
-                    final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootId(),
-                            debeziumEventKafkaMessage.aggregateRootType());
+                    final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootType(),
+                            debeziumEventKafkaMessage.aggregateRootId());
                     final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
                     final EventId eventId = decryptableEvent.eventId();
                     if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
