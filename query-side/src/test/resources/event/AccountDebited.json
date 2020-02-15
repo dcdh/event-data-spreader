@@ -1,18 +1,17 @@
 {
   "topic": "event-query",
   "key": {
-    "id": "*********************damdamdeo|************************************AccountDebited|0000000000"
+    "aggregaterootid": "damdamdeo",
+    "aggregateroottype": "AccountAggregate",
+    "version": 0
   },
   "value": {
     "before": null,
     "after": {
-      "id": "*********************damdamdeo|************************************AccountDebited|0000000000",
       "aggregaterootid": "damdamdeo",
       "aggregateroottype": "AccountAggregate",
       "version": 0,
       "creationdate": 1569174260987000,
-      "encryptedeventtype": "ENCRYPTED_EVENT",
-      "secret": null,
       "eventtype": "AccountDebited",
       "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
       "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}"

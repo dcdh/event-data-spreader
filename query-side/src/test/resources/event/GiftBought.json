@@ -1,18 +1,17 @@
 {
   "topic": "event-query",
   "key": {
-    "id": "**********************MotorolaG6|***************GiftAggregateGiftBoughtEventPayload|0000000000"
+    "aggregaterootid": "MotorolaG6",
+    "aggregateroottype": "GiftAggregate",
+    "version": 0
   },
   "value": {
     "before": null,
     "after": {
-      "id": "**********************MotorolaG6|***************GiftAggregateGiftBoughtEventPayload|0000000000",
       "aggregaterootid": "MotorolaG6",
       "aggregateroottype": "GiftAggregate",
       "version": 0,
       "creationdate": 1569174258217000,
-      "encryptedeventtype": "ENCRYPTED_EVENT",
-      "secret": null,
       "eventtype": "GiftBought",
       "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
       "eventpayload": "{\"name\": \"MotorolaG6\", \"@type\": \"GiftAggregateGiftBoughtEventPayload\"}"

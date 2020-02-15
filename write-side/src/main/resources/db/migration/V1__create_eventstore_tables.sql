@@ -22,8 +22,6 @@ CREATE TABLE public.event (
     aggregateroottype character varying(255),
     version bigint,
     creationdate timestamp without time zone,
-    encryptedeventtype character varying(255),
-    secret character varying(255),
     eventtype character varying(255),
     eventmetadata jsonb,
     eventpayload jsonb
