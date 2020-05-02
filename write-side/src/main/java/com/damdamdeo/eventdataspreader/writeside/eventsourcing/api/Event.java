@@ -12,10 +12,8 @@ import java.util.Optional;
 
 public final class Event {
 
-    private final String aggregateRootId;
-    private final String aggregateRootType;
+    private final EventId eventId;
     private final String eventType;
-    private final Long version;
     private final Date creationDate;
     private final EventMetadata eventMetaData;
     private final AggregateRootEventPayload aggregateRootEventPayload;
@@ -27,10 +25,8 @@ public final class Event {
                  final Date creationDate,
                  final AggregateRootEventPayload aggregateRootEventPayload,
                  final EventMetadata eventMetaData) {
-        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
-        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+        this.eventId = new InternalEventId(aggregateRootId, aggregateRootType, version);
         this.eventType = Objects.requireNonNull(eventType);
-        this.version = Objects.requireNonNull(version);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
         this.eventMetaData = Objects.requireNonNull(eventMetaData);
@@ -44,42 +40,79 @@ public final class Event {
         Validate.notNull(encryptedEventSecret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
         Validate.notNull(eventMetadataDeserializer);
-        this.eventId = decryptableEvent.eventId();
-        this.aggregateRootId = decryptableEvent.aggregateRootId();
-        this.aggregateRootType = decryptableEvent.aggregateRootType();
+        this.eventId = new InternalEventId(decryptableEvent.eventId());
         this.eventType = decryptableEvent.eventType();
-        this.version = decryptableEvent.eventId().version();
         this.creationDate = decryptableEvent.creationDate();
         this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadDeSerializer);
         this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
     }
 
+    private static final class InternalEventId implements EventId {
+
+        private final String aggregateRootId;
+        private final String aggregateRootType;
+        private final Long version;
+
+        public InternalEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
+            this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+            this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+            this.version = Objects.requireNonNull(version);
+        }
+
+        public InternalEventId(final EventId eventId) {
+            this(eventId.aggregateRootId(), eventId.aggregateRootType(), eventId.version());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            InternalEventId that = (InternalEventId) o;
+            return Objects.equals(aggregateRootId, that.aggregateRootId) &&
+                    Objects.equals(aggregateRootType, that.aggregateRootType) &&
+                    Objects.equals(version, that.version);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(aggregateRootId, aggregateRootType, version);
+        }
+
+        @Override
+        public String toString() {
+            return "InternalEventId{" +
+                    "aggregateRootId='" + aggregateRootId + '\'' +
+                    ", aggregateRootType='" + aggregateRootType + '\'' +
+                    ", version=" + version +
+                    '}';
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return aggregateRootId;
+        }
+
+        @Override
+        public String aggregateRootType() {
+            return aggregateRootType;
+        }
+
+        @Override
+        public Long version() {
+            return version;
+        }
+
+    }
     public EventId eventId() {
-        return new EventId() {
-
-            @Override
-            public String aggregateRootId() {
-                return aggregateRootId;
-            }
-
-            @Override
-            public String aggregateRootType() {
-                return aggregateRootType;
-            }
-
-            @Override
-            public Long version() {
-                return version;
-            }
-        };
+        return eventId;
     }
 
     public String aggregateRootId() {
-        return aggregateRootId;
+        return eventId.aggregateRootId();
     }
 
     public String aggregateRootType() {
-        return aggregateRootType;
+        return eventId.aggregateRootType();
     }
 
     public String eventType() {
@@ -87,7 +120,7 @@ public final class Event {
     }
 
     public Long version() {
-        return version;
+        return eventId.version();
     }
 
     public Date creationDate() {
@@ -105,12 +138,10 @@ public final class Event {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Event)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Event event = (Event) o;
-        return Objects.equals(aggregateRootId, event.aggregateRootId) &&
-                Objects.equals(aggregateRootType, event.aggregateRootType) &&
+        return Objects.equals(eventId, event.eventId) &&
                 Objects.equals(eventType, event.eventType) &&
-                Objects.equals(version, event.version) &&
                 Objects.equals(creationDate, event.creationDate) &&
                 Objects.equals(eventMetaData, event.eventMetaData) &&
                 Objects.equals(aggregateRootEventPayload, event.aggregateRootEventPayload);
@@ -118,16 +149,14 @@ public final class Event {
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootId, aggregateRootType, eventType, version, creationDate, eventMetaData, aggregateRootEventPayload);
+        return Objects.hash(eventId, eventType, creationDate, eventMetaData, aggregateRootEventPayload);
     }
 
     @Override
     public String toString() {
         return "Event{" +
-                "aggregateRootId='" + aggregateRootId + '\'' +
-                ", aggregateRootType='" + aggregateRootType + '\'' +
+                "eventId=" + eventId +
                 ", eventType='" + eventType + '\'' +
-                ", version=" + version +
                 ", creationDate=" + creationDate +
                 ", eventMetaData=" + eventMetaData +
                 ", aggregateRootEventPayload=" + aggregateRootEventPayload +
