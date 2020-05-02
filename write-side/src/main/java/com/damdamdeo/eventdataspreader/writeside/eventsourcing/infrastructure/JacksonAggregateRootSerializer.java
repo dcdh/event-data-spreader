@@ -1,6 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SerializationException;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonAggregateRootSerializer implements AggregateRootSerializer {
