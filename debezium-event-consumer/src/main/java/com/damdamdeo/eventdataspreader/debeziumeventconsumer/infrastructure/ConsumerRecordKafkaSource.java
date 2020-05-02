@@ -1,9 +1,8 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
-import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class ConsumerRecordKafkaSource implements KafkaSource {
 
@@ -11,14 +10,10 @@ public class ConsumerRecordKafkaSource implements KafkaSource {
     private final String topic;
     private final Long offset;
 
-    public ConsumerRecordKafkaSource(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
-        this(message.unwrap());
-    }
-
-    public ConsumerRecordKafkaSource(final ConsumerRecord<JsonObject, JsonObject> consumerRecord) {
-        this.partition = consumerRecord.partition();
-        this.topic = consumerRecord.topic();
-        this.offset = consumerRecord.offset();
+    public ConsumerRecordKafkaSource(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
+        this.partition = record.getPartition();
+        this.topic = record.getTopic();
+        this.offset = record.getOffset();
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.Jack
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventPayloadSubtypes;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled// FIXME Fail to build using maven !!!
 public class AccountAggregateAccountDebitedEventPayloadTest {
 
     @Test

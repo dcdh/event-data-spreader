@@ -6,7 +6,6 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.JacksonAggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootSubtypes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -15,7 +14,6 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled// FIXME Fail to build using maven !!!
 public class AccountAggregateTest {
 
     private static class DefaultJacksonAggregateRootSubtypes implements JacksonAggregateRootSubtypes {

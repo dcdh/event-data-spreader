@@ -5,7 +5,7 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.DecryptableEven
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
-import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
@@ -67,16 +67,16 @@ public class KafkaEventConsumer {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    @Incoming("event")
+    @Incoming("event-in")
     @Transactional(Transactional.TxType.NEVER)
-    public CompletionStage<Void> onMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message) {
-        LOGGER.log(Level.FINE, String.format("Receiving event '%s'", message.getKey().toString()));
+    public CompletionStage<Void> onMessage(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
+        LOGGER.log(Level.FINE, String.format("Receiving record '%s'", record.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
             boolean processedSuccessfully = true;
             do {
                 processedSuccessfully = true;
                 try {
-                    final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(message);
+                    final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(record);
                     final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootType(),
                             debeziumEventKafkaMessage.aggregateRootId());
                     final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
@@ -96,7 +96,7 @@ public class KafkaEventConsumer {
                                     eventConsumer.consume(event);
                                     eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
                                             eventConsumer.getClass(),
-                                            new ConsumerRecordKafkaSource(message),
+                                            new ConsumerRecordKafkaSource(record),
                                             gitCommitId);
                                     transaction.commit();
                                 }
@@ -106,7 +106,7 @@ public class KafkaEventConsumer {
                         } else if (eventConsumers.isAmbiguous()) {
                             throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
                         }
-                        eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(message));
+                        eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(record));
                     } else {
                         LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                     }

@@ -8,6 +8,7 @@ import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EncryptedEventEntity;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.Header;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,18 @@ public class E2ETest {
 
     @Inject
     UserTransaction transaction;
+
+    @BeforeEach
+    public void setupVault() {
+        // setup vault account
+        final Header xVaultToken = new Header("X-Vault-Token", "myroot");
+        given().body("{'type': 'userpass'}").header(xVaultToken).post("http://127.0.0.1:8200/v1/sys/auth/userpass");
+        given().body("{'password': 'sinclair', 'policies': 'vault-quickstart-policy'}").header(xVaultToken).post("http://127.0.0.1:8200/v1/auth/userpass/users/bob");
+        given().header(xVaultToken).delete("http://127.0.0.1:8200/v1/sys/mounts/secret");
+        given().body("{ 'type': 'kv' }").header(xVaultToken).post("http://127.0.0.1:8200/v1/sys/mounts/secret");
+        given().body("{'policy': 'path \"secret/encryption\" {capabilities = [\"read\"]}'}").header(xVaultToken).put("http://127.0.0.1:8200/v1/sys/policy/vault-quickstart-policy");
+        given().body("{'policy': 'path \"secret/*\" {capabilities = [\"read\", \"create\", \"update\"]}'}").header(xVaultToken).put("http://127.0.0.1:8200/v1/sys/policy/vault-quickstart-policy");
+    }
 
     @BeforeEach
     @Transactional

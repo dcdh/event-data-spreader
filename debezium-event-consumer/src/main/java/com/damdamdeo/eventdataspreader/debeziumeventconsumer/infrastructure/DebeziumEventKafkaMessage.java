@@ -2,9 +2,8 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
-import io.smallrye.reactive.messaging.kafka.ReceivedKafkaMessage;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.*;
 
@@ -26,26 +25,25 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
     private final String eventMetaData;
     private final String eventPayload;
 
-    public DebeziumEventKafkaMessage(final ReceivedKafkaMessage<JsonObject, JsonObject> message)
+    public DebeziumEventKafkaMessage(final IncomingKafkaRecord<JsonObject, JsonObject> record)
             throws UnableToDecodeDebeziumEventMessageException {
-        final ConsumerRecord<JsonObject, JsonObject> consumerRecord = message.unwrap();
-        if (message.getKey() == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
+        if (record.getKey() == null) {
+            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
                     "'Message Key' is missing");
         }
-        if (message.getPayload() == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
+        if (record.getPayload() == null) {
+            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
                     "'Message Payload' is missing");
         }
-        if (message.getPayload().getJsonObject(AFTER) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
+        if (record.getPayload().getJsonObject(AFTER) == null) {
+            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
                     "'after' is missing");
         }
-        if (message.getPayload().getString(OPERATION) == null) {
-            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(consumerRecord),
+        if (record.getPayload().getString(OPERATION) == null) {
+            throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
                     "'op' is missing");
         }
-        final JsonObject after = message.getPayload().getJsonObject(AFTER);
+        final JsonObject after = record.getPayload().getJsonObject(AFTER);
         this.eventId = new DebeziumEventId(after);
         this.creationDate = new Date(after.getLong(EVENT_CREATION_DATE) / 1000);
 

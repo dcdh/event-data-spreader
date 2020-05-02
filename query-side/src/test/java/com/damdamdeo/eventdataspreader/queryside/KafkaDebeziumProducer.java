@@ -42,7 +42,7 @@ public class KafkaDebeziumProducer {
         final JsonObject key = jsonTestResource.getJsonObject("key");
         final JsonObject value = jsonTestResource.getJsonObject("value");
 
-        producer.send(new ProducerRecord<>("event-query", key, value)).get();
+        producer.send(new ProducerRecord<>("event-query-in", key, value)).get();
     }
 
     public static String loadContentFromResource(final String testResourceFileName) {
