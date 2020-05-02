@@ -9,6 +9,8 @@ import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
+import io.agroal.api.AgroalDataSource;
+import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,9 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,9 +39,22 @@ public class GiftEventStoreTest {
     @Inject
     EventRepository eventRepository;
 
+    @Inject
+    @DataSource("secret-store")
+    AgroalDataSource secretStoreDataSource;
+
     @BeforeEach
     @Transactional
     public void setup() {
+        try (final Connection con = secretStoreDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE SecretStore");
+        } catch (SQLException e) {
+            // Do not throw an exception as the table is not present because the @PostConstruct in AgroalDataSourceSecretStore
+            // has not be called yet... bug ?!?
+            // throw new RuntimeException(e);
+        }
+
         entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();

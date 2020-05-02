@@ -3,6 +3,8 @@ package com.damdamdeo.eventdataspreader.queryside;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
+import io.agroal.api.AgroalDataSource;
+import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,9 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -30,9 +35,22 @@ public class QuerySideTest {
     @Inject
     UserTransaction transaction;
 
+    @Inject
+    @DataSource("secret-store")
+    AgroalDataSource secretStoreDataSource;
+
     @BeforeEach
     @Transactional
     public void setup() {
+        try (final Connection con = secretStoreDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE SecretStore");
+        } catch (SQLException e) {
+            // Do not throw an exception as the table is not present because the @PostConstruct in AgroalDataSourceSecretStore
+            // has not be called yet... bug ?!?
+            // throw new RuntimeException(e);
+        }
+
         entityManager.createQuery("DELETE FROM GiftEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM AccountEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
