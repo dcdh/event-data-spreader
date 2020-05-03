@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.queryside.interfaces;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.Event;
+import com.damdamdeo.eventdataspreader.event.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftBoughtEventPayload;

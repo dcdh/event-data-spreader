@@ -1,13 +1,13 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi;
+package com.damdamdeo.eventdataspreader.event.infrastructure.spi;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayload;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 import java.util.List;
 
-public interface JacksonEventPayloadSubtypes {
+public interface JacksonEventMetadataSubtypes {
 
-    List<JacksonSubtype<EventPayload>> jacksonSubtypes();
+    List<JacksonSubtype<EventMetadata>> jacksonSubtypes();
 
     default NamedType[] namedTypes() {
         return jacksonSubtypes()

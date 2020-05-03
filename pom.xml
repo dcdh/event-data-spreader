@@ -19,6 +19,7 @@
     </properties>
 
     <modules>
+        <module>event-api</module>
         <module>write-side</module>
         <module>query-side</module>
         <module>encryption</module>

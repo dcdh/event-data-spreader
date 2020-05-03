@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 

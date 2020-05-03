@@ -1,8 +1,8 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
+package com.damdamdeo.eventdataspreader.event.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SerializationException;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.JacksonEncryptionSerializer;
@@ -15,11 +15,11 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 
 @ApplicationScoped
-public class JacksonEventMetadataDeserializer implements EventMetadataDeserializer {
+public class JacksonEventMetadataSerializer implements EventMetadataSerializer {
 
     private final ObjectMapper OBJECT_MAPPER;
 
-    public JacksonEventMetadataDeserializer(final JacksonEventMetadataSubtypes jacksonEventMetadataSubtypesBean) {
+    public JacksonEventMetadataSerializer(final JacksonEventMetadataSubtypes jacksonEventMetadataSubtypesBean) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.registerSubtypes(jacksonEventMetadataSubtypesBean.namedTypes());
@@ -27,12 +27,12 @@ public class JacksonEventMetadataDeserializer implements EventMetadataDeserializ
     }
 
     @Override
-    public EventMetadata deserialize(final Optional<EncryptedEventSecret> encryptedEventSecret, final String eventMetadata) {
+    public String serialize(final Optional<EncryptedEventSecret> encryptedEventSecret, final EventMetadata eventMetadata) {
         try {
             return OBJECT_MAPPER
-                    .readerFor(EventMetadata.class)
+                    .writer()
                     .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret)
-                    .readValue(eventMetadata);
+                    .writeValueAsString(eventMetadata);
         } catch (final Exception e) {
             throw new SerializationException(e);
         }

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;

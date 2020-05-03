@@ -1,8 +1,8 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import org.apache.commons.lang3.Validate;
 

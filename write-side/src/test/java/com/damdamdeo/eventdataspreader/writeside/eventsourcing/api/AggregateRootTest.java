@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

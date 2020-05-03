@@ -2,8 +2,8 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumed;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumerConsumed;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

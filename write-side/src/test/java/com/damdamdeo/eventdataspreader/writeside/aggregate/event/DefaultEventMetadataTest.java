@@ -1,12 +1,12 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.JacksonEventMetadataSerializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.infrastructure.JacksonEventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.infrastructure.JacksonEventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 

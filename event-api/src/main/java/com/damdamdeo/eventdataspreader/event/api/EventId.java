@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
+package com.damdamdeo.eventdataspreader.event.api;
 
 public interface EventId {
 

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;

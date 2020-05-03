@@ -1,11 +1,11 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.AESEncryption;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import org.apache.commons.lang3.Validate;
 

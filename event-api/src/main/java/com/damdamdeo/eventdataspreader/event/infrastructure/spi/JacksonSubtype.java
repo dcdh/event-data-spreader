@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi;
+package com.damdamdeo.eventdataspreader.event.infrastructure.spi;
 
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 

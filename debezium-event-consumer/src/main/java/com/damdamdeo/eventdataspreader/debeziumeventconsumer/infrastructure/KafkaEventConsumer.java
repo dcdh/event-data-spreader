@@ -1,9 +1,8 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.DecryptableEvent;
+import com.damdamdeo.eventdataspreader.event.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayloadDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;

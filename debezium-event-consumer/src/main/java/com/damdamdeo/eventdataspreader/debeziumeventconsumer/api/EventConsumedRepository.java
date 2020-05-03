@@ -1,5 +1,7 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 
+import com.damdamdeo.eventdataspreader.event.api.EventId;
+
 import java.util.Date;
 import java.util.List;
 

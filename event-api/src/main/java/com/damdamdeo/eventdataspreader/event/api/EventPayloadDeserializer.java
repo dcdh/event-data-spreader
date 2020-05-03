@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
+package com.damdamdeo.eventdataspreader.event.api;
 
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 

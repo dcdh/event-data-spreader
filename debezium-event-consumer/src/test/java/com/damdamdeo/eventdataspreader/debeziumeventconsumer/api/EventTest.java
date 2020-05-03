@@ -1,5 +1,6 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 
+import com.damdamdeo.eventdataspreader.event.api.Event;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 

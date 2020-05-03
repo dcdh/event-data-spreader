@@ -1,8 +1,8 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 
 import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;

@@ -1,10 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventPayload;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventMetadataSubtypes;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonEventPayloadSubtypes;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.spi.JacksonSubtype;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventPayload;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventPayloadSubtypes;
+import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;

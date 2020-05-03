@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
+package com.damdamdeo.eventdataspreader.event.api;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -6,5 +6,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "@type")
-public interface EventMetadata {
+public interface EventPayload {
 }

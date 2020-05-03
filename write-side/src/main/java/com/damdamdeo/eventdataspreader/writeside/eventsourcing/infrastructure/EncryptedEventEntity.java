@@ -1,9 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventId;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;

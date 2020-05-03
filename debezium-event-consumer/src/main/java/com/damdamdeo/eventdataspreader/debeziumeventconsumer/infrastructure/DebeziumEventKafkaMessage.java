@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
+import com.damdamdeo.eventdataspreader.event.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;

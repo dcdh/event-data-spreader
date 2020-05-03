@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventMetadata;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
