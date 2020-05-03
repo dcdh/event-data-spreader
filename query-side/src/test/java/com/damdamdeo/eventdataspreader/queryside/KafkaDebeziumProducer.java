@@ -6,7 +6,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -22,13 +21,12 @@ import java.util.stream.Collectors;
 @Dependent
 public class KafkaDebeziumProducer {
 
-    @ConfigProperty(name = "mp.messaging.incoming.event-in.bootstrap.servers")
-    String servers;
+    final String servers;
 
-    private KafkaProducer<JsonObject, JsonObject> producer;
+    private final KafkaProducer<JsonObject, JsonObject> producer;
 
-    @PostConstruct
-    public void init() {
+    public KafkaDebeziumProducer(@ConfigProperty(name = "mp.messaging.incoming.event-in.bootstrap.servers") final String servers) {
+        this.servers = servers;
         final Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, JsonbSerializer.class.getName());
