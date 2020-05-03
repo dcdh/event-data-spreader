@@ -8,12 +8,10 @@ import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Inject;
 import javax.json.JsonReader;
 import javax.transaction.*;
 import java.io.IOException;
@@ -32,29 +30,28 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
 
-    @Inject
-    SecretStore secretStore;
+    private final SecretStore secretStore;
+    private final EventConsumedRepository eventConsumedRepository;
+    private final EventPayloadDeserializer eventPayloadDeserializer;
+    private final EventMetadataDeserializer eventMetadataDeserializer;
+    private final UserTransaction transaction;
+    private final Instance<EventConsumer> eventConsumersBeans;
+    private final String gitCommitId;
+    private final Executor executor;
 
-    @Inject
-    EventConsumedRepository eventConsumedRepository;
-
-    @Inject
-    EventPayloadDeserializer eventPayloadDeserializer;
-
-    @Inject
-    EventMetadataDeserializer eventMetadataDeserializer;
-
-    @Inject
-    UserTransaction transaction;
-
-    @Inject
-    @Any
-    Instance<EventConsumer> eventConsumersBeans;
-
-    private String gitCommitId;
-
-    @PostConstruct
-    void onPostConstruct() {
+    public KafkaEventConsumer(final SecretStore secretStore,
+                              final EventConsumedRepository eventConsumedRepository,
+                              final EventPayloadDeserializer eventPayloadDeserializer,
+                              final EventMetadataDeserializer eventMetadataDeserializer,
+                              final UserTransaction transaction,
+                              @Any final Instance<EventConsumer> eventConsumersBeans) {
+        this.secretStore = Objects.requireNonNull(secretStore);
+        this.eventConsumedRepository = Objects.requireNonNull(eventConsumedRepository);
+        this.eventPayloadDeserializer = Objects.requireNonNull(eventPayloadDeserializer);
+        this.eventMetadataDeserializer = Objects.requireNonNull(eventMetadataDeserializer);
+        this.transaction = Objects.requireNonNull(transaction);
+        this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
+        this.executor = Executors.newSingleThreadExecutor();
         try (final InputStream gitProperties = getClass().getClassLoader().getResourceAsStream("git.properties");
              final JsonReader reader = Json.createReader(gitProperties)) {
             final javax.json.JsonObject gitPropertiesObject = reader.readObject();
@@ -63,8 +60,6 @@ public class KafkaEventConsumer {
             throw new RuntimeException(e);
         }
     }
-
-    private final Executor executor = Executors.newSingleThreadExecutor();
 
     @Incoming("event-in")
     @Transactional(Transactional.TxType.NEVER)
