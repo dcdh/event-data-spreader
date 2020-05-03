@@ -78,14 +78,14 @@ public class AbstractAggregateRootRepositoryTest {
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
         when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
         when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
-        final Event eventToApply = testAggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class));
+        testAggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class));
         final InOrder inOrder = inOrder(testAggregateRoot);
 
         // When
         testAbstractAggregateRootRepository.save(testAggregateRoot);
 
         // Then
-        verify(eventRepository).save(asList(eventToApply));
+        verify(eventRepository).save(anyList());
         inOrder.verify(testAggregateRoot).unsavedEvents();
         inOrder.verify(testAggregateRoot).deleteUnsavedEvents();
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootId();

@@ -18,7 +18,7 @@ public abstract class AggregateRoot implements Serializable {
     protected Long version = -1l;
     private String aggregateRootType;
 
-    protected Event apply(final AggregateRootEventPayload aggregateRootEventPayload, final EventMetadata eventMetaData) {
+    protected void apply(final AggregateRootEventPayload aggregateRootEventPayload, final EventMetadata eventMetaData) {
         aggregateRootEventPayload.apply(this);
         this.version++;
         final String eventAggregateRootId = Objects.requireNonNull(aggregateRootEventPayload.aggregateRootId(), "Aggregate root id can't be null");
@@ -33,7 +33,6 @@ public abstract class AggregateRoot implements Serializable {
                 aggregateRootEventPayload,
                 eventMetaData);
         this.unsavedEvents.add(eventToApply);
-        return eventToApply;
     }
 
     public void loadFromHistory(final List<Event> events) {
