@@ -2,7 +2,6 @@ package com.damdamdeo.eventdataspreader.queryside.interfaces;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventQualifier;
 import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftBoughtEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 
@@ -11,7 +10,6 @@ import javax.persistence.EntityManager;
 import java.util.Objects;
 
 @Dependent
-@EventQualifier(aggregateRootType = "GiftAggregate", eventType = "GiftBought")
 public class GiftBoughtEventConsumer implements EventConsumer {
 
     final EntityManager entityManager;
@@ -27,6 +25,16 @@ public class GiftBoughtEventConsumer implements EventConsumer {
         final GiftEntity giftEntity = new GiftEntity();
         giftEntity.onGiftBought(giftAggregateGiftBoughtEventPayload.name(), version);
         entityManager.persist(giftEntity);
+    }
+
+    @Override
+    public String aggregateRootType() {
+        return "GiftAggregate";
+    }
+
+    @Override
+    public String eventType() {
+        return "GiftBought";
     }
 
 }

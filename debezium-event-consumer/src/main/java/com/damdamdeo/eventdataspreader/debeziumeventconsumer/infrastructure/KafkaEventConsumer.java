@@ -11,7 +11,6 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.util.AnnotationLiteral;
 import javax.json.JsonReader;
 import javax.transaction.*;
 import java.io.IOException;
@@ -23,6 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.json.Json;
 
 @ApplicationScoped
@@ -78,27 +78,23 @@ public class KafkaEventConsumer {
                     if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
                         final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
                         final String eventType = decryptableEvent.eventType();
-                        final Instance<EventConsumer> eventConsumers = eventConsumersBeans.select(EventConsumer.class, new EventQualifierLiteral(
-                                aggregateRootType,
-                                eventType));
-                        if (eventConsumers.isResolvable()) {
+
+                        final List<EventConsumer> eventConsumersToExecute = eventConsumersBeans.stream()
+                                .filter(eventConsumer -> aggregateRootType.equals(eventConsumer.aggregateRootType()))
+                                .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
+                                .collect(Collectors.toList());
+                        for (final EventConsumer eventConsumerToExecute: eventConsumersToExecute) {
                             final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
                             final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                            for (final EventConsumer eventConsumer : eventConsumers) {
-                                if (!consumedEventClassNames.contains(eventConsumer.getClass().getName())) {
-                                    transaction.begin();
-                                    eventConsumer.consume(event);
-                                    eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
-                                            eventConsumer.getClass(),
-                                            new ConsumerRecordKafkaSource(record),
-                                            gitCommitId);
-                                    transaction.commit();
-                                }
+                            if (!consumedEventClassNames.contains(eventConsumerToExecute.getClass().getName())) {
+                                transaction.begin();
+                                eventConsumerToExecute.consume(event);
+                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
+                                        eventConsumerToExecute.getClass(),
+                                        new ConsumerRecordKafkaSource(record),
+                                        gitCommitId);
+                                transaction.commit();
                             }
-                        } else if (eventConsumers.isUnsatisfied()) {
-                            // TODO log
-                        } else if (eventConsumers.isAmbiguous()) {
-                            throw new IllegalStateException("Ambiguous command handlers for " + aggregateRootType + " " + eventType);
                         }
                         eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(record));
                     } else {
@@ -128,28 +124,6 @@ public class KafkaEventConsumer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-    private class EventQualifierLiteral extends AnnotationLiteral<EventQualifier> implements EventQualifier {
-
-        private final String aggregateRootType;
-        private final String eventType;
-
-        private EventQualifierLiteral(final String aggregateRootType,
-                                      final String eventType) {
-            this.aggregateRootType = aggregateRootType;
-            this.eventType = eventType;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return aggregateRootType;
-        }
-
-        @Override
-        public String eventType() {
-            return eventType;
-        }
-
     }
 
 }
