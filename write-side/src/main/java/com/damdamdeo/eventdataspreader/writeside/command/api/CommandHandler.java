@@ -4,6 +4,6 @@ import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot
 
 public interface CommandHandler<T extends AggregateRoot, C extends Command> {
 
-    T executeCommand(final C command) throws Exception;
+    T executeCommand(final C command) throws Throwable;
 
 }

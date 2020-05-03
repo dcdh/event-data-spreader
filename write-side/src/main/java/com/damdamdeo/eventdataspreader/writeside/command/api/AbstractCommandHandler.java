@@ -14,7 +14,7 @@ public abstract class AbstractCommandHandler<T extends AggregateRoot, C extends 
 
     protected abstract T handle(C command);
 
-    public T executeCommand(final C command) throws Exception {
+    public T executeCommand(final C command) throws Throwable {
         return this.commandExecutor.execute(() -> handle(command));
     }
 
