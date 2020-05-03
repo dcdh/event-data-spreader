@@ -13,10 +13,7 @@ public class CommandHandlerExecutorTest {
     @Test
     public void should_initialise_exactlyOnceCommandExecutor() {
         // Given
-        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor();
-
-        // When
-        commandHandlerExecutor.init();
+        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor(mock(Instance.class));
 
         // Then
         assertNotNull(commandHandlerExecutor.exactlyOnceCommandExecutor);
@@ -25,8 +22,7 @@ public class CommandHandlerExecutorTest {
     @Test
     public void should_execute_resolvable_command_handler() throws Throwable {
         // Given
-        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor();
-        commandHandlerExecutor.init();
+        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor(mock(Instance.class));
 
         final Command command = mock(Command.class);
         final Instance<CommandHandler> commandHandlerInstance = mock(Instance.class);
@@ -34,7 +30,6 @@ public class CommandHandlerExecutorTest {
         final CommandHandler commandHandler = mock(CommandHandler.class);
         doReturn(commandHandler).when(commandHandlerInstance).get();
         doReturn(mock(AggregateRoot.class)).when(commandHandler).handle(command);
-        commandHandlerExecutor.commandHandlers = mock(Instance.class);
         doReturn(commandHandlerInstance).when(commandHandlerExecutor.commandHandlers).select(CommandHandler.class, new CommandHandlerExecutor.CommandQualifierLiteral(command.getClass()));
 
         // When
@@ -49,8 +44,7 @@ public class CommandHandlerExecutorTest {
     @Test
     public void should_not_execute_unsatisfied_command_handler() throws Throwable {
         // Given
-        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor();
-        commandHandlerExecutor.init();
+        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor(mock(Instance.class));
 
         final Command command = mock(Command.class);
         final Instance<CommandHandler> commandHandlerInstance = mock(Instance.class);
@@ -59,7 +53,6 @@ public class CommandHandlerExecutorTest {
         final CommandHandler commandHandler = mock(CommandHandler.class);
         doReturn(commandHandler).when(commandHandlerInstance).get();
         doReturn(mock(AggregateRoot.class)).when(commandHandler).handle(command);
-        commandHandlerExecutor.commandHandlers = mock(Instance.class);
         doReturn(commandHandlerInstance).when(commandHandlerExecutor.commandHandlers).select(CommandHandler.class, new CommandHandlerExecutor.CommandQualifierLiteral(command.getClass()));
 
         // When
@@ -75,8 +68,7 @@ public class CommandHandlerExecutorTest {
     @Test
     public void should_throw_exception_when_executing_ambiguous_commandHandler() throws Throwable {
         // Given
-        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor();
-        commandHandlerExecutor.init();
+        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor(mock(Instance.class));
 
         final Command command = mock(Command.class);
         final Instance<CommandHandler> commandHandlerInstance = mock(Instance.class);
@@ -86,7 +78,6 @@ public class CommandHandlerExecutorTest {
         final CommandHandler commandHandler = mock(CommandHandler.class);
         doReturn(commandHandler).when(commandHandlerInstance).get();
         doReturn(mock(AggregateRoot.class)).when(commandHandler).handle(command);
-        commandHandlerExecutor.commandHandlers = mock(Instance.class);
         doReturn(commandHandlerInstance).when(commandHandlerExecutor.commandHandlers).select(CommandHandler.class, new CommandHandlerExecutor.CommandQualifierLiteral(command.getClass()));
 
         // When
@@ -103,8 +94,7 @@ public class CommandHandlerExecutorTest {
     @Test
     public void should_shutdown_exactlyOnceCommandExecutor() {
         // Given
-        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor();
-        commandHandlerExecutor.init();
+        final CommandHandlerExecutor commandHandlerExecutor = new CommandHandlerExecutor(mock(Instance.class));
 
         // When
         commandHandlerExecutor.destroy();

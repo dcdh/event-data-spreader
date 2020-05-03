@@ -2,13 +2,11 @@ package com.damdamdeo.eventdataspreader.writeside.command.api;
 
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -17,14 +15,12 @@ import java.util.concurrent.Executors;
 @ApplicationScoped
 public class CommandHandlerExecutor {
 
-    ExecutorService exactlyOnceCommandExecutor;
+    final ExecutorService exactlyOnceCommandExecutor;
 
-    @Inject
-    @Any
-    Instance<CommandHandler> commandHandlers;
+    final Instance<CommandHandler> commandHandlers;
 
-    @PostConstruct
-    public void init() {
+    public CommandHandlerExecutor(@Any final Instance<CommandHandler> commandHandlers) {
+        this.commandHandlers = commandHandlers;
         this.exactlyOnceCommandExecutor = Executors.newSingleThreadExecutor();
     }
 
