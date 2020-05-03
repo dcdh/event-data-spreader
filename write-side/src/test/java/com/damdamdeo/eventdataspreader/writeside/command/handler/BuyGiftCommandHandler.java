@@ -1,31 +1,28 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
-import com.damdamdeo.eventdataspreader.writeside.command.api.Command;
-import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
+import com.damdamdeo.eventdataspreader.writeside.command.api.AbstractCommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
-import com.damdamdeo.eventdataspreader.writeside.command.api.CommandQualifier;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
+import com.damdamdeo.eventdataspreader.writeside.command.api.CommandExecutor;
 
 import javax.enterprise.context.Dependent;
 import java.util.Objects;
 
 @Dependent
-@CommandQualifier(BuyGiftCommand.class)
-public class BuyGiftCommandHandler implements CommandHandler {
+public class BuyGiftCommandHandler extends AbstractCommandHandler<GiftAggregate, BuyGiftCommand> {
 
     final GiftAggregateRepository giftAggregateRepository;
 
-    public BuyGiftCommandHandler(final GiftAggregateRepository giftAggregateRepository) {
+    public BuyGiftCommandHandler(final GiftAggregateRepository giftAggregateRepository, final CommandExecutor commandExecutor) {
+        super(commandExecutor);
         this.giftAggregateRepository = Objects.requireNonNull(giftAggregateRepository);
     }
 
     @Override
-    public AggregateRoot handle(final Command command) {
+    protected GiftAggregate handle(final BuyGiftCommand command) {
         final GiftAggregate giftAggregate = new GiftAggregate();
-        final BuyGiftCommand buyGiftCommand = (BuyGiftCommand) command;
-        giftAggregate.handle(buyGiftCommand);
+        giftAggregate.handle(command);
         return giftAggregateRepository.save(giftAggregate);
     }
 

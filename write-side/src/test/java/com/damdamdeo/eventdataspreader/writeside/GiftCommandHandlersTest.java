@@ -6,7 +6,8 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMet
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
-import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandlerExecutor;
+import com.damdamdeo.eventdataspreader.writeside.command.handler.BuyGiftCommandHandler;
+import com.damdamdeo.eventdataspreader.writeside.command.handler.OfferGiftCommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.agroal.api.AgroalDataSource;
@@ -34,7 +35,10 @@ public class GiftCommandHandlersTest {
     EntityManager entityManager;
 
     @Inject
-    CommandHandlerExecutor commandHandlerExecutor;
+    BuyGiftCommandHandler buyGiftCommandHandler;
+
+    @Inject
+    OfferGiftCommandHandler offerGiftCommandHandler;
 
     @Inject
     EventRepository eventRepository;
@@ -42,7 +46,6 @@ public class GiftCommandHandlersTest {
     @Inject
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
-
 
     @BeforeEach
     @Transactional
@@ -66,7 +69,7 @@ public class GiftCommandHandlersTest {
     public void should_buy_and_offer_the_gift() throws Throwable {
         GiftAggregate giftAggregate;
         // When
-        giftAggregate = (GiftAggregate) commandHandlerExecutor.execute(new BuyGiftCommand("Motorola G6", "damdamdeo")).get();
+        giftAggregate = buyGiftCommandHandler.executeCommand(new BuyGiftCommand("Motorola G6", "damdamdeo"));
 
         // Then
         assertEquals("Motorola G6", giftAggregate.aggregateRootId());
@@ -75,9 +78,9 @@ public class GiftCommandHandlersTest {
         assertEquals(0l, giftAggregate.version());
 
         // When
-        giftAggregate = (GiftAggregate) commandHandlerExecutor.execute(new OfferGiftCommand("Motorola G6", "toto", "damdamdeo")).get();
+        giftAggregate = offerGiftCommandHandler.executeCommand(new OfferGiftCommand("Motorola G6", "toto", "damdamdeo"));
 
-        // Then
+        // Thenexecute
         assertEquals("Motorola G6", giftAggregate.aggregateRootId());
         assertEquals("Motorola G6", giftAggregate.name());
         assertEquals("toto", giftAggregate.offeredTo());

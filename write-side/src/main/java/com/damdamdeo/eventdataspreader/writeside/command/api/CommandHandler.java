@@ -2,8 +2,8 @@ package com.damdamdeo.eventdataspreader.writeside.command.api;
 
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 
-public interface CommandHandler {
+public interface CommandHandler<T extends AggregateRoot, C extends Command> {
 
-    AggregateRoot handle(Command command);
+    T executeCommand(final C command) throws Exception;
 
 }
