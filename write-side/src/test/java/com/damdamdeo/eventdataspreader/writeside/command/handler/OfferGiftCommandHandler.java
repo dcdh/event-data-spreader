@@ -20,7 +20,7 @@ public class OfferGiftCommandHandler extends AbstractCommandHandler<GiftAggregat
 
     @Override
     protected GiftAggregate handle(final OfferGiftCommand command) {
-        final GiftAggregate giftAggregate = giftAggregateRepository.load(command.aggregateId());
+        final GiftAggregate giftAggregate = giftAggregateRepository.load(command.name());
         giftAggregate.handle(command);
         return giftAggregateRepository.save(giftAggregate);
     }

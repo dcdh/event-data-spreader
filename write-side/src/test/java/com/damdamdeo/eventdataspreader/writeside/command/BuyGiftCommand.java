@@ -16,11 +16,6 @@ public final class BuyGiftCommand implements Command {
         this.executedBy = Objects.requireNonNull(executedBy);
     }
 
-    @Override
-    public String aggregateId() {
-        return name;
-    }
-
     public String name() {
         return name;
     }

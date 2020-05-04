@@ -33,11 +33,6 @@ public final class OfferGiftCommand implements Command {
     }
 
     @Override
-    public String aggregateId() {
-        return name;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof OfferGiftCommand)) return false;

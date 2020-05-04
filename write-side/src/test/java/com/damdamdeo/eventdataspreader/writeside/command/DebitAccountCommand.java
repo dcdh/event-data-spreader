@@ -19,11 +19,6 @@ public final class DebitAccountCommand implements Command {
         this.executedBy = Objects.requireNonNull(executedBy);
     }
 
-    @Override
-    public String aggregateId() {
-        return owner;
-    }
-
     public String owner() {
         return owner;
     }
