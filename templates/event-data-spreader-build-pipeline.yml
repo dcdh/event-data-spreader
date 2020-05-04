@@ -137,7 +137,7 @@ objects:
                         sh "printenv | sort"
                         sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'eventstore'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE eventstore\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE eventstore TO postgresuser;\""
                         sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'query'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE query\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE query TO postgresuser;\""
-                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'secret_store'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE secret_store\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE secret_store TO postgresuser;\""
+                        sh "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'secret-store'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE secret-store\" &&  psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE secret-store TO postgresuser;\""
                       }
                     }
                     stage("checkout") {
@@ -168,7 +168,7 @@ objects:
             quarkus.datasource.secret-store.db-kind=postgresql
             quarkus.datasource.secret-store.username=postgresql
             quarkus.datasource.secret-store.password=postgrespassword
-            quarkus.datasource.secret-store.jdbc.url=jdbc:postgresql://localhost:5432/secret_store
+            quarkus.datasource.secret-store.jdbc.url=jdbc:postgresql://localhost:5432/secret-store
             quarkus.datasource.secret-store.jdbc.min-size=1
             quarkus.datasource.secret-store.jdbc.max-size=11
 
@@ -222,7 +222,7 @@ objects:
             quarkus.datasource.secret-store.db-kind=postgresql
             quarkus.datasource.secret-store.username=postgresql
             quarkus.datasource.secret-store.password=postgrespassword
-            quarkus.datasource.secret-store.jdbc.url=jdbc:postgresql://localhost:5432/secret_store
+            quarkus.datasource.secret-store.jdbc.url=jdbc:postgresql://localhost:5432/secret-store
             quarkus.datasource.secret-store.jdbc.min-size=1
             quarkus.datasource.secret-store.jdbc.max-size=11
 

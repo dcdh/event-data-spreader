@@ -86,11 +86,11 @@ services:
       - POSTGRES_PASSWORD=postgresql
       - POSTGRES_DB=query
 
-  secret_store:
+  secret-store:
     image: debezium/postgres:11-alpine
     ports:
       - 5434:5432
     environment:
       - POSTGRES_USER=postgresql
       - POSTGRES_PASSWORD=postgresql
-      - POSTGRES_DB=secret_store
+      - POSTGRES_DB=secret-store
