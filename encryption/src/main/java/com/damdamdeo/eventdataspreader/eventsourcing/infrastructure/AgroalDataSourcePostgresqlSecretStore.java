@@ -33,7 +33,7 @@ public class AgroalDataSourcePostgresqlSecretStore implements SecretStore {
     }
 
     @PostConstruct
-    public void initSecretStoreTable() {
+    public void initSecretStoreTables() {
         final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
         try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
              final Connection con = secretStoreDataSource.getConnection();
