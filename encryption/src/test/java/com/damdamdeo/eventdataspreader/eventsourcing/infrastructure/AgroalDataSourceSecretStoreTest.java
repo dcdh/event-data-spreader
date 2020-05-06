@@ -28,7 +28,7 @@ public class AgroalDataSourceSecretStoreTest {
 
     @BeforeEach
     public void setup() {
-        final String truncate = "TRUNCATE TABLE SecretStore";
+        final String truncate = "TRUNCATE TABLE SECRET_STORE";
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
             stmt.executeUpdate(truncate);

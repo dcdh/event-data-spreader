@@ -48,7 +48,7 @@ public class GiftEventStoreTest {
     public void setup() {
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
-            stmt.executeUpdate("TRUNCATE TABLE SecretStore");
+            stmt.executeUpdate("TRUNCATE TABLE SECRET_STORE");
         } catch (SQLException e) {
             // Do not throw an exception as the table is not present because the @PostConstruct in AgroalDataSourceSecretStore
             // has not be called yet... bug ?!?
