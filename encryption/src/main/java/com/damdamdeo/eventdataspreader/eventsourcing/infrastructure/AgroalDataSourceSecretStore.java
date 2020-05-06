@@ -11,16 +11,20 @@ import io.quarkus.runtime.Startup;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Scanner;
 
 @Startup
 @ApplicationScoped
 public class AgroalDataSourceSecretStore implements SecretStore {
+
+    private static final String POSTGRESQL_DDL_FILE = "/sql/secret-store-postgresql.ddl";
 
     final AgroalDataSource secretStoreDataSource;
 
@@ -30,15 +34,16 @@ public class AgroalDataSourceSecretStore implements SecretStore {
 
     @PostConstruct
     public void initSecretStoreTable() {
-        final String createTable = "CREATE TABLE IF NOT EXISTS SecretStore (\n" +
-                "    aggregateRootType varchar(255),\n" +
-                "    aggregateRootId   varchar(255),\n" +
-                "    secret            varchar(255),\n" +
-                "    CONSTRAINT aggregateRootType_aggregateRootId PRIMARY KEY(aggregateRootType,aggregateRootId)\n" +
-                ");";
-        try (final Connection con = secretStoreDataSource.getConnection();
+        final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
+        try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
+             final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
-            stmt.executeUpdate(createTable);
+            while (scanner.hasNext()) {
+                final String ddlEntry = scanner.next().trim();
+                if (!ddlEntry.isEmpty()) {
+                    stmt.executeUpdate(ddlEntry);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
