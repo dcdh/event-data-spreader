@@ -7,6 +7,7 @@ import io.quarkus.agroal.DataSource;
 import io.quarkus.cache.CacheInvalidate;
 import io.quarkus.cache.CacheKey;
 import io.quarkus.cache.CacheResult;
+import io.quarkus.runtime.Startup;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -17,6 +18,7 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.Optional;
 
+@Startup
 @ApplicationScoped
 public class AgroalDataSourceSecretStore implements SecretStore {
 
