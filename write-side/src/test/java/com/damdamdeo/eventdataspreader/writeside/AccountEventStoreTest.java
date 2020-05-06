@@ -8,12 +8,9 @@ import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -21,25 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class AccountEventStoreTest {
+public class AccountEventStoreTest extends AbstractTest {
 
     @Inject
     AccountAggregateRepository accountAggregateRepository;
 
     @Inject
-    EntityManager entityManager;
-
-    @Inject
     EventRepository eventRepository;
-
-    @BeforeEach
-    @Transactional
-    public void setup() {
-        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
-    }
 
     @Test
     public void should_debit_account() {

@@ -10,29 +10,17 @@ import com.damdamdeo.eventdataspreader.writeside.command.handler.BuyGiftCommandH
 import com.damdamdeo.eventdataspreader.writeside.command.handler.OfferGiftCommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
-import io.agroal.api.AgroalDataSource;
-import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
-public class GiftCommandHandlersTest {
-
-    @Inject
-    EntityManager entityManager;
+public class GiftCommandHandlersTest extends AbstractTest {
 
     @Inject
     BuyGiftCommandHandler buyGiftCommandHandler;
@@ -42,26 +30,6 @@ public class GiftCommandHandlersTest {
 
     @Inject
     EventRepository eventRepository;
-
-    @Inject
-    @DataSource("secret-store")
-    AgroalDataSource secretStoreDataSource;
-
-    @BeforeEach
-    @Transactional
-    public void setup() {
-        try (final Connection con = secretStoreDataSource.getConnection();
-             final Statement stmt = con.createStatement()) {
-            stmt.executeUpdate("TRUNCATE TABLE SECRET_STORE");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
-    }
 
     @Test
     public void should_buy_and_offer_the_gift() throws Throwable {
