@@ -17,7 +17,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
-public class AgroalDataSourceSecretStoreTest {
+public class AgroalDataSourcePostgresqlSecretStoreTest {
 
     @Inject
     SecretStore secretStore;

@@ -22,13 +22,13 @@ import java.util.Scanner;
 
 @Startup
 @ApplicationScoped
-public class AgroalDataSourceSecretStore implements SecretStore {
+public class AgroalDataSourcePostgresqlSecretStore implements SecretStore {
 
     private static final String POSTGRESQL_DDL_FILE = "/sql/secret-store-postgresql.ddl";
 
     final AgroalDataSource secretStoreDataSource;
 
-    public AgroalDataSourceSecretStore(@DataSource("secret-store") final AgroalDataSource secretStoreDataSource) {
+    public AgroalDataSourcePostgresqlSecretStore(@DataSource("secret-store") final AgroalDataSource secretStoreDataSource) {
         this.secretStoreDataSource = Objects.requireNonNull(secretStoreDataSource);
     }
 
