@@ -50,9 +50,7 @@ public class GiftEventStoreTest {
              final Statement stmt = con.createStatement()) {
             stmt.executeUpdate("TRUNCATE TABLE SECRET_STORE");
         } catch (SQLException e) {
-            // Do not throw an exception as the table is not present because the @PostConstruct in AgroalDataSourceSecretStore
-            // has not be called yet... bug ?!?
-            // throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
 
         entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
