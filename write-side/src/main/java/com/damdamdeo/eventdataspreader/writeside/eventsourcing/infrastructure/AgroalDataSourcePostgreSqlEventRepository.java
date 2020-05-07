@@ -85,6 +85,7 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
             for (final PostgreSQLDecryptableEvent postgreSQLDecryptableEvent : eventsToSave) {
                 final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
