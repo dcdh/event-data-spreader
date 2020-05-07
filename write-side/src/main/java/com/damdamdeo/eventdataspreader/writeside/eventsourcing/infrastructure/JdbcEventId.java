@@ -56,7 +56,7 @@ public final class JdbcEventId implements EventId {
 
     @Override
     public String toString() {
-        return "EncryptedIdEventEntity{" +
+        return "JdbcEventId{" +
                 "aggregateRootId='" + aggregateRootId + '\'' +
                 ", aggregateRootType='" + aggregateRootType + '\'' +
                 ", version=" + version +
