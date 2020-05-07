@@ -161,7 +161,7 @@ public class E2ETest {
         final List<EventConsumed> eventsConsumed = new ArrayList<>();
         try (final Connection con = consumedEventsDataSource.getConnection();
              final Statement stmt = con.createStatement();
-             final ResultSet resultSet = stmt.executeQuery("SELECT aggregaterootid, aggregateroottype, version, consumed FROM CONSUMED_EVENT")) {
+             final ResultSet resultSet = stmt.executeQuery("SELECT aggregaterootid, aggregateroottype, version, consumed FROM CONSUMED_EVENT ORDER BY kafkaoffset ASC")) {
             while (resultSet.next()) {
                 eventsConsumed.add(new EventConsumed(resultSet));
             }
