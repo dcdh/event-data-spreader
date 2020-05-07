@@ -113,13 +113,13 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
              final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ? ORDER BY e.version ASC")) {
             stmt.setString(1, aggregateRootId);
             stmt.setString(2, aggregateRootType);
-            final ResultSet resultSet = stmt.executeQuery();
-            // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
             final List<Event> events = new ArrayList<>();
-            while (resultSet.next()) {
-                events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer));
+            // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
+            try (final ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer));
+                }
             }
-            resultSet.close();
             return events;
         } catch (SQLException e) {
             throw new RuntimeException(e);
