@@ -1,7 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
@@ -9,6 +7,7 @@ import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.DefaultEventId;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLDecryptableEvent;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -19,9 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import javax.transaction.UserTransaction;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -41,18 +38,16 @@ public class E2ETest {
     AggregateRootRepository aggregateRootRepository;
 
     @Inject
-    EntityManager entityManager;
-
-    @Inject
-    UserTransaction transaction;
-
-    @Inject
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
 
     @Inject
     @DataSource("aggregate-root-projection-event-store")
     AgroalDataSource aggregateRootProjectionEventStoreDataSource;
+
+    @Inject
+    @DataSource("consumed-events")
+    AgroalDataSource consumedEventsDataSource;
 
     @Inject
     EventMetadataDeserializer eventMetadataDeserializer;
@@ -82,8 +77,13 @@ public class E2ETest {
             throw new RuntimeException(e);
         }
 
-        entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
+        try (final Connection con = consumedEventsDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE CONSUMED_EVENT CASCADE");
+            stmt.executeUpdate("TRUNCATE TABLE CONSUMED_EVENT_CONSUMER CASCADE");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         final ClassLoader classLoader = getClass().getClassLoader();
         try (final InputStream inputStream = classLoader.getResourceAsStream("debezium.json")) {
@@ -135,13 +135,16 @@ public class E2ETest {
         // Then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
             final List<Event> events = loadOrderByCreationDateASC();
-            transaction.begin();
-            final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
-            transaction.commit();
-            return events.size() == 3 && eventConsumedEntities
-                    .stream()
-                    .filter(eventConsumedEntity -> eventConsumedEntity.consumed())
-                    .count() == 3;
+            final Long nbOfConsumedEvent;
+            try (final Connection con = consumedEventsDataSource.getConnection();
+                 final Statement stmt = con.createStatement();
+                 final ResultSet resultSet = stmt.executeQuery("SELECT COUNT(*) AS nbOfConsumedEvent FROM CONSUMED_EVENT e WHERE e.consumed = true")) {
+                resultSet.next();
+                nbOfConsumedEvent = resultSet.getLong("nbOfConsumedEvent");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return events.size() == 3 && nbOfConsumedEvent == 3;
         });
         final List<Event> events = loadOrderByCreationDateASC();
 
@@ -155,15 +158,44 @@ public class E2ETest {
         assertEquals("AccountAggregate", events.get(2).aggregateRootType());
         assertEquals("AccountDebited", events.get(2).eventType());
 
-        transaction.begin();
-        final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e LEFT JOIN FETCH e.eventConsumerEntities ORDER BY e.kafkaOffset ASC").getResultList();
-        transaction.commit();
+        final List<EventConsumed> eventsConsumed = new ArrayList<>();
+        try (final Connection con = consumedEventsDataSource.getConnection();
+             final Statement stmt = con.createStatement();
+             final ResultSet resultSet = stmt.executeQuery("SELECT aggregaterootid, aggregateroottype, version, consumed FROM CONSUMED_EVENT")) {
+            while (resultSet.next()) {
+                eventsConsumed.add(new EventConsumed(resultSet));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-        eventConsumedEntities.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed(), "Event not consumed " + eventConsumedEntity.toString()));
+        eventsConsumed.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed(), "Event not consumed " + eventConsumedEntity.toString()));
 
-        assertEquals(new EventConsumedId(events.get(0).eventId()), eventConsumedEntities.get(0).eventId());
-        assertEquals(new EventConsumedId(events.get(1).eventId()), eventConsumedEntities.get(1).eventId());
-        assertEquals(new EventConsumedId(events.get(2).eventId()), eventConsumedEntities.get(2).eventId());
+        assertEquals(events.get(0).eventId(), eventsConsumed.get(0).eventId());
+        assertEquals(events.get(1).eventId(), eventsConsumed.get(1).eventId());
+        assertEquals(events.get(2).eventId(), eventsConsumed.get(2).eventId());
+    }
+
+    private static final class EventConsumed {
+        private final DefaultEventId eventId;
+        private final Boolean consumed;
+
+        public EventConsumed(final ResultSet resultSet) throws Exception {
+            this.eventId = new DefaultEventId(
+                    resultSet.getString("aggregaterootid"),
+                    resultSet.getString("aggregateroottype"),
+                    resultSet.getLong("version"));
+            this.consumed = resultSet.getBoolean("consumed");
+        }
+
+        public DefaultEventId eventId() {
+            return eventId;
+        }
+
+        public Boolean consumed() {
+            return consumed;
+        }
+
     }
 
     private List<Event> loadOrderByCreationDateASC() {

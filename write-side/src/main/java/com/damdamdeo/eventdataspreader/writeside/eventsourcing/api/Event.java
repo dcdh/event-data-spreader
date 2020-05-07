@@ -25,7 +25,7 @@ public final class Event {
                  final Date creationDate,
                  final AggregateRootEventPayload aggregateRootEventPayload,
                  final EventMetadata eventMetaData) {
-        this.eventId = new InternalEventId(aggregateRootId, aggregateRootType, version);
+        this.eventId = new DefaultEventId(aggregateRootId, aggregateRootType, version);
         this.eventType = Objects.requireNonNull(eventType);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
@@ -40,69 +40,13 @@ public final class Event {
         Validate.notNull(encryptedEventSecret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
         Validate.notNull(eventMetadataDeserializer);
-        this.eventId = new InternalEventId(decryptableEvent.eventId());
+        this.eventId = new DefaultEventId(decryptableEvent.eventId());
         this.eventType = decryptableEvent.eventType();
         this.creationDate = decryptableEvent.creationDate();
         this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadDeSerializer);
         this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
     }
 
-    private static final class InternalEventId implements EventId {
-
-        private final String aggregateRootId;
-        private final String aggregateRootType;
-        private final Long version;
-
-        public InternalEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
-            this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
-            this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
-            this.version = Objects.requireNonNull(version);
-        }
-
-        public InternalEventId(final EventId eventId) {
-            this(eventId.aggregateRootId(), eventId.aggregateRootType(), eventId.version());
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            InternalEventId that = (InternalEventId) o;
-            return Objects.equals(aggregateRootId, that.aggregateRootId) &&
-                    Objects.equals(aggregateRootType, that.aggregateRootType) &&
-                    Objects.equals(version, that.version);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(aggregateRootId, aggregateRootType, version);
-        }
-
-        @Override
-        public String toString() {
-            return "InternalEventId{" +
-                    "aggregateRootId='" + aggregateRootId + '\'' +
-                    ", aggregateRootType='" + aggregateRootType + '\'' +
-                    ", version=" + version +
-                    '}';
-        }
-
-        @Override
-        public String aggregateRootId() {
-            return aggregateRootId;
-        }
-
-        @Override
-        public String aggregateRootType() {
-            return aggregateRootType;
-        }
-
-        @Override
-        public Long version() {
-            return version;
-        }
-
-    }
     public EventId eventId() {
         return eventId;
     }

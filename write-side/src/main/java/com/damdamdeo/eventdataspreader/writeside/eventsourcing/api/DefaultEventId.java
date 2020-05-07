@@ -1,10 +1,10 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
+package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 
 import java.util.Objects;
 
-public final class JdbcEventId implements EventId {
+public final class DefaultEventId implements EventId {
 
     private final String aggregateRootId;
 
@@ -12,15 +12,15 @@ public final class JdbcEventId implements EventId {
 
     private final Long version;
 
-    public JdbcEventId(final String aggregateRootId,
-                       final String aggregateRootType,
-                       final Long version) {
+    public DefaultEventId(final String aggregateRootId,
+                          final String aggregateRootType,
+                          final Long version) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
         this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
         this.version = Objects.requireNonNull(version);
     }
 
-    public JdbcEventId(final EventId eventId) {
+    public DefaultEventId(final EventId eventId) {
         this(eventId.aggregateRootId(), eventId.aggregateRootType(), eventId.version());
     }
 
@@ -42,8 +42,8 @@ public final class JdbcEventId implements EventId {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JdbcEventId)) return false;
-        JdbcEventId that = (JdbcEventId) o;
+        if (!(o instanceof DefaultEventId)) return false;
+        DefaultEventId that = (DefaultEventId) o;
         return Objects.equals(aggregateRootId, that.aggregateRootId) &&
                 Objects.equals(aggregateRootType, that.aggregateRootType) &&
                 Objects.equals(version, that.version);
@@ -56,7 +56,7 @@ public final class JdbcEventId implements EventId {
 
     @Override
     public String toString() {
-        return "JdbcEventId{" +
+        return "DefaultEventId{" +
                 "aggregateRootId='" + aggregateRootId + '\'' +
                 ", aggregateRootType='" + aggregateRootType + '\'' +
                 ", version=" + version +

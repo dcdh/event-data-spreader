@@ -5,7 +5,6 @@ import io.quarkus.agroal.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,15 +13,16 @@ import java.sql.Statement;
 public abstract class AbstractTest {
 
     @Inject
-    EntityManager entityManager;
-
-    @Inject
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
 
     @Inject
     @DataSource("aggregate-root-projection-event-store")
     AgroalDataSource aggregateRootProjectionEventStoreDataSource;
+
+    @Inject
+    @DataSource("consumed-events")
+    AgroalDataSource consumedEventsDataSource;
 
     @BeforeEach
     @Transactional
@@ -42,8 +42,13 @@ public abstract class AbstractTest {
             throw new RuntimeException(e);
         }
 
-        entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
+        try (final Connection con = consumedEventsDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE CONSUMED_EVENT CASCADE");
+            stmt.executeUpdate("TRUNCATE TABLE CONSUMED_EVENT_CONSUMER CASCADE");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

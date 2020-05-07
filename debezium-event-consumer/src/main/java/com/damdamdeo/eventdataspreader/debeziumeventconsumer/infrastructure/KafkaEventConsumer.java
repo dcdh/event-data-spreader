@@ -87,7 +87,7 @@ public class KafkaEventConsumer {
                             final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
                             final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
                             if (!consumedEventClassNames.contains(eventConsumerToExecute.getClass().getName())) {
-                                transaction.begin();
+                                transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional
                                 eventConsumerToExecute.consume(event);
                                 eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
                                         eventConsumerToExecute.getClass(),
