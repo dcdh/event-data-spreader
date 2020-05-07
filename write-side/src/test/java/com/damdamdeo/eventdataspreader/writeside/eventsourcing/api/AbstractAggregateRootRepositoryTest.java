@@ -1,15 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.AggregateRootEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-import javax.persistence.EntityManager;
-
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class AbstractAggregateRootRepositoryTest {
@@ -20,17 +15,14 @@ public class AbstractAggregateRootRepositoryTest {
 
         private final TestAggregateRoot testAggregateRoot;
         private final EventRepository eventRepository;
-        private final EntityManager entityManager;
-        private final AggregateRootSerializer aggregateRootSerializer;
+        private final AggregateRootProjectionRepository aggregateRootProjectionRepository;
 
         public TestAbstractAggregateRootRepository(final TestAggregateRoot testAggregateRoot,
                                                    final EventRepository eventRepository,
-                                                   final EntityManager entityManager,
-                                                   final AggregateRootSerializer aggregateRootSerializer) {
+                                                   final AggregateRootProjectionRepository aggregateRootProjectionRepository) {
             this.testAggregateRoot = testAggregateRoot;
             this.eventRepository = eventRepository;
-            this.entityManager = entityManager;
-            this.aggregateRootSerializer = aggregateRootSerializer;
+            this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
         }
 
         @Override
@@ -44,13 +36,8 @@ public class AbstractAggregateRootRepositoryTest {
         }
 
         @Override
-        protected EntityManager entityManager() {
-            return entityManager;
-        }
-
-        @Override
-        protected AggregateRootSerializer aggregateRootSerializer() {
-            return aggregateRootSerializer;
+        protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
+            return aggregateRootProjectionRepository;
         }
 
     }
@@ -59,21 +46,20 @@ public class AbstractAggregateRootRepositoryTest {
     public void should_fail_fast_when_aggregateRoot_is_null() {
         // Given
         final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                mock(TestAggregateRoot.class), mock(EventRepository.class), mock(EntityManager.class), mock(AggregateRootSerializer.class));
+                mock(TestAggregateRoot.class), mock(EventRepository.class), mock(AggregateRootProjectionRepository.class));
 
         // When && Then
         assertThrows(NullPointerException.class, () -> testAbstractAggregateRootRepository.save(null));
     }
 
     @Test
-    public void should_save_unsaved_event_next_delete_them() {
+    public void should_save_unsaved_event_next_delete_them() throws Exception {
         // Given
         final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
         final EventRepository eventRepository = mock(EventRepository.class);
-        final EntityManager entityManager = mock(EntityManager.class);
-        final AggregateRootSerializer aggregateRootSerializer = mock(AggregateRootSerializer.class);
+        final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
         final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                testAggregateRoot, eventRepository, entityManager, aggregateRootSerializer);
+                testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
         when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
@@ -94,14 +80,13 @@ public class AbstractAggregateRootRepositoryTest {
     }
 
     @Test
-    public void should_save_aggregate_root_projection() {
+    public void should_save_aggregate_root_projection() throws Exception {
         // Given
         final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
         final EventRepository eventRepository = mock(EventRepository.class);
-        final EntityManager entityManager = mock(EntityManager.class);
-        final AggregateRootSerializer aggregateRootSerializer = mock(AggregateRootSerializer.class);
+        final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
         final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                testAggregateRoot, eventRepository, entityManager, aggregateRootSerializer);
+                testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
         when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
@@ -112,7 +97,7 @@ public class AbstractAggregateRootRepositoryTest {
         testAbstractAggregateRootRepository.save(testAggregateRoot);
 // TODO revoir tests !
         // Then
-        verify(entityManager).merge(any(AggregateRootEntity.class));
+        verify(aggregateRootProjectionRepository).merge(testAggregateRoot);
     }
 
 }

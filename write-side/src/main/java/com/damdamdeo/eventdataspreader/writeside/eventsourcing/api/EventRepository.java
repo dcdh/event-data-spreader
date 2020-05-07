@@ -6,6 +6,6 @@ public interface EventRepository {
 
     void save(List<Event> events);
 
-    List<Event> load(String aggregateRootId, String aggregateRootType);
+    List<Event> loadOrderByCreationDateASC(String aggregateRootId, String aggregateRootType);
 
 }

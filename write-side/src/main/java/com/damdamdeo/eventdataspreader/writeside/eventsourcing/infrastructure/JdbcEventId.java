@@ -2,34 +2,25 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import java.io.Serializable;
 import java.util.Objects;
 
-@Embeddable
-public class EncryptedIdEventEntity implements EventId, Serializable {
+public final class JdbcEventId implements EventId {
 
-    @Column(name="aggregateRootId")
-    private String aggregateRootId;
+    private final String aggregateRootId;
 
-    @Column(name="aggregateRootType")
-    private String aggregateRootType;
+    private final String aggregateRootType;
 
-    @Column(name="version")
-    private Long version;
+    private final Long version;
 
-    public EncryptedIdEventEntity() {}
-
-    public EncryptedIdEventEntity(final String aggregateRootId,
-                                  final String aggregateRootType,
-                                  final Long version) {
+    public JdbcEventId(final String aggregateRootId,
+                       final String aggregateRootType,
+                       final Long version) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
         this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
         this.version = Objects.requireNonNull(version);
     }
 
-    public EncryptedIdEventEntity(final EventId eventId) {
+    public JdbcEventId(final EventId eventId) {
         this(eventId.aggregateRootId(), eventId.aggregateRootType(), eventId.version());
     }
 
@@ -51,8 +42,8 @@ public class EncryptedIdEventEntity implements EventId, Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EncryptedIdEventEntity)) return false;
-        EncryptedIdEventEntity that = (EncryptedIdEventEntity) o;
+        if (!(o instanceof JdbcEventId)) return false;
+        JdbcEventId that = (JdbcEventId) o;
         return Objects.equals(aggregateRootId, that.aggregateRootId) &&
                 Objects.equals(aggregateRootType, that.aggregateRootType) &&
                 Objects.equals(version, that.version);

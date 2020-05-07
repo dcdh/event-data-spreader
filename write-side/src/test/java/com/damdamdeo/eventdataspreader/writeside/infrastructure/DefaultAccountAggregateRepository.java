@@ -3,23 +3,23 @@ package com.damdamdeo.eventdataspreader.writeside.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AbstractAggregateRootRepository;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 
 import javax.enterprise.context.Dependent;
-import javax.persistence.EntityManager;
 
 @Dependent
 public class DefaultAccountAggregateRepository extends AbstractAggregateRootRepository<AccountAggregate> implements AccountAggregateRepository {
 
-    final EntityManager entityManager;
+    final AggregateRootProjectionRepository aggregateRootProjectionRepository;
     final EventRepository eventRepository;
     final AggregateRootSerializer aggregateRootSerializer;
 
-    public DefaultAccountAggregateRepository(final EntityManager entityManager,
+    public DefaultAccountAggregateRepository(final AggregateRootProjectionRepository aggregateRootProjectionRepository,
                                              final EventRepository eventRepository,
                                              final AggregateRootSerializer aggregateRootSerializer) {
-        this.entityManager = entityManager;
+        this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
         this.eventRepository = eventRepository;
         this.aggregateRootSerializer = aggregateRootSerializer;
     }
@@ -35,13 +35,8 @@ public class DefaultAccountAggregateRepository extends AbstractAggregateRootRepo
     }
 
     @Override
-    protected EntityManager entityManager() {
-        return entityManager;
-    }
-
-    @Override
-    protected AggregateRootSerializer aggregateRootSerializer() {
-        return aggregateRootSerializer;
+    protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
+        return aggregateRootProjectionRepository;
     }
 
 }

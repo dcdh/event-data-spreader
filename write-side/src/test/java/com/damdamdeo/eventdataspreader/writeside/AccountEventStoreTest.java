@@ -41,7 +41,7 @@ public class AccountEventStoreTest extends AbstractTest {
         assertEquals(new BigDecimal("899.99"), accountAggregateSaved.balance());
         assertEquals(0l, accountAggregateSaved.version());
 
-        final List<Event> events = eventRepository.load("owner", "AccountAggregate");
+        final List<Event> events = eventRepository.loadOrderByCreationDateASC("owner", "AccountAggregate");
         assertEquals(1, events.size());
         // -- AccountDebited
         assertEquals("owner", events.get(0).aggregateRootId());

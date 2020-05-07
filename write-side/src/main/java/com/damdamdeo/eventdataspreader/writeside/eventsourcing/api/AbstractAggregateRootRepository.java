@@ -1,8 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.AggregateRootEntity;
-
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
@@ -16,9 +13,8 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
         final EventRepository eventRepository = eventRepository();
         eventRepository.save(aggregateRoot.unsavedEvents());
         aggregateRoot.deleteUnsavedEvents();
-        final EntityManager entityManager = entityManager();
-        final AggregateRootSerializer aggregateRootSerializer = aggregateRootSerializer();
-        entityManager.merge(new AggregateRootEntity(aggregateRoot, aggregateRootSerializer));
+        final AggregateRootProjectionRepository aggregateRootProjectionRepository = aggregateRootProjectionRepository();
+        aggregateRootProjectionRepository.merge(aggregateRoot);
         return aggregateRoot;
     }
 
@@ -28,7 +24,7 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
         Objects.requireNonNull(aggregateRootId);
         final EventRepository eventRepository = eventRepository();
         final T instance = createNewInstance();
-        final List<Event> events = eventRepository.load(aggregateRootId, instance.getClass().getSimpleName());
+        final List<Event> events = eventRepository.loadOrderByCreationDateASC(aggregateRootId, instance.getClass().getSimpleName());
         if (events.size() == 0) {
             throw new UnknownAggregateRootException(aggregateRootId);
         }
@@ -40,8 +36,6 @@ public abstract class AbstractAggregateRootRepository<T extends AggregateRoot> i
 
     protected abstract EventRepository eventRepository();
 
-    protected abstract EntityManager entityManager();
-
-    protected abstract AggregateRootSerializer aggregateRootSerializer();
+    protected abstract AggregateRootProjectionRepository aggregateRootProjectionRepository();
 
 }

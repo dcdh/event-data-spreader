@@ -2,11 +2,15 @@ package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedEntity;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedId;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.EncryptedEventEntity;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLDecryptableEvent;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -21,10 +25,10 @@ import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
@@ -47,6 +51,19 @@ public class E2ETest {
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
 
+    @Inject
+    @DataSource("aggregate-root-projection-event-store")
+    AgroalDataSource aggregateRootProjectionEventStoreDataSource;
+
+    @Inject
+    EventRepository eventRepository;
+
+    @Inject
+    EventMetadataDeserializer eventMetadataDeserializer;
+
+    @Inject
+    AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
+
     @BeforeEach
     @Transactional
     public void setup() throws Exception {
@@ -60,8 +77,15 @@ public class E2ETest {
         given()
                 .when()
                 .delete("http://localhost:8083/connectors/test-connector");
-        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
+
+        try (final Connection con = aggregateRootProjectionEventStoreDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE AGGREGATE_ROOT_PROJECTION");
+            stmt.executeUpdate("TRUNCATE TABLE EVENT");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
 
@@ -114,8 +138,8 @@ public class E2ETest {
 
         // Then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
+            final List<Event> events = loadOrderByCreationDateASC();
             transaction.begin();
-            final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e").getResultList();
             final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e  LEFT JOIN FETCH e.eventConsumerEntities").getResultList();
             transaction.commit();
             return events.size() == 3 && eventConsumedEntities
@@ -123,9 +147,7 @@ public class E2ETest {
                     .filter(eventConsumedEntity -> eventConsumedEntity.consumed())
                     .count() == 3;
         });
-        transaction.begin();
-        final List<EncryptedEventEntity> events = entityManager.createQuery("SELECT e FROM EncryptedEventEntity e " +
-                "ORDER BY e.creationDate ASC").getResultList();
+        final List<Event> events = loadOrderByCreationDateASC();
 
         // -- GiftBought
         assertEquals("GiftAggregate", events.get(0).aggregateRootType());
@@ -137,6 +159,7 @@ public class E2ETest {
         assertEquals("AccountAggregate", events.get(2).aggregateRootType());
         assertEquals("AccountDebited", events.get(2).eventType());
 
+        transaction.begin();
         final List<EventConsumedEntity> eventConsumedEntities = entityManager.createQuery("SELECT e FROM EventConsumedEntity e LEFT JOIN FETCH e.eventConsumerEntities ORDER BY e.kafkaOffset ASC").getResultList();
         transaction.commit();
 
@@ -145,6 +168,23 @@ public class E2ETest {
         assertEquals(new EventConsumedId(events.get(0).eventId()), eventConsumedEntities.get(0).eventId());
         assertEquals(new EventConsumedId(events.get(1).eventId()), eventConsumedEntities.get(1).eventId());
         assertEquals(new EventConsumedId(events.get(2).eventId()), eventConsumedEntities.get(2).eventId());
+    }
+
+    private List<Event> loadOrderByCreationDateASC() {
+        try (final Connection connection = aggregateRootProjectionEventStoreDataSource.getConnection();
+             final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e ORDER BY e.creationdate ASC")) {
+            final ResultSet resultSet = stmt.executeQuery();
+            // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
+            final List<Event> events = new ArrayList<>();
+            while (resultSet.next()) {
+                events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(Optional.empty(),
+                        aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer));
+            }
+            resultSet.close();
+            return events;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -20,6 +20,10 @@ public abstract class AbstractTest {
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
 
+    @Inject
+    @DataSource("aggregate-root-projection-event-store")
+    AgroalDataSource aggregateRootProjectionEventStoreDataSource;
+
     @BeforeEach
     @Transactional
     public void setup() {
@@ -30,8 +34,14 @@ public abstract class AbstractTest {
             throw new RuntimeException(e);
         }
 
-        entityManager.createQuery("DELETE FROM EncryptedEventEntity").executeUpdate();
-        entityManager.createQuery("DELETE FROM AggregateRootEntity").executeUpdate();
+        try (final Connection con = aggregateRootProjectionEventStoreDataSource.getConnection();
+             final Statement stmt = con.createStatement()) {
+            stmt.executeUpdate("TRUNCATE TABLE AGGREGATE_ROOT_PROJECTION");
+            stmt.executeUpdate("TRUNCATE TABLE EVENT");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         entityManager.createQuery("DELETE FROM EventConsumerConsumedEntity").executeUpdate();
         entityManager.createQuery("DELETE FROM EventConsumedEntity").executeUpdate();
     }

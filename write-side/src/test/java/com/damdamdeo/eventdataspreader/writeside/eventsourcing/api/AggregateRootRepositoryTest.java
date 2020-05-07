@@ -1,12 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.AggregateRootEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
-import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,24 +16,20 @@ public class AggregateRootRepositoryTest {
     private AbstractAggregateRootRepository abstractAggregateRootRepository;
     private AggregateRoot aggregateRoot;
     private EventRepository eventRepository;
-    private EntityManager entityManager;
-    private AggregateRootSerializer aggregateRootSerializer;
+    private AggregateRootProjectionRepository aggregateRootProjectionRepository;
 
     private static final class TestAbstractAggregateRootRepository extends AbstractAggregateRootRepository {
 
         private final AggregateRoot aggregateRoot;
         private final EventRepository eventRepository;
-        private final EntityManager entityManager;
-        private final AggregateRootSerializer aggregateRootSerializer;
+        private final AggregateRootProjectionRepository aggregateRootProjectionRepository;
 
         public TestAbstractAggregateRootRepository(final AggregateRoot aggregateRoot,
                                                    final EventRepository eventRepository,
-                                                   final EntityManager entityManager,
-                                                   final AggregateRootSerializer aggregateRootSerializer) {
+                                                   final AggregateRootProjectionRepository aggregateRootProjectionRepository) {
             this.aggregateRoot = aggregateRoot;
             this.eventRepository = eventRepository;
-            this.entityManager = entityManager;
-            this.aggregateRootSerializer = aggregateRootSerializer;
+            this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
         }
 
         @Override
@@ -49,27 +43,23 @@ public class AggregateRootRepositoryTest {
         }
 
         @Override
-        protected EntityManager entityManager() {
-            return entityManager;
+        protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
+            return aggregateRootProjectionRepository;
         }
 
-        @Override
-        protected AggregateRootSerializer aggregateRootSerializer() {
-            return aggregateRootSerializer;
-        }
     }
+
     @BeforeEach
     public void setup() {
         aggregateRoot = mock(AggregateRoot.class);
         eventRepository = mock(EventRepository.class);
-        entityManager = mock(EntityManager.class);
-        aggregateRootSerializer = mock(AggregateRootSerializer.class);
+        aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
 
-        abstractAggregateRootRepository = spy(new TestAbstractAggregateRootRepository(aggregateRoot, eventRepository, entityManager, aggregateRootSerializer));
+        abstractAggregateRootRepository = spy(new TestAbstractAggregateRootRepository(aggregateRoot, eventRepository, aggregateRootProjectionRepository));
     }
 
     @Test
-    public void should_save_events() {
+    public void should_save_events() throws Exception {
         // Given
         final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
         final List<Event> unsavedEvents = Collections.singletonList(mock(Event.class));
@@ -85,7 +75,7 @@ public class AggregateRootRepositoryTest {
     }
 
     @Test
-    public void should_purge_events_after_save() {
+    public void should_purge_events_after_save() throws Exception {
         // Given
         final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
 
@@ -97,7 +87,7 @@ public class AggregateRootRepositoryTest {
     }
 
     @Test
-    public void should_save_aggregate() {
+    public void should_save_aggregate() throws Exception {
         // Given
         final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
 
@@ -105,14 +95,14 @@ public class AggregateRootRepositoryTest {
         abstractAggregateRootRepository.save(aggregateRoot);
 
         // Then
-        verify(entityManager).merge(ArgumentMatchers.any(AggregateRootEntity.class));
+        verify(aggregateRootProjectionRepository).merge(aggregateRoot);
     }
 
     @Test
     public void should_load_aggregateRoot() {
         // Given
         final List<Event> events = Collections.singletonList(mock(Event.class));
-        doReturn(events).when(eventRepository).load(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        doReturn(events).when(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
 
         // When
         final AggregateRoot aggregateRootLoaded = abstractAggregateRootRepository.load("aggregateRootId");
@@ -121,13 +111,13 @@ public class AggregateRootRepositoryTest {
         assertEquals(aggregateRoot, aggregateRootLoaded);
         verify(aggregateRoot).loadFromHistory(events);
         verify(abstractAggregateRootRepository).createNewInstance();
-        verify(eventRepository).load(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        verify(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
     }
 
     @Test
     public void should_throw_exception_when_no_events_are_presents() {
         // Given
-        doReturn(Collections.emptyList()).when(eventRepository).load(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        doReturn(Collections.emptyList()).when(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
 
         // When && Then
         Assertions.assertThrows(UnknownAggregateRootException.class, () -> {
@@ -136,7 +126,7 @@ public class AggregateRootRepositoryTest {
 
         verify(aggregateRoot, never()).loadFromHistory(ArgumentMatchers.anyList());
         verify(abstractAggregateRootRepository).createNewInstance();
-        verify(eventRepository).load(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        verify(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
     }
 
 }

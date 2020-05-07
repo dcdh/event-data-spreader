@@ -3,23 +3,23 @@ package com.damdamdeo.eventdataspreader.writeside.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AbstractAggregateRootRepository;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootProjectionRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 
 import javax.enterprise.context.Dependent;
-import javax.persistence.EntityManager;
 
 @Dependent
 public class DefaultGiftAggregateRepository extends AbstractAggregateRootRepository<GiftAggregate> implements GiftAggregateRepository {
 
-    final EntityManager entityManager;
+    final AggregateRootProjectionRepository aggregateRootProjectionRepository;
     final EventRepository eventRepository;
     final AggregateRootSerializer aggregateRootSerializer;
 
-    public DefaultGiftAggregateRepository(final EntityManager entityManager,
+    public DefaultGiftAggregateRepository(final AggregateRootProjectionRepository aggregateRootProjectionRepository,
                                           final EventRepository eventRepository,
                                           final AggregateRootSerializer aggregateRootSerializer) {
-        this.entityManager = entityManager;
+        this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
         this.eventRepository = eventRepository;
         this.aggregateRootSerializer = aggregateRootSerializer;
     }
@@ -35,12 +35,8 @@ public class DefaultGiftAggregateRepository extends AbstractAggregateRootReposit
     }
 
     @Override
-    protected EntityManager entityManager() {
-        return entityManager;
+    protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
+        return aggregateRootProjectionRepository;
     }
 
-    @Override
-    protected AggregateRootSerializer aggregateRootSerializer() {
-        return aggregateRootSerializer;
-    }
 }

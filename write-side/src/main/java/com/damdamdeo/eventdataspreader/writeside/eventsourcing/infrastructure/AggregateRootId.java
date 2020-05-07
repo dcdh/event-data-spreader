@@ -1,25 +1,17 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import java.io.Serializable;
 import java.util.Objects;
 
-@Embeddable
-public class AggregateRootId implements Serializable {
+public final class AggregateRootId {
 
-    @Column(name="aggregateRootId")
-    private String aggregateRootId;
+    final String aggregateRootId;
 
-    @Column(name="aggregateRootType")
-    private String aggregateRootType;
-
-    public AggregateRootId() {}
+    final String aggregateRootType;
 
     public AggregateRootId(final String aggregateRootId,
                            final String aggregateRootType) {
-        this.aggregateRootId = aggregateRootId;
-        this.aggregateRootType = aggregateRootType;
+        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
     }
 
     @Override
