@@ -83,9 +83,9 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
                 .collect(Collectors.toList());
         try (final Connection connection = aggregateRootProjectionEventStoreDataSource.getConnection()) {
             for (final PostgreSQLDecryptableEvent postgreSQLDecryptableEvent : eventsToSave) {
-                final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection);
-                preparedStatement.executeUpdate();
-                preparedStatement.close();
+                try (final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection)) {
+                    preparedStatement.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
