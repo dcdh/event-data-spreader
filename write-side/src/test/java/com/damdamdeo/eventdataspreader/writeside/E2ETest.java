@@ -133,7 +133,7 @@ public class E2ETest {
         aggregateRootRepository.save(giftAggregate);
 
         // Then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(10, TimeUnit.SECONDS).until(() -> {
             final List<Event> events = loadOrderByCreationDateASC();
             final Long nbOfConsumedEvent;
             try (final Connection con = consumedEventsDataSource.getConnection();
