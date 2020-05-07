@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -56,7 +55,6 @@ public class E2ETest {
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
 
     @BeforeEach
-    @Transactional
     public void setup() throws Exception {
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
