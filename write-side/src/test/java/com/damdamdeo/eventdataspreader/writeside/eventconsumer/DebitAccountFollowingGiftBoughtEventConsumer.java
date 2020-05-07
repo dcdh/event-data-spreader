@@ -3,9 +3,9 @@ package com.damdamdeo.eventdataspreader.writeside.eventconsumer;
 import com.damdamdeo.eventdataspreader.event.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.query.event.GiftAggregateGiftBoughtEventPayload;
 
 import javax.enterprise.context.Dependent;
@@ -15,10 +15,10 @@ import java.util.Objects;
 @Dependent
 public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsumer {
 
-    final AccountAggregateRepository accountAggregateRepository;
+    final AggregateRootRepository aggregateRootRepository;
 
-    public DebitAccountFollowingGiftBoughtEventConsumer(final AccountAggregateRepository accountAggregateRepository) {
-        this.accountAggregateRepository = Objects.requireNonNull(accountAggregateRepository);
+    public DebitAccountFollowingGiftBoughtEventConsumer(final AggregateRootRepository aggregateRootRepository) {
+        this.aggregateRootRepository = Objects.requireNonNull(aggregateRootRepository);
     }
 
     // je creer une commande à partir d'un event ;)
@@ -33,7 +33,7 @@ public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsum
         final AccountAggregate accountAggregate = new AccountAggregate();
         accountAggregate.handle(new DebitAccountCommand(
                 owner, price, executedBy));
-        accountAggregateRepository.save(accountAggregate);
+        aggregateRootRepository.save(accountAggregate);
     }
 
     @Override

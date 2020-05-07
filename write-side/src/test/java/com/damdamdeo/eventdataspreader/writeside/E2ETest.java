@@ -4,12 +4,11 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.Even
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.EventConsumedId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLDecryptableEvent;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -39,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class E2ETest {
 
     @Inject
-    GiftAggregateRepository giftAggregateRepository;
+    AggregateRootRepository aggregateRootRepository;
 
     @Inject
     EntityManager entityManager;
@@ -54,9 +53,6 @@ public class E2ETest {
     @Inject
     @DataSource("aggregate-root-projection-event-store")
     AgroalDataSource aggregateRootProjectionEventStoreDataSource;
-
-    @Inject
-    EventRepository eventRepository;
 
     @Inject
     EventMetadataDeserializer eventMetadataDeserializer;
@@ -134,7 +130,7 @@ public class E2ETest {
         giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
 
         // When
-        giftAggregateRepository.save(giftAggregate);
+        aggregateRootRepository.save(giftAggregate);
 
         // Then
         await().atMost(30, TimeUnit.SECONDS).until(() -> {

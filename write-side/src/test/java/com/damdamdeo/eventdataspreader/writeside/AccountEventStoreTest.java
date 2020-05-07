@@ -1,10 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class AccountEventStoreTest extends AbstractTest {
 
     @Inject
-    AccountAggregateRepository accountAggregateRepository;
+    AggregateRootRepository aggregateRootRepository;
 
     @Inject
     EventRepository eventRepository;
@@ -33,7 +33,7 @@ public class AccountEventStoreTest extends AbstractTest {
         accountAggregate.handle(new DebitAccountCommand("owner", new BigDecimal("100.01"), "executedBy"));
 
         // When save
-        final AccountAggregate accountAggregateSaved = accountAggregateRepository.save(accountAggregate);
+        final AccountAggregate accountAggregateSaved = aggregateRootRepository.save(accountAggregate);
 
         // Then
         assertEquals("owner", accountAggregateSaved.aggregateRootId());

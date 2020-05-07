@@ -7,49 +7,18 @@ import org.mockito.InOrder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class AbstractAggregateRootRepositoryTest {
+public class DefaultAggregateRootRepositoryTest {
 
     private final class TestAggregateRoot extends AggregateRoot {}
-
-    private final class TestAbstractAggregateRootRepository extends AbstractAggregateRootRepository<TestAggregateRoot> {
-
-        private final TestAggregateRoot testAggregateRoot;
-        private final EventRepository eventRepository;
-        private final AggregateRootProjectionRepository aggregateRootProjectionRepository;
-
-        public TestAbstractAggregateRootRepository(final TestAggregateRoot testAggregateRoot,
-                                                   final EventRepository eventRepository,
-                                                   final AggregateRootProjectionRepository aggregateRootProjectionRepository) {
-            this.testAggregateRoot = testAggregateRoot;
-            this.eventRepository = eventRepository;
-            this.aggregateRootProjectionRepository = aggregateRootProjectionRepository;
-        }
-
-        @Override
-        protected TestAggregateRoot createNewInstance() {
-            return testAggregateRoot;
-        }
-
-        @Override
-        protected EventRepository eventRepository() {
-            return eventRepository;
-        }
-
-        @Override
-        protected AggregateRootProjectionRepository aggregateRootProjectionRepository() {
-            return aggregateRootProjectionRepository;
-        }
-
-    }
 
     @Test
     public void should_fail_fast_when_aggregateRoot_is_null() {
         // Given
-        final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                mock(TestAggregateRoot.class), mock(EventRepository.class), mock(AggregateRootProjectionRepository.class));
+        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
+                mock(EventRepository.class), mock(AggregateRootProjectionRepository.class));
 
         // When && Then
-        assertThrows(NullPointerException.class, () -> testAbstractAggregateRootRepository.save(null));
+        assertThrows(NullPointerException.class, () -> defaultAggregateRootRepository.save(null));
     }
 
     @Test
@@ -58,8 +27,8 @@ public class AbstractAggregateRootRepositoryTest {
         final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
         final EventRepository eventRepository = mock(EventRepository.class);
         final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
-        final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
+        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
+                eventRepository, aggregateRootProjectionRepository);
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
         when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
@@ -68,7 +37,7 @@ public class AbstractAggregateRootRepositoryTest {
         final InOrder inOrder = inOrder(testAggregateRoot);
 
         // When
-        testAbstractAggregateRootRepository.save(testAggregateRoot);
+        defaultAggregateRootRepository.save(testAggregateRoot);
 
         // Then
         verify(eventRepository).save(anyList());
@@ -85,8 +54,8 @@ public class AbstractAggregateRootRepositoryTest {
         final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
         final EventRepository eventRepository = mock(EventRepository.class);
         final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
-        final TestAbstractAggregateRootRepository testAbstractAggregateRootRepository = new TestAbstractAggregateRootRepository(
-                testAggregateRoot, eventRepository, aggregateRootProjectionRepository);
+        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
+                eventRepository, aggregateRootProjectionRepository);
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
         when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
@@ -94,7 +63,7 @@ public class AbstractAggregateRootRepositoryTest {
         testAggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class));
 
         // When
-        testAbstractAggregateRootRepository.save(testAggregateRoot);
+        defaultAggregateRootRepository.save(testAggregateRoot);
 // TODO revoir tests !
         // Then
         verify(aggregateRootProjectionRepository).merge(testAggregateRoot);

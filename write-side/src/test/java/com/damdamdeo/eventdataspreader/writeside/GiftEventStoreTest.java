@@ -1,12 +1,12 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRepository;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftBoughtEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class GiftEventStoreTest extends AbstractTest {
 
     @Inject
-    GiftAggregateRepository giftAggregateRepository;
+    AggregateRootRepository aggregateRootRepository;
 
     @Inject
     EventRepository eventRepository;
@@ -35,7 +35,7 @@ public class GiftEventStoreTest extends AbstractTest {
         giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
 
         // When save
-        final GiftAggregate giftAggregateSaved = giftAggregateRepository.save(giftAggregate);
+        final GiftAggregate giftAggregateSaved = aggregateRootRepository.save(giftAggregate);
 
         // Then
         assertEquals("Motorola G6", giftAggregateSaved.aggregateRootId());
