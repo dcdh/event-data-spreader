@@ -63,7 +63,6 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
         }
     }
 
-    // FIXME gérer moi meme la transaction !!! virer le @Transactional !!!
     @Transactional
     @Override
     public void save(final List<Event> events) {
@@ -105,7 +104,6 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
         return secretStore.read(aggregateRootType, aggregateRootId);
     }
 
-    // FIXME gérer moi meme la transaction !!! virer le @Transactional !!!
     @Transactional
     @Override
     public List<Event> loadOrderByCreationDateASC(final String aggregateRootId, final String aggregateRootType) {
