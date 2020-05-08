@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,7 +33,6 @@ public class KafkaEventConsumerTest {
     EventConsumedRepository eventConsumedRepository;
 
     @BeforeEach
-    @Transactional
     public void setup() {
         try (final Connection con = consumedEventsDataSource.getConnection();
              final Statement stmt = con.createStatement()) {

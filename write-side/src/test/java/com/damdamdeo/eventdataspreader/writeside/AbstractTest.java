@@ -5,7 +5,6 @@ import io.quarkus.agroal.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -25,7 +24,6 @@ public abstract class AbstractTest {
     AgroalDataSource consumedEventsDataSource;
 
     @BeforeEach
-    @Transactional
     public void setup() {
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
