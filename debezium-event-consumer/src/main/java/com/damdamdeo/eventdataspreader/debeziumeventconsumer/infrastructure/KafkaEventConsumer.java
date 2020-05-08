@@ -69,7 +69,6 @@ public class KafkaEventConsumer {
         return CompletableFuture.supplyAsync(() -> {
             boolean processedSuccessfully = true;
             do {
-                processedSuccessfully = true;
                 try {
                     final DebeziumEventKafkaMessage debeziumEventKafkaMessage = new DebeziumEventKafkaMessage(record);
                     final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(debeziumEventKafkaMessage.aggregateRootType(),
