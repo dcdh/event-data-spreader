@@ -1,5 +1,7 @@
 package com.damdamdeo.eventdataspreader.queryside;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 import io.agroal.api.AgroalDataSource;
@@ -14,7 +16,6 @@ import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,9 @@ public class QuerySideTest {
     @DataSource("consumed-events")
     AgroalDataSource consumedEventsDataSource;
 
+    @Inject
+    EventConsumedRepository eventConsumedRepository;
+
     @BeforeEach
     @Transactional
     public void setup() {
@@ -64,6 +68,34 @@ public class QuerySideTest {
         entityManager.createQuery("DELETE FROM AccountEntity").executeUpdate();
     }
 
+    private static final class TestEventId implements EventId {
+
+        private final String aggregateRootId;
+        private final String aggregateRootType;
+        private final Long version;
+
+        public TestEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
+            this.aggregateRootId = aggregateRootId;
+            this.aggregateRootType = aggregateRootType;
+            this.version = version;
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return aggregateRootId;
+        }
+
+        @Override
+        public String aggregateRootType() {
+            return aggregateRootType;
+        }
+
+        @Override
+        public Long version() {
+            return version;
+        }
+    }
+
     @Test
     public void should_consume_events() throws Exception {
         // When
@@ -72,18 +104,16 @@ public class QuerySideTest {
         kafkaDebeziumProducer.produce("event/AccountDebited.json");
 
         // Then
-        await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            final Long nbOfConsumedEvent;
-            try (final Connection con = consumedEventsDataSource.getConnection();
-                 final Statement stmt = con.createStatement();
-                 final ResultSet resultSet = stmt.executeQuery("SELECT COUNT(*) AS nbOfConsumedEvent FROM CONSUMED_EVENT e WHERE e.consumed = true")) {
-                resultSet.next();
-                nbOfConsumedEvent = resultSet.getLong("nbOfConsumedEvent");
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            return nbOfConsumedEvent == 3;
-        });
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("MotorolaG6", "GiftAggregate", 0l)));
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("MotorolaG6", "GiftAggregate", 1l)));
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("damdamdeo", "AccountAggregate", 0l)));
+
         transaction.begin();
         final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "MotorolaG6");
         final AccountEntity accountEntity = entityManager.find(AccountEntity.class, "damdamdeo");

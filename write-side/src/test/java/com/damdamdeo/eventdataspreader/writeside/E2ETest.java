@@ -1,5 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
@@ -53,6 +55,9 @@ public class E2ETest {
 
     @Inject
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
+
+    @Inject
+    EventConsumedRepository eventConsumedRepository;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -119,6 +124,34 @@ public class E2ETest {
                 .statusCode(204);
     }
 
+    private static final class TestEventId implements EventId {
+
+        private final String aggregateRootId;
+        private final String aggregateRootType;
+        private final Long version;
+
+        public TestEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
+            this.aggregateRootId = aggregateRootId;
+            this.aggregateRootType = aggregateRootType;
+            this.version = version;
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return aggregateRootId;
+        }
+
+        @Override
+        public String aggregateRootType() {
+            return aggregateRootType;
+        }
+
+        @Override
+        public Long version() {
+            return version;
+        }
+    }
+
     @Test
     public void should_buy_offer_the_gift_and_debit_account() throws Exception{
         // Given
@@ -130,19 +163,16 @@ public class E2ETest {
         aggregateRootRepository.save(giftAggregate);
 
         // Then
-        await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            final List<Event> events = loadOrderByCreationDateASC();
-            final Long nbOfConsumedEvent;
-            try (final Connection con = consumedEventsDataSource.getConnection();
-                 final Statement stmt = con.createStatement();
-                 final ResultSet resultSet = stmt.executeQuery("SELECT COUNT(*) AS nbOfConsumedEvent FROM CONSUMED_EVENT e WHERE e.consumed = true")) {
-                resultSet.next();
-                nbOfConsumedEvent = resultSet.getLong("nbOfConsumedEvent");
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            return events.size() == 3 && nbOfConsumedEvent == 3;
-        });
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("Motorola G6", "GiftAggregate", 0l)));
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("Motorola G6", "GiftAggregate", 1l)));
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                        new TestEventId("damdamdeo", "AccountAggregate", 0l)));
+
         final List<Event> events = loadOrderByCreationDateASC();
 
         // -- GiftBought
