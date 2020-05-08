@@ -1,0 +1,37 @@
+{
+  "topic": "event",
+  "key": {
+    "aggregaterootid": "damdamdeo",
+    "aggregateroottype": "AccountAggregate",
+    "version": 0
+  },
+  "value": {
+    "before": null,
+    "after": {
+      "aggregaterootid": "damdamdeo",
+      "aggregateroottype": "AccountAggregate",
+      "version": 0,
+      "creationdate": 1569174260987000,
+      "eventtype": "AccountDebited",
+      "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
+      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}"
+    },
+    "source": {
+      "version": "0.10.0.Beta2",
+      "connector": "postgresql",
+      "name": "event-store",
+      "ts_ms": 1569167061018,
+      "snapshot": "false",
+      "db": "event-store",
+      "schema": "public",
+      "table": "event",
+      "txId": 575,
+      "lsn": 24756288,
+      "xmin": null
+    },
+    "op": "c",
+    "ts_ms": 1569167061281
+  },
+  "partition": 0,
+  "offset": 2
+}
