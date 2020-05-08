@@ -5,12 +5,14 @@ import com.damdamdeo.eventdataspreader.eventsourcing.api.SecretStore;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -35,6 +37,18 @@ public class AgroalDataSourcePostgresqlSecretStoreTest {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void should_tables_be_initialised_at_application_startup() {
+        Assertions.assertDoesNotThrow(() -> {
+            try (final Connection con = secretStoreDataSource.getConnection();
+                 final Statement stmt = con.createStatement();
+                 final ResultSet rsSecretStore = stmt.executeQuery("SELECT * FROM SECRET_STORE")) {
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Test
