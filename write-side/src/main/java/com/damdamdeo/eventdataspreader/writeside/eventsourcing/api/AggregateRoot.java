@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.Validate;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public abstract class AggregateRoot implements Serializable {
                 this.aggregateRootType,
                 aggregateRootEventPayload.eventName(),
                 this.version,
-                new Date(),
+                LocalDateTime.now(),
                 aggregateRootEventPayload,
                 eventMetaData);
         this.unsavedEvents.add(eventToApply);

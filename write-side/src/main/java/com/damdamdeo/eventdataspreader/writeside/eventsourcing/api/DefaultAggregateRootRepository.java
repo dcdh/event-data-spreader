@@ -33,7 +33,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     public <T extends AggregateRoot> T load(String aggregateRootId, Class<T> clazz) throws UnknownAggregateRootException {
         Objects.requireNonNull(aggregateRootId);
         final T instance = createNewInstance(clazz);
-        final List<Event> events = eventRepository.loadOrderByCreationDateASC(aggregateRootId, instance.getClass().getSimpleName());
+        final List<Event> events = eventRepository.loadOrderByVersionASC(aggregateRootId, instance.getClass().getSimpleName());
         if (events.size() == 0) {
             throw new UnknownAggregateRootException(aggregateRootId);
         }

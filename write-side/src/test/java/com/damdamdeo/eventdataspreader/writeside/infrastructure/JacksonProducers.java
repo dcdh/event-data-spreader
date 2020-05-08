@@ -13,6 +13,7 @@ import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGi
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayload;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.TestAggregateRootEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootEventPayloadSubtypes;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.spi.JacksonAggregateRootSubtypes;
 
@@ -31,7 +32,8 @@ public class JacksonProducers {
             public List<JacksonSubtype<AggregateRootEventPayload>> jacksonSubtypes() {
                 return asList(new JacksonSubtype<>(AccountAggregateAccountDebitedEventPayload.class, "AccountAggregateAccountDebitedEventPayload"),
                         new JacksonSubtype<>(GiftAggregateGiftBoughtEventPayload.class, "GiftAggregateGiftBoughtEventPayload"),
-                        new JacksonSubtype<>(GiftAggregateGiftOfferedEventPayload.class, "GiftAggregateGiftOfferedEventPayload"));
+                        new JacksonSubtype<>(GiftAggregateGiftOfferedEventPayload.class, "GiftAggregateGiftOfferedEventPayload"),
+                        new JacksonSubtype<>(TestAggregateRootEventPayload.class, "TestAggregateRootEventPayload"));
             }
 
         };

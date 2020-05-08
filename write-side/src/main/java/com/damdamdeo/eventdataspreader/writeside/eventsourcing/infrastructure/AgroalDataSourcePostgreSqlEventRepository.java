@@ -107,7 +107,7 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
 
     @Transactional
     @Override
-    public List<Event> loadOrderByCreationDateASC(final String aggregateRootId, final String aggregateRootType) {
+    public List<Event> loadOrderByVersionASC(final String aggregateRootId, final String aggregateRootType) {
         final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(aggregateRootType,aggregateRootId);
         try (final Connection connection = aggregateRootProjectionEventStoreDataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ? ORDER BY e.version ASC")) {

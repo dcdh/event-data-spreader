@@ -75,7 +75,7 @@ public class AggregateRootRepositoryTest {
     public void should_load_aggregateRoot() {
         // Given
         final List<Event> events = Collections.singletonList(mock(Event.class));
-        doReturn(events).when(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        doReturn(events).when(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
         final TestAggregateRoot aggregateRoot = mock(TestAggregateRoot.class);
         doReturn(aggregateRoot).when(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
 
@@ -85,14 +85,14 @@ public class AggregateRootRepositoryTest {
         // Then
         assertEquals(aggregateRoot, aggregateRootLoaded);
         verify(aggregateRoot).loadFromHistory(events);
-        verify(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        verify(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
         verify(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
     }
 
     @Test
     public void should_throw_exception_when_no_events_are_presents() {
         // Given
-        doReturn(Collections.emptyList()).when(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        doReturn(Collections.emptyList()).when(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
         final TestAggregateRoot aggregateRoot = mock(TestAggregateRoot.class);
         doReturn(aggregateRoot).when(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
 
@@ -103,7 +103,7 @@ public class AggregateRootRepositoryTest {
 
         verify(aggregateRoot, never()).loadFromHistory(ArgumentMatchers.anyList());
         verify(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
-        verify(eventRepository).loadOrderByCreationDateASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        verify(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
     }
 
 }

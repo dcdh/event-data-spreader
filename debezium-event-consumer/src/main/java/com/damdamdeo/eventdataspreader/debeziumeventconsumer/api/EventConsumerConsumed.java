@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public interface EventConsumerConsumed {
 
@@ -10,7 +10,7 @@ public interface EventConsumerConsumed {
 
     String consumerClassName();
 
-    Date consumedAt();
+    LocalDateTime consumedAt();
 
     String gitCommitId();
 

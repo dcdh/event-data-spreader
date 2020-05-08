@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -21,7 +21,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
 
     private final DefaultEventId defaultEventId;
 
-    private final Date creationDate;
+    private final LocalDateTime creationDate;
 
     private final String eventType;
 
@@ -35,7 +35,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
                 resultSet.getString("aggregateroottype"),
                 resultSet.getLong("version")
         );
-        this.creationDate = resultSet.getDate("creationdate");
+        this.creationDate = resultSet.getObject("creationdate", LocalDateTime.class);
         this.eventType = resultSet.getString("eventtype");
         this.eventMetaData = resultSet.getString("eventmetadata");
         this.eventPayload = resultSet.getString("eventpayload");
@@ -58,7 +58,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         preparedStatement.setString(1, defaultEventId.aggregateRootId());
         preparedStatement.setString(2, defaultEventId.aggregateRootType());
         preparedStatement.setLong(3, defaultEventId.version());
-        preparedStatement.setDate(4, new java.sql.Date(creationDate.getTime()));
+        preparedStatement.setObject(4, creationDate);
         preparedStatement.setString(5, eventType);
         preparedStatement.setString(6, eventMetaData);
         preparedStatement.setString(7, eventPayload);
@@ -72,7 +72,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     public static class EncryptedEventBuilder {
         private EventId eventId;
         private String eventType;
-        private Date creationDate;
+        private LocalDateTime creationDate;
         private AggregateRootEventPayload aggregateRootEventPayload;
         private EventMetadata eventMetaData;
 
@@ -86,7 +86,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
             return this;
         }
 
-        public EncryptedEventBuilder withCreationDate(final Date creationDate) {
+        public EncryptedEventBuilder withCreationDate(final LocalDateTime creationDate) {
             this.creationDate = creationDate;
             return this;
         }
@@ -130,8 +130,8 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     }
 
     @Override
-    public Date creationDate() {
-        return new Date(creationDate.getTime());
+    public LocalDateTime creationDate() {
+        return creationDate;
     }
 
     public String aggregateRootId() {

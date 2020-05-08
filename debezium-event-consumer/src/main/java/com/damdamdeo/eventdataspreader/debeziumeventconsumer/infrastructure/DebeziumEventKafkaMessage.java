@@ -1,11 +1,13 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.*;
 import com.damdamdeo.eventdataspreader.event.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 public final class DebeziumEventKafkaMessage implements DecryptableEvent {
@@ -20,7 +22,7 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
     private static final String EVENT_EVENT_PAYLOAD = "eventpayload";
 
     private final EventId eventId;
-    private final Date creationDate;
+    private final LocalDateTime creationDate;
 
     private final String eventType;
     private final String eventMetaData;
@@ -46,8 +48,8 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
         }
         final JsonObject after = record.getPayload().getJsonObject(AFTER);
         this.eventId = new DebeziumEventId(after);
-        this.creationDate = new Date(after.getLong(EVENT_CREATION_DATE) / 1000);
-
+        final Instant instant = Instant.ofEpochMilli(after.getLong(EVENT_CREATION_DATE) / 1000);
+        this.creationDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
         this.eventType = after.getString(EVENT_EVENT_TYPE);
         this.eventMetaData = after.getString(EVENT_EVENT_METADATA);
         this.eventPayload = after.getString(EVENT_EVENT_PAYLOAD);
@@ -59,7 +61,7 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
     }
 
     @Override
-    public Date creationDate() {
+    public LocalDateTime creationDate() {
         return creationDate;
     }
 

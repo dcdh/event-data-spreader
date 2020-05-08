@@ -6,7 +6,7 @@ import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import org.apache.commons.lang3.Validate;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ public final class Event {
 
     private final EventId eventId;
     private final String eventType;
-    private final Date creationDate;
+    private final LocalDateTime creationDate;
     private final EventMetadata eventMetaData;
     private final AggregateRootEventPayload aggregateRootEventPayload;
 
@@ -22,7 +22,7 @@ public final class Event {
                  final String aggregateRootType,
                  final String eventType,
                  final Long version,
-                 final Date creationDate,
+                 final LocalDateTime creationDate,
                  final AggregateRootEventPayload aggregateRootEventPayload,
                  final EventMetadata eventMetaData) {
         this.eventId = new DefaultEventId(aggregateRootId, aggregateRootType, version);
@@ -67,7 +67,7 @@ public final class Event {
         return eventId.version();
     }
 
-    public Date creationDate() {
+    public LocalDateTime creationDate() {
         return creationDate;
     }
 

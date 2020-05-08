@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.event.api;
 
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -10,7 +10,7 @@ public final class Event {
 
     private final EventId eventId;
     private final String eventType;
-    private final Date creationDate;
+    private final LocalDateTime creationDate;
     private final EventPayload eventPayload;
     private final EventMetadata eventMetaData;
 
@@ -45,7 +45,7 @@ public final class Event {
         return eventId.version();
     }
 
-    public Date creationDate() {
+    public LocalDateTime creationDate() {
         return creationDate;
     }
 

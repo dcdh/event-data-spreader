@@ -42,7 +42,7 @@ public class GiftEventStoreTest extends AbstractTest {
         assertEquals("Motorola G6", giftAggregateSaved.name());
         assertEquals(1l, giftAggregateSaved.version());
 
-        final List<Event> events = eventRepository.loadOrderByCreationDateASC("Motorola G6", "GiftAggregate");
+        final List<Event> events = eventRepository.loadOrderByVersionASC("Motorola G6", "GiftAggregate");
         assertEquals(2, events.size());
         // -- GiftBought
         assertEquals("Motorola G6", events.get(0).aggregateRootId());

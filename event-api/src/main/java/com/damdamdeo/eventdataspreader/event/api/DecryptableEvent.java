@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.event.api;
 
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface DecryptableEvent {
@@ -11,7 +11,7 @@ public interface DecryptableEvent {
 
     String eventType();
 
-    Date creationDate();
+    LocalDateTime creationDate();
 
     EventPayload eventPayload(Optional<EncryptedEventSecret> encryptedEventSecret, EventPayloadDeserializer eventPayloadDeserializer);
 
