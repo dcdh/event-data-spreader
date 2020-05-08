@@ -2,17 +2,17 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventConsumedRepository {
 
-    void addEventConsumerConsumed(EventId eventId, Class consumerClass, KafkaSource kafkaSource, String gitCommitId);
+    void addEventConsumerConsumed(EventId eventId, Class consumerClass, LocalDateTime consumedAt, KafkaSource kafkaSource, String gitCommitId);
 
-    void markEventAsConsumed(EventId eventId, Date consumedAt, KafkaSource kafkaSource);
+    void markEventAsConsumed(EventId eventId, LocalDateTime consumedAt, KafkaSource kafkaSource);
 
-    boolean hasConsumedEvent(EventId eventId);
+    boolean hasFinishedConsumingEvent(EventId eventId);
 
-    List<String> getConsumedEventsForEventId(EventId eventId);
+    List<String> getConsumersHavingProcessedEvent(EventId eventId);
 
 }

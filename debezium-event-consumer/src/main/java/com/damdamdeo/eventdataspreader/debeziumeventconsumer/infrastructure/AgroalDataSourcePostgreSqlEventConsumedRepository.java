@@ -12,8 +12,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.Date;
 
 // I could used entities to do some business cases like marked an event as consumed. However it will imply a lot of mapping ...
 
@@ -48,19 +48,21 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
 
     @Override
     @Transactional
-    public void addEventConsumerConsumed(final EventId eventId, final Class consumerClass, final KafkaSource kafkaSource, final String gitCommitId) {
+    // FIXME FCK le nom n'est pas bon : startConsumingEvent !!!
+    public void addEventConsumerConsumed(final EventId eventId, final Class consumerClass, final LocalDateTime consumedAt, final KafkaSource kafkaSource, final String gitCommitId) {
         // Upsert EVENT_CONSUMED
         try (final Connection connection = consumedEventsDataSource.getConnection();
-             final PreparedStatement upsertEventConsumedPreparedStatement = connection.prepareStatement("INSERT INTO CONSUMED_EVENT (aggregaterootid, aggregateroottype, version, consumed, kafkapartition, kafkatopic, kafkaoffset) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+             final PreparedStatement upsertEventConsumedPreparedStatement = connection.prepareStatement("INSERT INTO CONSUMED_EVENT (aggregaterootid, aggregateroottype, version, consumed, consumedat, kafkapartition, kafkatopic, kafkaoffset) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                      "ON CONFLICT ON CONSTRAINT eventconsumed_pkey DO NOTHING")) {
             upsertEventConsumedPreparedStatement.setString(1, eventId.aggregateRootId());
             upsertEventConsumedPreparedStatement.setString(2, eventId.aggregateRootType());
             upsertEventConsumedPreparedStatement.setLong(3, eventId.version());
             upsertEventConsumedPreparedStatement.setBoolean(4, Boolean.FALSE);
-            upsertEventConsumedPreparedStatement.setInt(5, kafkaSource.partition());
-            upsertEventConsumedPreparedStatement.setString(6, kafkaSource.topic());
-            upsertEventConsumedPreparedStatement.setLong(7, kafkaSource.offset());
+            upsertEventConsumedPreparedStatement.setObject(5, consumedAt);
+            upsertEventConsumedPreparedStatement.setInt(6, kafkaSource.partition());
+            upsertEventConsumedPreparedStatement.setString(7, kafkaSource.topic());
+            upsertEventConsumedPreparedStatement.setLong(8, kafkaSource.offset());
             upsertEventConsumedPreparedStatement.executeUpdate();
             // Add CONSUMED_EVENT_CONSUMER
             try (final PreparedStatement addEventConsumerConsumedPreparedStatement = connection.prepareStatement(
@@ -70,7 +72,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
                 addEventConsumerConsumedPreparedStatement.setString(2, eventId.aggregateRootType());
                 addEventConsumerConsumedPreparedStatement.setLong(3, eventId.version());
                 addEventConsumerConsumedPreparedStatement.setString(4, consumerClass.getName());
-                addEventConsumerConsumedPreparedStatement.setDate(5, new java.sql.Date(new Date().getTime()));
+                addEventConsumerConsumedPreparedStatement.setObject(5, consumedAt);
                 addEventConsumerConsumedPreparedStatement.setString(6, gitCommitId);
                 addEventConsumerConsumedPreparedStatement.executeUpdate();
             }
@@ -81,18 +83,19 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
 
     @Override
     @Transactional
-    public void markEventAsConsumed(final EventId eventId, final Date consumedAt, final KafkaSource kafkaSource) {
+    public void markEventAsConsumed(final EventId eventId, final LocalDateTime consumedAt, final KafkaSource kafkaSource) {
         try (final Connection connection = consumedEventsDataSource.getConnection();
-             final PreparedStatement markEventAsConsumedPreparedStatement = connection.prepareStatement("INSERT INTO CONSUMED_EVENT (aggregaterootid, aggregateroottype, version, consumed, kafkapartition, kafkatopic, kafkaoffset) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+             final PreparedStatement markEventAsConsumedPreparedStatement = connection.prepareStatement("INSERT INTO CONSUMED_EVENT (aggregaterootid, aggregateroottype, version, consumed, consumedat, kafkapartition, kafkatopic, kafkaoffset) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                      "ON CONFLICT ON CONSTRAINT eventconsumed_pkey DO UPDATE SET consumed = EXCLUDED.consumed")) {
             markEventAsConsumedPreparedStatement.setString(1, eventId.aggregateRootId());
             markEventAsConsumedPreparedStatement.setString(2, eventId.aggregateRootType());
             markEventAsConsumedPreparedStatement.setLong(3, eventId.version());
             markEventAsConsumedPreparedStatement.setBoolean(4, Boolean.TRUE);
-            markEventAsConsumedPreparedStatement.setInt(5, kafkaSource.partition());
-            markEventAsConsumedPreparedStatement.setString(6, kafkaSource.topic());
-            markEventAsConsumedPreparedStatement.setLong(7, kafkaSource.offset());
+            markEventAsConsumedPreparedStatement.setObject(5, consumedAt);
+            markEventAsConsumedPreparedStatement.setInt(6, kafkaSource.partition());
+            markEventAsConsumedPreparedStatement.setString(7, kafkaSource.topic());
+            markEventAsConsumedPreparedStatement.setLong(8, kafkaSource.offset());
             markEventAsConsumedPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -101,15 +104,17 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
 
     @Override
     @Transactional
-    public boolean hasConsumedEvent(final EventId eventId) {
+    public boolean hasFinishedConsumingEvent(final EventId eventId) {
         try (final Connection connection = consumedEventsDataSource.getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement("SELECT EXISTS (SELECT * FROM CONSUMED_EVENT WHERE aggregaterootid = ? AND aggregateroottype = ? AND version = ?)")) {
+             final PreparedStatement preparedStatement = connection.prepareStatement("SELECT consumed FROM CONSUMED_EVENT WHERE aggregaterootid = ? AND aggregateroottype = ? AND version = ?")) {
             preparedStatement.setString(1, eventId.aggregateRootId());
             preparedStatement.setString(2, eventId.aggregateRootType());
             preparedStatement.setLong(3, eventId.version());
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getBoolean("exists");
+                if (resultSet.next()) {
+                    return resultSet.getBoolean("consumed");
+                }
+                return false;
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -118,7 +123,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
 
     @Override
     @Transactional
-    public List<String> getConsumedEventsForEventId(final EventId eventId) {
+    public List<String> getConsumersHavingProcessedEvent(final EventId eventId) {
         try (final Connection connection = consumedEventsDataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement("SELECT e.consumerclassname FROM CONSUMED_EVENT_CONSUMER e WHERE aggregaterootid = ? AND aggregateroottype = ? AND version = ?")) {
             preparedStatement.setString(1, eventId.aggregateRootId());

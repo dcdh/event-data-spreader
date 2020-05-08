@@ -15,6 +15,7 @@ import javax.json.JsonReader;
 import javax.transaction.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -75,28 +76,29 @@ public class KafkaEventConsumer {
                             debeziumEventKafkaMessage.aggregateRootId());
                     final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
                     final EventId eventId = decryptableEvent.eventId();
-                    if (!eventConsumedRepository.hasConsumedEvent(eventId)) {
+                    if (!eventConsumedRepository.hasFinishedConsumingEvent(eventId)) {
                         final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
                         final String eventType = decryptableEvent.eventType();
 
-                        final List<EventConsumer> eventConsumersToExecute = eventConsumersBeans.stream()
+                        final List<EventConsumer> consumersToProcessEvent = eventConsumersBeans.stream()
                                 .filter(eventConsumer -> aggregateRootType.equals(eventConsumer.aggregateRootType()))
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
-                        for (final EventConsumer eventConsumerToExecute: eventConsumersToExecute) {
+                        for (final EventConsumer consumerToProcessEvent: consumersToProcessEvent) {
                             final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
-                            final List<String> consumedEventClassNames = eventConsumedRepository.getConsumedEventsForEventId(event.eventId());
-                            if (!consumedEventClassNames.contains(eventConsumerToExecute.getClass().getName())) {
+                            final List<String> consumersHavingProcessedEventClassNames = eventConsumedRepository.getConsumersHavingProcessedEvent(event.eventId());
+                            if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional
-                                eventConsumerToExecute.consume(event);
+                                consumerToProcessEvent.consume(event);
                                 eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
-                                        eventConsumerToExecute.getClass(),
+                                        consumerToProcessEvent.getClass(),
+                                        LocalDateTime.now(),
                                         new ConsumerRecordKafkaSource(record),
                                         gitCommitId);
                                 transaction.commit();
                             }
                         }
-                        eventConsumedRepository.markEventAsConsumed(eventId, new Date(), new ConsumerRecordKafkaSource(record));
+                        eventConsumedRepository.markEventAsConsumed(eventId, LocalDateTime.now(), new ConsumerRecordKafkaSource(record));
                     } else {
                         LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                     }

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS CONSUMED_EVENT (
     aggregateroottype character varying(255) NOT NULL,
     version bigint,
     consumed boolean NOT NULL,
+    consumedat timestamp without time zone,
     kafkapartition integer NOT NULL,
     kafkatopic text NOT NULL,
     kafkaoffset bigint NOT NULL,
