@@ -102,17 +102,17 @@ public class KafkaEventConsumer {
                         LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                     }
                 } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                    waitSomeTime();
                     LOGGER.log(Level.WARNING, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
                             unableToDecodeDebeziumEventMessageException.topic(),
                             unableToDecodeDebeziumEventMessageException.partition(),
                             unableToDecodeDebeziumEventMessageException.offset(),
                             unableToDecodeDebeziumEventMessageException.getMessage()));
                     processedSuccessfully = false;
-                } catch (final Exception exception) {
                     waitSomeTime();
+                } catch (final Exception exception) {
                     LOGGER.log(Level.WARNING, "Message processing failure. Will try once again.", exception);
                     processedSuccessfully = false;
+                    waitSomeTime();
                 }
             } while (!processedSuccessfully);
             return null;
