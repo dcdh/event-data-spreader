@@ -113,6 +113,7 @@ public class E2ETest {
                 .then().log().all()
                 .extract()
                 .body().jsonPath().getString("tasks[0].state").equals("RUNNING"));
+        Thread.sleep(1000);
     }
 
     @AfterEach
