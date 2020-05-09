@@ -2,6 +2,8 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 
+import java.util.Objects;
+
 public class UnableToDecodeDebeziumEventMessageException extends Exception {
 
     private final Integer partition;
@@ -11,9 +13,9 @@ public class UnableToDecodeDebeziumEventMessageException extends Exception {
     public UnableToDecodeDebeziumEventMessageException(final KafkaSource kafkaSource,
                                                        final String message) {
         super(message);
-        this.partition = kafkaSource.partition();
-        this.topic = kafkaSource.topic();
-        this.offset = kafkaSource.offset();
+        this.partition = Objects.requireNonNull(kafkaSource.partition());
+        this.topic = Objects.requireNonNull(kafkaSource.topic());
+        this.offset = Objects.requireNonNull(kafkaSource.offset());
     }
 
     public Integer partition() {

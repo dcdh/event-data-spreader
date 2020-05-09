@@ -46,13 +46,13 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
                     "'op' is missing");
         }
-        final JsonObject after = record.getPayload().getJsonObject(AFTER);
+        final JsonObject after = Objects.requireNonNull(record.getPayload().getJsonObject(AFTER));
         this.eventId = new DebeziumEventId(after);
-        final Instant instant = Instant.ofEpochMilli(after.getLong(EVENT_CREATION_DATE) / 1000);
+        final Instant instant = Instant.ofEpochMilli(Objects.requireNonNull(after.getLong(EVENT_CREATION_DATE)) / 1000);
         this.creationDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
-        this.eventType = after.getString(EVENT_EVENT_TYPE);
-        this.eventMetaData = after.getString(EVENT_EVENT_METADATA);
-        this.eventPayload = after.getString(EVENT_EVENT_PAYLOAD);
+        this.eventType = Objects.requireNonNull(after.getString(EVENT_EVENT_TYPE));
+        this.eventMetaData = Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA));
+        this.eventPayload = Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD));
     }
 
     @Override

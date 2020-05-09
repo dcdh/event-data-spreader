@@ -4,6 +4,8 @@ import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
 public class ConsumerRecordKafkaSource implements KafkaSource {
 
     private final Integer partition;
@@ -11,9 +13,9 @@ public class ConsumerRecordKafkaSource implements KafkaSource {
     private final Long offset;
 
     public ConsumerRecordKafkaSource(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
-        this.partition = record.getPartition();
-        this.topic = record.getTopic();
-        this.offset = record.getOffset();
+        this.partition = Objects.requireNonNull(record.getPartition());
+        this.topic = Objects.requireNonNull(record.getTopic());
+        this.offset = Objects.requireNonNull(record.getOffset());
     }
 
     @Override

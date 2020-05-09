@@ -16,9 +16,9 @@ public final class DebeziumEventId implements EventId {
     private final Long version;
 
     public DebeziumEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
-        this.aggregateRootId = aggregateRootId;
-        this.aggregateRootType = aggregateRootType;
-        this.version = version;
+        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+        this.version = Objects.requireNonNull(version);
     }
 
     public DebeziumEventId(final JsonObject after) {
