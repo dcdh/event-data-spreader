@@ -26,10 +26,9 @@ public abstract class AggregateRoot implements Serializable {
         Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(eventAggregateRootId), "Aggregate root id and event aggregate root id mismatch");
         this.aggregateRootId = eventAggregateRootId;
         this.aggregateRootType = aggregateRootEventPayload.aggregateRootType();
-        final Event eventToApply = new Event(this.aggregateRootId,
-                this.aggregateRootType,
+        final Event eventToApply = new Event(
+                new EventSourcedEventId(this.aggregateRootId, this.aggregateRootType, this.version),
                 aggregateRootEventPayload.eventName(),
-                this.version,
                 LocalDateTime.now(),
                 aggregateRootEventPayload,
                 eventMetaData);

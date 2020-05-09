@@ -9,8 +9,8 @@ import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.DefaultEventId;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLDecryptableEvent;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLEventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -204,18 +204,15 @@ public class E2ETest {
     }
 
     private static final class EventConsumed {
-        private final DefaultEventId eventId;
+        private final PostgreSQLEventId eventId;
         private final Boolean consumed;
 
         public EventConsumed(final ResultSet resultSet) throws Exception {
-            this.eventId = new DefaultEventId(
-                    resultSet.getString("aggregaterootid"),
-                    resultSet.getString("aggregateroottype"),
-                    resultSet.getLong("version"));
+            this.eventId = new PostgreSQLEventId(resultSet);
             this.consumed = resultSet.getBoolean("consumed");
         }
 
-        public DefaultEventId eventId() {
+        public PostgreSQLEventId eventId() {
             return eventId;
         }
 

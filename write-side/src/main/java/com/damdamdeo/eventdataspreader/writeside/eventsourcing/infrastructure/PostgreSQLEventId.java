@@ -1,27 +1,27 @@
-package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
+package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 
-public final class DefaultEventId implements EventId {
+public final class PostgreSQLEventId implements EventId {
 
     private final String aggregateRootId;
-
     private final String aggregateRootType;
-
     private final Long version;
 
-    public DefaultEventId(final String aggregateRootId,
-                          final String aggregateRootType,
-                          final Long version) {
-        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
-        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
-        this.version = Objects.requireNonNull(version);
+    public PostgreSQLEventId(final ResultSet resultSet) throws SQLException {
+        this.aggregateRootId = Objects.requireNonNull(resultSet.getString("aggregaterootid"));
+        this.aggregateRootType = Objects.requireNonNull(resultSet.getString("aggregateroottype"));
+        this.version = Objects.requireNonNull(resultSet.getLong("version"));
     }
 
-    public DefaultEventId(final EventId eventId) {
-        this(eventId.aggregateRootId(), eventId.aggregateRootType(), eventId.version());
+    public PostgreSQLEventId(final EventId eventId) {
+        this.aggregateRootId = Objects.requireNonNull(eventId.aggregateRootId());
+        this.aggregateRootType = Objects.requireNonNull(eventId.aggregateRootType());
+        this.version = Objects.requireNonNull(eventId.version());
     }
 
     @Override
@@ -42,8 +42,8 @@ public final class DefaultEventId implements EventId {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DefaultEventId)) return false;
-        DefaultEventId that = (DefaultEventId) o;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostgreSQLEventId that = (PostgreSQLEventId) o;
         return Objects.equals(aggregateRootId, that.aggregateRootId) &&
                 Objects.equals(aggregateRootType, that.aggregateRootType) &&
                 Objects.equals(version, that.version);
@@ -56,7 +56,7 @@ public final class DefaultEventId implements EventId {
 
     @Override
     public String toString() {
-        return "DefaultEventId{" +
+        return "PostgreSQLEventId{" +
                 "aggregateRootId='" + aggregateRootId + '\'' +
                 ", aggregateRootType='" + aggregateRootType + '\'' +
                 ", version=" + version +

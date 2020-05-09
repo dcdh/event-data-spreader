@@ -3,6 +3,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventSourcedEventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -70,7 +71,8 @@ public class AgroalDataSourcePostgreSqlEventRepositoryTest {
         // Given
         final LocalDateTime creationDate = LocalDateTime.now();
 
-        final Event event = new Event("aggregateRootId", "aggregateRootType", "eventType", 0l,
+        final Event event = new Event(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 0l),
+                "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy"),
                 new DefaultEventMetadata("executedBy"));
@@ -105,13 +107,15 @@ public class AgroalDataSourcePostgreSqlEventRepositoryTest {
         // Given
         final LocalDateTime creationDate = LocalDateTime.now();
 
-        final Event event0 = new Event("aggregateRootId", "aggregateRootType", "eventType", 0l,
+        final Event event0 = new Event(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 0l),
+                "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy0"),
                 new DefaultEventMetadata("executedBy0"));
         eventRepository.save(Collections.singletonList(event0));
 
-        final Event event1 = new Event("aggregateRootId", "aggregateRootType", "eventType", 1l,
+        final Event event1 = new Event(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 1l),
+                "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy1"),
                 new DefaultEventMetadata("executedBy1"));
@@ -139,12 +143,14 @@ public class AgroalDataSourcePostgreSqlEventRepositoryTest {
         // Given
         final LocalDateTime creationDate = LocalDateTime.now();
 
-        final Event event0 = new Event("aggregateRootId", "aggregateRootType", "eventType", 0l,
+        final Event event0 = new Event(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 0l),
+                "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy0"),
                 new DefaultEventMetadata("executedBy0"));
 
-        final Event event1 = new Event("aggregateRootId", "aggregateRootType", "eventType", 1l,
+        final Event event1 = new Event(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 1l),
+                "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy1"),
                 new DefaultEventMetadata("executedBy1"));
@@ -155,8 +161,10 @@ public class AgroalDataSourcePostgreSqlEventRepositoryTest {
 
         // Then
         assertEquals(Arrays.asList(
-                new Event("aggregateRootId", "aggregateRootType", "eventType", 0l, creationDate, new TestAggregateRootEventPayload("dummy0"), new DefaultEventMetadata("executedBy0")),
-                new Event("aggregateRootId", "aggregateRootType", "eventType", 1l, creationDate, new TestAggregateRootEventPayload("dummy1"), new DefaultEventMetadata("executedBy1")))
+                new Event(new PostgreSQLEventId(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 0l)),
+                        "eventType", creationDate, new TestAggregateRootEventPayload("dummy0"), new DefaultEventMetadata("executedBy0")),
+                new Event(new PostgreSQLEventId(new EventSourcedEventId("aggregateRootId", "aggregateRootType", 1l)),
+                        "eventType", creationDate, new TestAggregateRootEventPayload("dummy1"), new DefaultEventMetadata("executedBy1")))
                 , events);
     }
 

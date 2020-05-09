@@ -18,14 +18,12 @@ public final class Event {
     private final EventMetadata eventMetaData;
     private final AggregateRootEventPayload aggregateRootEventPayload;
 
-    public Event(final String aggregateRootId,
-                 final String aggregateRootType,
+    public Event(final EventId eventId,
                  final String eventType,
-                 final Long version,
                  final LocalDateTime creationDate,
                  final AggregateRootEventPayload aggregateRootEventPayload,
                  final EventMetadata eventMetaData) {
-        this.eventId = new DefaultEventId(aggregateRootId, aggregateRootType, version);
+        this.eventId = Objects.requireNonNull(eventId);
         this.eventType = Objects.requireNonNull(eventType);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
@@ -40,7 +38,7 @@ public final class Event {
         Validate.notNull(encryptedEventSecret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
         Validate.notNull(eventMetadataDeserializer);
-        this.eventId = new DefaultEventId(decryptableEvent.eventId());
+        this.eventId = decryptableEvent.eventId();
         this.eventType = decryptableEvent.eventType();
         this.creationDate = decryptableEvent.creationDate();
         this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadDeSerializer);
