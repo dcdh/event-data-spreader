@@ -21,12 +21,9 @@ import java.util.stream.Collectors;
 @Dependent
 public class KafkaDebeziumProducer {
 
-    final String servers;
-
     private final KafkaProducer<JsonObject, JsonObject> producer;
 
     public KafkaDebeziumProducer(@ConfigProperty(name = "mp.messaging.incoming.event-in.bootstrap.servers") final String servers) {
-        this.servers = servers;
         final Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, JsonbSerializer.class.getName());
