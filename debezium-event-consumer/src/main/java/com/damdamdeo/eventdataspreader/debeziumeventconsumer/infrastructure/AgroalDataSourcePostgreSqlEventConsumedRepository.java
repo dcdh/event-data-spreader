@@ -48,7 +48,6 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventC
 
     @Override
     @Transactional
-    // FIXME FCK le nom n'est pas bon : startConsumingEvent !!!
     public void addEventConsumerConsumed(final EventId eventId, final Class consumerClass, final LocalDateTime consumedAt, final KafkaSource kafkaSource, final String gitCommitId) {
         // Upsert EVENT_CONSUMED
         try (final Connection connection = consumedEventsDataSource.getConnection();

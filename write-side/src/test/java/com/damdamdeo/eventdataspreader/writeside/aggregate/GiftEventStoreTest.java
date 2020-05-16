@@ -1,6 +1,5 @@
-package com.damdamdeo.eventdataspreader.writeside;
+package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftBoughtEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
@@ -38,9 +37,7 @@ public class GiftEventStoreTest extends AbstractTest {
         final GiftAggregate giftAggregateSaved = aggregateRootRepository.save(giftAggregate);
 
         // Then
-        assertEquals("Motorola G6", giftAggregateSaved.aggregateRootId());
-        assertEquals("Motorola G6", giftAggregateSaved.name());
-        assertEquals(1l, giftAggregateSaved.version());
+        assertEquals(new GiftAggregate("Motorola G6", "Motorola G6", "toto", 1l), giftAggregateSaved);
 
         final List<Event> events = eventRepository.loadOrderByVersionASC("Motorola G6", "GiftAggregate");
         assertEquals(2, events.size());

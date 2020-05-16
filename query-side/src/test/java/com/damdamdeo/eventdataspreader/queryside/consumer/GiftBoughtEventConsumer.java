@@ -1,30 +1,32 @@
-package com.damdamdeo.eventdataspreader.queryside.interfaces;
+package com.damdamdeo.eventdataspreader.queryside.consumer;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftBoughtEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 
-import javax.enterprise.context.Dependent;
-import javax.persistence.EntityManager;
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
 
-@Dependent
+@ApplicationScoped
 public class GiftBoughtEventConsumer implements EventConsumer {
 
-    final EntityManager entityManager;
+    final GiftRepository giftRepository;
+    final GiftEntityProvider giftEntityProvider;
 
-    public GiftBoughtEventConsumer(final EntityManager entityManager) {
-        this.entityManager = Objects.requireNonNull(entityManager);
+    public GiftBoughtEventConsumer(final GiftRepository giftRepository,
+                                   final GiftEntityProvider giftEntityProvider) {
+        this.giftRepository = Objects.requireNonNull(giftRepository);
+        this.giftEntityProvider = Objects.requireNonNull(giftEntityProvider);
     }
 
     @Override
     public void consume(final Event event) {
         final GiftAggregateGiftBoughtEventPayload giftAggregateGiftBoughtEventPayload = (GiftAggregateGiftBoughtEventPayload) event.eventPayload();
         final Long version = event.version();
-        final GiftEntity giftEntity = new GiftEntity();
+        final GiftEntity giftEntity = this.giftEntityProvider.create();
         giftEntity.onGiftBought(giftAggregateGiftBoughtEventPayload.name(), version);
-        entityManager.persist(giftEntity);
+        giftRepository.persist(giftEntity);
     }
 
     @Override

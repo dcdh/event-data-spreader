@@ -8,24 +8,25 @@ import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GiftAggregateGiftBoughtEventPayloadTest {
+public class JacksonAccountAggregateAccountDebitedEventPayloadTest {
 
     @Test
     public void should_verify_equality() {
-        EqualsVerifier.forClass(GiftAggregateGiftBoughtEventPayload.class).verify();
+        EqualsVerifier.forClass(JacksonAccountAggregateAccountDebitedEventPayload.class).verify();
     }
 
     private static class DefaultJacksonEventPayloadSubtypes implements JacksonEventPayloadSubtypes {
 
         @Override
         public List<JacksonSubtype<EventPayload>> jacksonSubtypes() {
-            return singletonList(new JacksonSubtype<>(GiftAggregateGiftBoughtEventPayload.class, "GiftAggregateGiftBoughtEventPayload"));
+            return singletonList(new JacksonSubtype<>(JacksonAccountAggregateAccountDebitedEventPayload.class, "AccountAggregateAccountDebitedEventPayload"));
         }
 
     }
@@ -37,10 +38,10 @@ public class GiftAggregateGiftBoughtEventPayloadTest {
 
         // When
         final EventPayload deserialized = eventPayloadDeserializer.deserialize(Optional.empty(),
-                "{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"damdamdeo\"}");
+                "{\"@type\":\"AccountAggregateAccountDebitedEventPayload\",\"owner\":\"damdamdeo\",\"balance\":10}");
 
         // Then
-        assertEquals(new GiftAggregateGiftBoughtEventPayload("damdamdeo"), deserialized);
+        assertEquals(new JacksonAccountAggregateAccountDebitedEventPayload("damdamdeo", BigDecimal.TEN), deserialized);
     }
 
 }

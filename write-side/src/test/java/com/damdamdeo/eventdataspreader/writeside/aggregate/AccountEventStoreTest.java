@@ -1,6 +1,5 @@
-package com.damdamdeo.eventdataspreader.writeside;
+package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
@@ -14,8 +13,7 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class AccountEventStoreTest extends AbstractTest {
@@ -36,11 +34,7 @@ public class AccountEventStoreTest extends AbstractTest {
         final AccountAggregate accountAggregateSaved = aggregateRootRepository.save(accountAggregate);
 
         // Then
-        assertEquals("owner", accountAggregateSaved.aggregateRootId());
-        assertEquals("owner", accountAggregateSaved.owner());
-        assertEquals(new BigDecimal("899.99"), accountAggregateSaved.balance());
-        assertEquals(0l, accountAggregateSaved.version());
-
+        assertEquals(new AccountAggregate("owner", "owner", new BigDecimal("899.99"), 0l), accountAggregateSaved);
         final List<Event> events = eventRepository.loadOrderByVersionASC("owner", "AccountAggregate");
         assertEquals(1, events.size());
         // -- AccountDebited

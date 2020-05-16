@@ -1,27 +1,30 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
-import com.damdamdeo.eventdataspreader.writeside.command.api.AbstractCommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
-import com.damdamdeo.eventdataspreader.writeside.command.api.CommandExecutor;
+import com.damdamdeo.eventdataspreader.writeside.command.api.CommandExecutorBinding;
+import com.damdamdeo.eventdataspreader.writeside.command.api.CommandHandler;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
 
-import javax.enterprise.context.Dependent;
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
 
-@Dependent
-public class BuyGiftCommandHandler extends AbstractCommandHandler<GiftAggregate, BuyGiftCommand> {
+@CommandExecutorBinding// FIXME fine a way to be dynamic !!!
+@ApplicationScoped
+public class BuyGiftCommandHandler implements CommandHandler<GiftAggregate, BuyGiftCommand> {
 
     final AggregateRootRepository aggregateRootRepository;
+    final GiftAggregateRootProvider giftAggregateRootProvider;
 
-    public BuyGiftCommandHandler(final AggregateRootRepository aggregateRootRepository, final CommandExecutor commandExecutor) {
-        super(commandExecutor);
+    public BuyGiftCommandHandler(final AggregateRootRepository aggregateRootRepository,
+                                 final GiftAggregateRootProvider giftAggregateRootProvider) {
         this.aggregateRootRepository = Objects.requireNonNull(aggregateRootRepository);
+        this.giftAggregateRootProvider = Objects.requireNonNull(giftAggregateRootProvider);
     }
 
     @Override
-    protected GiftAggregate handle(final BuyGiftCommand command) {
-        final GiftAggregate giftAggregate = new GiftAggregate();
+    public GiftAggregate execute(final BuyGiftCommand command) {
+        final GiftAggregate giftAggregate = giftAggregateRootProvider.create();
         giftAggregate.handle(command);
         return aggregateRootRepository.save(giftAggregate);
     }

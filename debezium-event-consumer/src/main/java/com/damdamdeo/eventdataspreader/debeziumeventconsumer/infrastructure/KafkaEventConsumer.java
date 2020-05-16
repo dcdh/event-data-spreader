@@ -84,7 +84,7 @@ public class KafkaEventConsumer {
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
                         for (final EventConsumer consumerToProcessEvent: consumersToProcessEvent) {
-                            final Event event = new Event(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
+                            final Event event = new DefaultEvent(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
                             final List<String> consumersHavingProcessedEventClassNames = eventConsumedRepository.getConsumersHavingProcessedEvent(event.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional

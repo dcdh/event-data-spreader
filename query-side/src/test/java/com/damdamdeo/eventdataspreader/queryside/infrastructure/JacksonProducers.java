@@ -5,10 +5,10 @@ import com.damdamdeo.eventdataspreader.event.api.EventPayload;
 import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventPayloadSubtypes;
 import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
-import com.damdamdeo.eventdataspreader.queryside.event.AccountAggregateAccountDebitedEventPayload;
+import com.damdamdeo.eventdataspreader.queryside.event.JacksonAccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftBoughtEventPayload;
-import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftOfferedEventPayload;
+import com.damdamdeo.eventdataspreader.queryside.event.JacksonGiftAggregateGiftBoughtEventPayload;
+import com.damdamdeo.eventdataspreader.queryside.event.JacksonGiftAggregateGiftOfferedEventPayload;
 
 import javax.enterprise.inject.Produces;
 import java.util.Arrays;
@@ -34,9 +34,9 @@ public class JacksonProducers {
 
             @Override
             public List<JacksonSubtype<EventPayload>> jacksonSubtypes() {
-                return Arrays.asList(new JacksonSubtype<>(AccountAggregateAccountDebitedEventPayload.class, "AccountAggregateAccountDebitedEventPayload"),
-                        new JacksonSubtype<>(GiftAggregateGiftBoughtEventPayload.class, "GiftAggregateGiftBoughtEventPayload"),
-                        new JacksonSubtype<>(GiftAggregateGiftOfferedEventPayload.class, "GiftAggregateGiftOfferedEventPayload"));
+                return Arrays.asList(new JacksonSubtype<>(JacksonAccountAggregateAccountDebitedEventPayload.class, "AccountAggregateAccountDebitedEventPayload"),
+                        new JacksonSubtype<>(JacksonGiftAggregateGiftBoughtEventPayload.class, "GiftAggregateGiftBoughtEventPayload"),
+                        new JacksonSubtype<>(JacksonGiftAggregateGiftOfferedEventPayload.class, "GiftAggregateGiftOfferedEventPayload"));
             }
 
         };

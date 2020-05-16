@@ -14,18 +14,18 @@ import java.util.Optional;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GiftAggregateGiftOfferedEventPayloadTest {
+public class JacksonGiftAggregateGiftBoughtEventPayloadTest {
 
     @Test
     public void should_verify_equality() {
-        EqualsVerifier.forClass(GiftAggregateGiftOfferedEventPayload.class).verify();
+        EqualsVerifier.forClass(JacksonGiftAggregateGiftBoughtEventPayload.class).verify();
     }
 
     private static class DefaultJacksonEventPayloadSubtypes implements JacksonEventPayloadSubtypes {
 
         @Override
         public List<JacksonSubtype<EventPayload>> jacksonSubtypes() {
-            return singletonList(new JacksonSubtype<>(GiftAggregateGiftOfferedEventPayload.class, "GiftAggregateGiftOfferedEventPayload"));
+            return singletonList(new JacksonSubtype<>(JacksonGiftAggregateGiftBoughtEventPayload.class, "GiftAggregateGiftBoughtEventPayload"));
         }
 
     }
@@ -37,10 +37,10 @@ public class GiftAggregateGiftOfferedEventPayloadTest {
 
         // When
         final EventPayload deserialized = eventPayloadDeserializer.deserialize(Optional.empty(),
-                "{\"@type\":\"GiftAggregateGiftOfferedEventPayload\",\"name\":\"MotorolaG6\",\"offeredTo\":\"damdamdeo\"}");
+                "{\"@type\":\"GiftAggregateGiftBoughtEventPayload\",\"name\":\"damdamdeo\"}");
 
         // Then
-        assertEquals(new GiftAggregateGiftOfferedEventPayload("MotorolaG6", "damdamdeo"), deserialized);
+        assertEquals(new JacksonGiftAggregateGiftBoughtEventPayload("damdamdeo"), deserialized);
     }
 
 }

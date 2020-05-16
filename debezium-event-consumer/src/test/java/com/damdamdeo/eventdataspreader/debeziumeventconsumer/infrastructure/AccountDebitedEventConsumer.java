@@ -3,9 +3,9 @@ package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
 import com.damdamdeo.eventdataspreader.event.api.Event;
 
-import javax.enterprise.context.Dependent;
+import javax.enterprise.context.ApplicationScoped;
 
-@Dependent
+@ApplicationScoped
 public class AccountDebitedEventConsumer implements EventConsumer {
 
     @Override

@@ -1,4 +1,4 @@
-package com.damdamdeo.eventdataspreader.writeside;
+package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
