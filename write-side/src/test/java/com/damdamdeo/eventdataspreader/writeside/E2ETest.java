@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.KafkaEventConsumedRepository;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.KafkaEventConsumedRepository;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;

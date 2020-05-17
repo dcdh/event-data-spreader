@@ -1,7 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventconsumer;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumer;
+import com.damdamdeo.eventdataspreader.event.api.consumer.EventConsumer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;

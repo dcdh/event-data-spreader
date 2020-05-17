@@ -23,7 +23,6 @@
         <module>write-side</module>
         <module>query-side</module>
         <module>encryption</module>
-        <module>debezium-event-consumer</module>
     </modules>
 
     <dependencyManagement>
@@ -39,16 +38,6 @@
             <dependency>
                 <groupId>com.damdamdeo</groupId>
                 <artifactId>encryption</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>debezium-event-consumer</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>debezium-event-consumer</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

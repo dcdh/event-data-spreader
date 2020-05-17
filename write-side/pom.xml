@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.damdamdeo</groupId>
-            <artifactId>debezium-event-consumer</artifactId>
+            <artifactId>event-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.damdamdeo</groupId>
