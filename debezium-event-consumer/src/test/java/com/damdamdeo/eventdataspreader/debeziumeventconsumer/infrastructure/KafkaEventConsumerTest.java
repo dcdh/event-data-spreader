@@ -1,6 +1,5 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -30,7 +29,7 @@ public class KafkaEventConsumerTest {
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    EventConsumedRepository eventConsumedRepository;
+    KafkaEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     public void setup() {
@@ -71,9 +70,9 @@ public class KafkaEventConsumerTest {
 
         // Then
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(accountDebitedEventId));
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(accountDebitedEventId));
 
-        final List<String> consumersHavingProcessedEvent = eventConsumedRepository.getConsumersHavingProcessedEvent(accountDebitedEventId);
+        final List<String> consumersHavingProcessedEvent = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(accountDebitedEventId);
 
         assertEquals(Collections.singletonList("com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.AccountDebitedEventConsumer"),
                 consumersHavingProcessedEvent);

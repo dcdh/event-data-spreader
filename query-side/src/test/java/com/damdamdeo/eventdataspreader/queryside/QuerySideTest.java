@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.queryside;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.KafkaEventConsumedRepository;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
@@ -44,7 +44,7 @@ public class QuerySideTest {
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    EventConsumedRepository eventConsumedRepository;
+    KafkaEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     @Transactional
@@ -105,13 +105,13 @@ public class QuerySideTest {
 
         // Then
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("MotorolaG6", "GiftAggregate", 0l)));
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("MotorolaG6", "GiftAggregate", 1l)));
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("damdamdeo", "AccountAggregate", 0l)));
 
         transaction.begin();

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
+import com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.KafkaEventConsumedRepository;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
@@ -57,7 +57,7 @@ public class E2ETest {
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
 
     @Inject
-    EventConsumedRepository eventConsumedRepository;
+    KafkaEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -165,13 +165,13 @@ public class E2ETest {
 
         // Then
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("Motorola G6", "GiftAggregate", 0l)));
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("Motorola G6", "GiftAggregate", 1l)));
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> eventConsumedRepository.hasFinishedConsumingEvent(
+                .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
                         new TestEventId("damdamdeo", "AccountAggregate", 0l)));
 
         final List<Event> events = loadOrderByCreationDateASC();

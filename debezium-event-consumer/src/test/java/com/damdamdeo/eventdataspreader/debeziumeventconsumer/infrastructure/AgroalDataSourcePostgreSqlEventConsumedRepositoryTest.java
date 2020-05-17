@@ -1,7 +1,5 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -25,7 +23,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    EventConsumedRepository eventConsumedRepository;
+    KafkaEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     public void setup() {
@@ -99,7 +97,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
         final LocalDateTime consumedAt = LocalDateTime.now();
 
         // When
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
 
         // Then
         try (final Connection con = consumedEventsDataSource.getConnection();
@@ -149,7 +147,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
         }
 
         // When
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
 
         try (final Connection con = consumedEventsDataSource.getConnection();
              final Statement stmt = con.createStatement();
@@ -184,7 +182,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
         final LocalDateTime consumedAt = LocalDateTime.now();
 
         // When
-        eventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
+        kafkaEventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
 
         // Then
         try (final Connection con = consumedEventsDataSource.getConnection();
@@ -206,10 +204,10 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
     public void should_mark_event_as_consumed_when_a_consumer_has_been_involved() throws SQLException {
         // Given
         final LocalDateTime consumedAt = LocalDateTime.now();
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
 
         // When
-        eventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
+        kafkaEventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
 
         // Then
         try (final Connection con = consumedEventsDataSource.getConnection();
@@ -225,7 +223,7 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
         // Given
 
         // When
-        final Boolean hasConsumedEvent = eventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
+        final Boolean hasConsumedEvent = kafkaEventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
 
         // Then
         assertFalse(hasConsumedEvent);
@@ -235,10 +233,10 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
     public void should_has_not_finished_consuming_event_when_even_has_not_been_marked_as_consumed() {
         // Given
         final LocalDateTime consumedAt = LocalDateTime.now();
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
 
         // When
-        final Boolean hasConsumedEvent = eventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
+        final Boolean hasConsumedEvent = kafkaEventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
 
         // Then
         assertFalse(hasConsumedEvent);
@@ -248,11 +246,11 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
     public void should_has_finished_consuming_event_when_even_has_been_marked_as_consumed() {
         // Given
         final LocalDateTime consumedAt = LocalDateTime.now();
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
-        eventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.markEventAsConsumed(new TestEventId(), consumedAt, new TestKafkaSource());
 
         // When
-        final Boolean hasConsumedEvent = eventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
+        final Boolean hasConsumedEvent = kafkaEventConsumedRepository.hasFinishedConsumingEvent(new TestEventId());
 
         // Then
         assertTrue(hasConsumedEvent);
@@ -262,10 +260,10 @@ public class AgroalDataSourcePostgreSqlEventConsumedRepositoryTest {
     public void should_return_consumers_having_processed_event_for_event() {
         // Given
         final LocalDateTime consumedAt = LocalDateTime.now();
-        eventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
+        kafkaEventConsumedRepository.addEventConsumerConsumed(new TestEventId(), TestEventConsumer.class, consumedAt, new TestKafkaSource(), "gitCommitId");
 
         // When
-        final List<String> consumersHavingProcessedEvent = eventConsumedRepository.getConsumersHavingProcessedEvent(new TestEventId());
+        final List<String> consumersHavingProcessedEvent = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(new TestEventId());
 
         // Then
         assertEquals(Collections.singletonList("com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure.AgroalDataSourcePostgreSqlEventConsumedRepositoryTest$TestEventConsumer"),

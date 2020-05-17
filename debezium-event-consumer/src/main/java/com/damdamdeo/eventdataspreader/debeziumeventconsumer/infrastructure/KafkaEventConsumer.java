@@ -32,7 +32,7 @@ public class KafkaEventConsumer {
     private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
 
     private final SecretStore secretStore;
-    private final EventConsumedRepository eventConsumedRepository;
+    private final KafkaEventConsumedRepository kafkaEventConsumedRepository;
     private final EventPayloadDeserializer eventPayloadDeserializer;
     private final EventMetadataDeSerializer eventMetadataDeSerializer;
     private final UserTransaction transaction;
@@ -41,13 +41,13 @@ public class KafkaEventConsumer {
     private final Executor executor;
 
     public KafkaEventConsumer(final SecretStore secretStore,
-                              final EventConsumedRepository eventConsumedRepository,
+                              final KafkaEventConsumedRepository kafkaEventConsumedRepository,
                               final EventPayloadDeserializer eventPayloadDeserializer,
                               final EventMetadataDeSerializer eventMetadataDeSerializer,
                               final UserTransaction transaction,
                               @Any final Instance<EventConsumer> eventConsumersBeans) {
         this.secretStore = Objects.requireNonNull(secretStore);
-        this.eventConsumedRepository = Objects.requireNonNull(eventConsumedRepository);
+        this.kafkaEventConsumedRepository = Objects.requireNonNull(kafkaEventConsumedRepository);
         this.eventPayloadDeserializer = Objects.requireNonNull(eventPayloadDeserializer);
         this.eventMetadataDeSerializer = Objects.requireNonNull(eventMetadataDeSerializer);
         this.transaction = Objects.requireNonNull(transaction);
@@ -75,7 +75,7 @@ public class KafkaEventConsumer {
                             debeziumEventKafkaMessage.aggregateRootId());
                     final DecryptableEvent decryptableEvent = debeziumEventKafkaMessage;
                     final EventId eventId = decryptableEvent.eventId();
-                    if (!eventConsumedRepository.hasFinishedConsumingEvent(eventId)) {
+                    if (!kafkaEventConsumedRepository.hasFinishedConsumingEvent(eventId)) {
                         final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
                         final String eventType = decryptableEvent.eventType();
 
@@ -85,11 +85,11 @@ public class KafkaEventConsumer {
                                 .collect(Collectors.toList());
                         for (final EventConsumer consumerToProcessEvent: consumersToProcessEvent) {
                             final Event event = new DefaultEvent(decryptableEvent, encryptedEventSecret, eventMetadataDeSerializer, eventPayloadDeserializer);
-                            final List<String> consumersHavingProcessedEventClassNames = eventConsumedRepository.getConsumersHavingProcessedEvent(event.eventId());
+                            final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(event.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional
                                 consumerToProcessEvent.consume(event);
-                                eventConsumedRepository.addEventConsumerConsumed(event.eventId(),
+                                kafkaEventConsumedRepository.addEventConsumerConsumed(event.eventId(),
                                         consumerToProcessEvent.getClass(),
                                         LocalDateTime.now(),
                                         new ConsumerRecordKafkaSource(record),
@@ -97,7 +97,7 @@ public class KafkaEventConsumer {
                                 transaction.commit();
                             }
                         }
-                        eventConsumedRepository.markEventAsConsumed(eventId, LocalDateTime.now(), new ConsumerRecordKafkaSource(record));
+                        kafkaEventConsumedRepository.markEventAsConsumed(eventId, LocalDateTime.now(), new ConsumerRecordKafkaSource(record));
                     } else {
                         LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", eventId));
                     }

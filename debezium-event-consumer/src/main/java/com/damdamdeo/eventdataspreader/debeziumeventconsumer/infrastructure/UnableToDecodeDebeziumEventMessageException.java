@@ -1,7 +1,5 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
-
 import java.util.Objects;
 
 public class UnableToDecodeDebeziumEventMessageException extends Exception {

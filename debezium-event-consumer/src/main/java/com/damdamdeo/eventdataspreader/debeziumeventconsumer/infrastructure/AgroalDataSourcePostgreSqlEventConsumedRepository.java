@@ -1,7 +1,5 @@
 package com.damdamdeo.eventdataspreader.debeziumeventconsumer.infrastructure;
 
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
-import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.KafkaSource;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -19,7 +17,7 @@ import java.util.*;
 
 @Startup
 @ApplicationScoped
-public class AgroalDataSourcePostgreSqlEventConsumedRepository implements EventConsumedRepository {
+public class AgroalDataSourcePostgreSqlEventConsumedRepository implements KafkaEventConsumedRepository {
 
     private static final String POSTGRESQL_DDL_FILE = "/sql/consumed-events-postgresql.ddl";
 
