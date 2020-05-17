@@ -34,7 +34,7 @@ public class KafkaEventConsumer {
     private final SecretStore secretStore;
     private final EventConsumedRepository eventConsumedRepository;
     private final EventPayloadDeserializer eventPayloadDeserializer;
-    private final EventMetadataDeserializer eventMetadataDeserializer;
+    private final EventMetadataDeSerializer eventMetadataDeSerializer;
     private final UserTransaction transaction;
     private final Instance<EventConsumer> eventConsumersBeans;
     private final String gitCommitId;
@@ -43,13 +43,13 @@ public class KafkaEventConsumer {
     public KafkaEventConsumer(final SecretStore secretStore,
                               final EventConsumedRepository eventConsumedRepository,
                               final EventPayloadDeserializer eventPayloadDeserializer,
-                              final EventMetadataDeserializer eventMetadataDeserializer,
+                              final EventMetadataDeSerializer eventMetadataDeSerializer,
                               final UserTransaction transaction,
                               @Any final Instance<EventConsumer> eventConsumersBeans) {
         this.secretStore = Objects.requireNonNull(secretStore);
         this.eventConsumedRepository = Objects.requireNonNull(eventConsumedRepository);
         this.eventPayloadDeserializer = Objects.requireNonNull(eventPayloadDeserializer);
-        this.eventMetadataDeserializer = Objects.requireNonNull(eventMetadataDeserializer);
+        this.eventMetadataDeSerializer = Objects.requireNonNull(eventMetadataDeSerializer);
         this.transaction = Objects.requireNonNull(transaction);
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
         this.executor = Executors.newSingleThreadExecutor();
@@ -84,7 +84,7 @@ public class KafkaEventConsumer {
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
                         for (final EventConsumer consumerToProcessEvent: consumersToProcessEvent) {
-                            final Event event = new DefaultEvent(decryptableEvent, encryptedEventSecret, eventMetadataDeserializer, eventPayloadDeserializer);
+                            final Event event = new DefaultEvent(decryptableEvent, encryptedEventSecret, eventMetadataDeSerializer, eventPayloadDeserializer);
                             final List<String> consumersHavingProcessedEventClassNames = eventConsumedRepository.getConsumersHavingProcessedEvent(event.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional

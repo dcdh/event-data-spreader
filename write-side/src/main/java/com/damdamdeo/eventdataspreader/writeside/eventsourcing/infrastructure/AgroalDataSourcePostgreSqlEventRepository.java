@@ -1,7 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.eventsourcing.infrastructure.AESEncryption;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
@@ -30,20 +29,17 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
     final Encryption encryption;
     final SecretStore secretStore;
     final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
-    final EventMetadataSerializer eventMetadataSerializer;
-    final EventMetadataDeserializer eventMetadataDeserializer;
+    final EventMetadataDeSerializer eventMetadataDeSerializer;
 
     public AgroalDataSourcePostgreSqlEventRepository(@DataSource("aggregate-root-projection-event-store") final AgroalDataSource aggregateRootProjectionEventStoreDataSource,
                                                      final SecretStore secretStore,
                                                      final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                                     final EventMetadataSerializer eventMetadataSerializer,
-                                                     final EventMetadataDeserializer eventMetadataDeserializer) {
+                                                     final EventMetadataDeSerializer eventMetadataDeSerializer) {
         this.aggregateRootProjectionEventStoreDataSource = Objects.requireNonNull(aggregateRootProjectionEventStoreDataSource);
         this.encryption = new AESEncryption();
         this.secretStore = secretStore;
         this.aggregateRootEventPayloadDeSerializer = aggregateRootEventPayloadDeSerializer;
-        this.eventMetadataSerializer = eventMetadataSerializer;
-        this.eventMetadataDeserializer = eventMetadataDeserializer;
+        this.eventMetadataDeSerializer = eventMetadataDeSerializer;
     }
 
     @PostConstruct
@@ -79,7 +75,7 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
                         .withCreationDate(event.creationDate())
                         .withEventPayload(event.eventPayload())
                         .withEventMetaData(event.eventMetaData())
-                        .build(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataSerializer))
+                        .build(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer))
                 .collect(Collectors.toList());
         try (final Connection connection = aggregateRootProjectionEventStoreDataSource.getConnection()) {
             for (final PostgreSQLDecryptableEvent postgreSQLDecryptableEvent : eventsToSave) {
@@ -117,7 +113,7 @@ public class AgroalDataSourcePostgreSqlEventRepository implements EventRepositor
             // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
             try (final ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
-                    events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer));
+                    events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer));
                 }
             }
             return events;

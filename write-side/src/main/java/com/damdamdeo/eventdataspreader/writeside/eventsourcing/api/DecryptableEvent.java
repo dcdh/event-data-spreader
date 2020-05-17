@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 
 import java.time.LocalDateTime;
@@ -19,6 +19,6 @@ public interface DecryptableEvent {
 
     AggregateRootEventPayload eventPayload(Optional<EncryptedEventSecret> encryptedEventSecret, AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer);
 
-    EventMetadata eventMetaData(Optional<EncryptedEventSecret> encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
+    EventMetadata eventMetaData(Optional<EncryptedEventSecret> encryptedEventSecret, EventMetadataDeSerializer eventMetadataDeSerializer);
 
 }

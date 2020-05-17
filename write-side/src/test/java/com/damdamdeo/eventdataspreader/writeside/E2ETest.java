@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside;
 
 import com.damdamdeo.eventdataspreader.debeziumeventconsumer.api.EventConsumedRepository;
 import com.damdamdeo.eventdataspreader.event.api.EventId;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
@@ -51,7 +51,7 @@ public class E2ETest {
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    EventMetadataDeserializer eventMetadataDeserializer;
+    EventMetadataDeSerializer eventMetadataDeSerializer;
 
     @Inject
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
@@ -231,7 +231,7 @@ public class E2ETest {
             final List<Event> events = new ArrayList<>();
             while (resultSet.next()) {
                 events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(Optional.empty(),
-                        aggregateRootEventPayloadDeSerializer, eventMetadataDeserializer));
+                        aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer));
             }
             resultSet.close();
             return events;

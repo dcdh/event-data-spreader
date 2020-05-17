@@ -17,13 +17,13 @@ public class DefaultEvent implements Event {
 
     public DefaultEvent(final DecryptableEvent decryptableEvent,
                         final Optional<EncryptedEventSecret> encryptedEventSecret,
-                        final EventMetadataDeserializer eventMetadataDeserializer,
+                        final EventMetadataDeSerializer eventMetadataDeSerializer,
                         final EventPayloadDeserializer eventPayloadDeserializer) {
         eventId = decryptableEvent.eventId();
         eventType = decryptableEvent.eventType();
         creationDate = decryptableEvent.creationDate();
         eventPayload = decryptableEvent.eventPayload(encryptedEventSecret, eventPayloadDeserializer);
-        eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
+        eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeSerializer);
     }
 
     @Override

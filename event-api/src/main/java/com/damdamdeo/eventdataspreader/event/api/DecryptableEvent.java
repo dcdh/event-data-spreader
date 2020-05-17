@@ -15,6 +15,6 @@ public interface DecryptableEvent {
 
     EventPayload eventPayload(Optional<EncryptedEventSecret> encryptedEventSecret, EventPayloadDeserializer eventPayloadDeserializer);
 
-    EventMetadata eventMetaData(Optional<EncryptedEventSecret> encryptedEventSecret, EventMetadataDeserializer eventMetadataDeserializer);
+    EventMetadata eventMetaData(Optional<EncryptedEventSecret> encryptedEventSecret, EventMetadataDeSerializer eventMetadataDeSerializer);
 
 }

@@ -80,8 +80,8 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
 
     @Override
     public EventMetadata eventMetaData(final Optional<EncryptedEventSecret> encryptedEventSecret,
-                                       final EventMetadataDeserializer eventMetadataDeserializer) {
-        return eventMetadataDeserializer.deserialize(encryptedEventSecret, eventMetaData);
+                                       final EventMetadataDeSerializer eventMetadataDeSerializer) {
+        return eventMetadataDeSerializer.deserialize(encryptedEventSecret, eventMetaData);
     }
 
     @Override

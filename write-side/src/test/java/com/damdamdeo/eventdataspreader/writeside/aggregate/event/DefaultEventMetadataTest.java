@@ -1,10 +1,8 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate.event;
 
 import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataSerializer;
-import com.damdamdeo.eventdataspreader.event.infrastructure.JacksonEventMetadataDeserializer;
-import com.damdamdeo.eventdataspreader.event.infrastructure.JacksonEventMetadataSerializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
+import com.damdamdeo.eventdataspreader.event.infrastructure.JacksonEventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
 import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -35,10 +33,10 @@ public class DefaultEventMetadataTest {
     @Test
     public void should_serialize() {
         // Given
-        final EventMetadataSerializer eventMetadataSerializer = new JacksonEventMetadataSerializer(new DefaultJacksonEventMetadataSubtypes());
+        final EventMetadataDeSerializer eventMetadataDeSerializer = new JacksonEventMetadataDeSerializer(new DefaultJacksonEventMetadataSubtypes());
 
         // When
-        final String serialized = eventMetadataSerializer.serialize(Optional.empty(),
+        final String serialized = eventMetadataDeSerializer.serialize(Optional.empty(),
                 new DefaultEventMetadata("executedBy"));
 
         // Then
@@ -48,10 +46,10 @@ public class DefaultEventMetadataTest {
     @Test
     public void should_deserialize() {
         // Given
-        final EventMetadataDeserializer eventMetadataDeserializer = new JacksonEventMetadataDeserializer(new DefaultJacksonEventMetadataSubtypes());
+        final EventMetadataDeSerializer eventMetadataDeSerializer = new JacksonEventMetadataDeSerializer(new DefaultJacksonEventMetadataSubtypes());
 
         // When
-        final EventMetadata deserialized = eventMetadataDeserializer.deserialize(Optional.empty(),
+        final EventMetadata deserialized = eventMetadataDeSerializer.deserialize(Optional.empty(),
                 "{\"@type\":\"DefaultEventMetadata\",\"executedBy\":\"executedBy\"}");
 
         // Then

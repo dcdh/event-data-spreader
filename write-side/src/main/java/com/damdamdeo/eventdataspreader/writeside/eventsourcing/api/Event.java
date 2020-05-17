@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeserializer;
+import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import org.apache.commons.lang3.Validate;
 
@@ -33,16 +33,16 @@ public final class Event {
     public Event(final DecryptableEvent decryptableEvent,
                  final Optional<EncryptedEventSecret> encryptedEventSecret,
                  final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                 final EventMetadataDeserializer eventMetadataDeserializer) {
+                 final EventMetadataDeSerializer eventMetadataDeSerializer) {
         Validate.notNull(decryptableEvent);
         Validate.notNull(encryptedEventSecret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
-        Validate.notNull(eventMetadataDeserializer);
+        Validate.notNull(eventMetadataDeSerializer);
         this.eventId = decryptableEvent.eventId();
         this.eventType = decryptableEvent.eventType();
         this.creationDate = decryptableEvent.creationDate();
         this.aggregateRootEventPayload = decryptableEvent.eventPayload(encryptedEventSecret, aggregateRootEventPayloadDeSerializer);
-        this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeserializer);
+        this.eventMetaData = decryptableEvent.eventMetaData(encryptedEventSecret, eventMetadataDeSerializer);
     }
 
     public EventId eventId() {
