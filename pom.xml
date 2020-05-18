@@ -19,7 +19,7 @@
     </properties>
 
     <modules>
-        <module>event-api</module>
+        <module>aggregate-root-event</module>
         <module>write-side</module>
         <module>query-side</module>
         <module>encryption</module>
@@ -42,7 +42,7 @@
             </dependency>
             <dependency>
                 <groupId>com.damdamdeo</groupId>
-                <artifactId>event-api</artifactId>
+                <artifactId>aggregate-root-event</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

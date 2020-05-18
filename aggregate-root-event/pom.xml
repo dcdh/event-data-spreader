@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>event-api</artifactId>
+    <artifactId>aggregate-root-event</artifactId>
 
     <dependencies>
         <dependency>

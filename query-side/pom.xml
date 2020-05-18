@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.damdamdeo</groupId>
-            <artifactId>event-api</artifactId>
+            <artifactId>aggregate-root-event</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
