@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public final class DebeziumEventKafkaMessage implements DecryptableEvent {
+public final class DebeziumIncomingKafkaRecordDecryptableEvent implements DecryptableEvent {
 
     private static final String AFTER = "after";
     private static final String OPERATION = "op";;
@@ -28,7 +28,7 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
     private final String eventMetaData;
     private final String eventPayload;
 
-    public DebeziumEventKafkaMessage(final IncomingKafkaRecord<JsonObject, JsonObject> record)
+    public DebeziumIncomingKafkaRecordDecryptableEvent(final IncomingKafkaRecord<JsonObject, JsonObject> record)
             throws UnableToDecodeDebeziumEventMessageException {
         if (record.getKey() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaSource(record),
@@ -93,8 +93,8 @@ public final class DebeziumEventKafkaMessage implements DecryptableEvent {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebeziumEventKafkaMessage)) return false;
-        DebeziumEventKafkaMessage that = (DebeziumEventKafkaMessage) o;
+        if (!(o instanceof DebeziumIncomingKafkaRecordDecryptableEvent)) return false;
+        DebeziumIncomingKafkaRecordDecryptableEvent that = (DebeziumIncomingKafkaRecordDecryptableEvent) o;
         return Objects.equals(eventId, that.eventId) &&
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(eventType, that.eventType) &&
