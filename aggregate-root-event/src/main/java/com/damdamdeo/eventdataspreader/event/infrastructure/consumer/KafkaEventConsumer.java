@@ -71,13 +71,12 @@ public class KafkaEventConsumer {
             do {
                 try {
                     final DecryptableEvent decryptableEvent = new DebeziumEventKafkaMessage(record);
-                    final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(decryptableEvent.eventId().aggregateRootType(),
-                            decryptableEvent.eventId().aggregateRootId());
+                    final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
+                    final String aggregateRootId = decryptableEvent.eventId().aggregateRootId();
+                    final Optional<EncryptedEventSecret> encryptedEventSecret = secretStore.read(aggregateRootType, aggregateRootId);
                     final EventId eventId = decryptableEvent.eventId();
                     if (!kafkaEventConsumedRepository.hasFinishedConsumingEvent(eventId)) {
-                        final String aggregateRootType = decryptableEvent.eventId().aggregateRootType();
                         final String eventType = decryptableEvent.eventType();
-
                         final List<EventConsumer> consumersToProcessEvent = eventConsumersBeans.stream()
                                 .filter(eventConsumer -> aggregateRootType.equals(eventConsumer.aggregateRootType()))
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
