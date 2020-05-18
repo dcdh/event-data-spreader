@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.writeside.eventconsumer;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.event.api.consumer.EventConsumer;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.AccountAggregate;
 import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
@@ -26,7 +27,7 @@ public class DebitAccountFollowingGiftBoughtEventConsumer implements EventConsum
     public void consume(final Event event) {
         final GiftAggregateGiftBoughtEventPayload giftAggregateGiftBoughtEventPayload = (GiftAggregateGiftBoughtEventPayload) event.eventPayload();
         final DefaultEventMetadata eventMetadata = (DefaultEventMetadata) event.eventMetaData();
-        final Long version = event.version(); // a stocker dans le metadata !
+        final EventId eventId = event.eventId(); // a stocker dans le metadata !
         final BigDecimal price = new BigDecimal("100");
         final String owner = eventMetadata.executedBy();
         final String executedBy = eventMetadata.executedBy();

@@ -24,10 +24,9 @@ public class AccountDebitedEventConsumer implements EventConsumer {
     public void consume(final Event event) {
         // TODO find a way to avoid casting
         final AccountAggregateAccountDebitedEventPayload accountAggregateAccountDebitedEventPayload = (AccountAggregateAccountDebitedEventPayload) event.eventPayload();
-        final Long version = event.version();
         final AccountEntity accountEntity = this.accountEntityProvider.create();
         accountEntity.onAccountDebited(accountAggregateAccountDebitedEventPayload.owner(),
-                accountAggregateAccountDebitedEventPayload.balance(), version);
+                accountAggregateAccountDebitedEventPayload.balance(), event.eventId());
         accountRepository.persist(accountEntity);
     }
 

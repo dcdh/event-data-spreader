@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.queryside.consumer;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.queryside.event.GiftAggregateGiftOfferedEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 import io.quarkus.test.junit.QuarkusTest;
@@ -29,7 +30,8 @@ public class GiftOfferedEventConsumerTest {
         doReturn("lapinou").when(giftAggregateGiftOfferedEventPayload).name();
         doReturn("damdamdeo").when(giftAggregateGiftOfferedEventPayload).offeredTo();
         doReturn(giftAggregateGiftOfferedEventPayload).when(event).eventPayload();
-        doReturn(1l).when(event).version();
+        final EventId eventId = mock(EventId.class);
+        doReturn(eventId).when(event).eventId();
         final GiftEntity giftEntity = mock(GiftEntity.class);
         doReturn(giftEntity).when(giftRepository).find("lapinou");
 
@@ -37,11 +39,11 @@ public class GiftOfferedEventConsumerTest {
         giftOfferedEventConsumer.consume(event);
 
         // Then
-        verify(giftEntity, times(1)).onGiftOffered("damdamdeo", 1l);
+        verify(giftEntity, times(1)).onGiftOffered("damdamdeo", eventId);
         verify(giftRepository, times(1)).persist(giftEntity);
         verify(giftRepository, times(1)).find(any());
         verify(event, times(1)).eventPayload();
-        verify(event, times(1)).version();
+        verify(event, times(1)).eventId();
         verify(giftAggregateGiftOfferedEventPayload, times(1)).name();
         verify(giftAggregateGiftOfferedEventPayload, times(1)).offeredTo();
         verifyNoMoreInteractions(giftRepository, event, giftAggregateGiftOfferedEventPayload);

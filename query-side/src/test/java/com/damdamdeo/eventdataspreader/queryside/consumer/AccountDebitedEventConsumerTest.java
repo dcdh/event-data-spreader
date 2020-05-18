@@ -1,6 +1,7 @@
 package com.damdamdeo.eventdataspreader.queryside.consumer;
 
 import com.damdamdeo.eventdataspreader.event.api.Event;
+import com.damdamdeo.eventdataspreader.event.api.EventId;
 import com.damdamdeo.eventdataspreader.queryside.event.AccountAggregateAccountDebitedEventPayload;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,7 +35,8 @@ public class AccountDebitedEventConsumerTest {
         doReturn("damdamdeo").when(accountAggregateAccountDebitedEventPayload).owner();
         doReturn(BigDecimal.ONE).when(accountAggregateAccountDebitedEventPayload).balance();
         doReturn(accountAggregateAccountDebitedEventPayload).when(event).eventPayload();
-        doReturn(0l).when(event).version();
+        final EventId eventId = mock(EventId.class);
+        doReturn(eventId).when(event).eventId();
         final AccountEntity accountEntity = mock(AccountEntity.class);
         doReturn(accountEntity).when(accountEntityProvider).create();
 
@@ -42,11 +44,11 @@ public class AccountDebitedEventConsumerTest {
         accountDebitedEventConsumer.consume(event);
 
         // Then
-        verify(accountEntity, times(1)).onAccountDebited("damdamdeo", BigDecimal.ONE, 0l);
+        verify(accountEntity, times(1)).onAccountDebited("damdamdeo", BigDecimal.ONE, eventId);
         verify(accountRepository, times(1)).persist(accountEntity);
 
         verify(event, times(1)).eventPayload();
-        verify(event, times(1)).version();
+        verify(event, times(1)).eventId();
         verify(accountAggregateAccountDebitedEventPayload, times(1)).owner();
         verify(accountAggregateAccountDebitedEventPayload, times(1)).balance();
         verify(accountEntityProvider, times(1)).create();

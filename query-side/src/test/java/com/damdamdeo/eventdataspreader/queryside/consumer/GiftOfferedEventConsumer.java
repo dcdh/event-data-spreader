@@ -20,9 +20,8 @@ public class GiftOfferedEventConsumer implements EventConsumer {
     @Override
     public void consume(final Event event) {
         final GiftAggregateGiftOfferedEventPayload giftAggregateGiftOfferedEventPayload = (GiftAggregateGiftOfferedEventPayload) event.eventPayload();
-        final Long version = event.version();
         final GiftEntity giftEntity = giftRepository.find(giftAggregateGiftOfferedEventPayload.name());
-        giftEntity.onGiftOffered(giftAggregateGiftOfferedEventPayload.offeredTo(), version);
+        giftEntity.onGiftOffered(giftAggregateGiftOfferedEventPayload.offeredTo(), event.eventId());
         giftRepository.persist(giftEntity);
     }
 

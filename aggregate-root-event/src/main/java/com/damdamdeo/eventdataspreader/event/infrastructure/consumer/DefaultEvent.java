@@ -32,23 +32,8 @@ public class DefaultEvent implements Event {
     }
 
     @Override
-    public String aggregateRootId() {
-        return eventId.aggregateRootId();
-    }
-
-    @Override
-    public String aggregateRootType() {
-        return eventId.aggregateRootType();
-    }
-
-    @Override
     public String eventType() {
         return eventType;
-    }
-
-    @Override
-    public Long version() {
-        return eventId.version();
     }
 
     @Override
