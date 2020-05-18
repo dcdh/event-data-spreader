@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DefaultEventMetadataTest {
+public class DecryptedEventMetadataTest {
 
     @Test
     public void should_verify_equality() {

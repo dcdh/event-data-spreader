@@ -6,8 +6,7 @@ import com.damdamdeo.eventdataspreader.eventsourcing.api.EncryptedEventSecret;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-// TODO better naming !
-public class DefaultEvent implements Event {
+public class DecryptedEvent implements Event {
 
     private final EventId eventId;
     private final String eventType;
@@ -15,10 +14,10 @@ public class DefaultEvent implements Event {
     private final EventPayload eventPayload;
     private final EventMetadata eventMetaData;
 
-    public DefaultEvent(final DecryptableEvent decryptableEvent,
-                        final Optional<EncryptedEventSecret> encryptedEventSecret,
-                        final EventMetadataDeSerializer eventMetadataDeSerializer,
-                        final EventPayloadDeserializer eventPayloadDeserializer) {
+    public DecryptedEvent(final DecryptableEvent decryptableEvent,
+                          final Optional<EncryptedEventSecret> encryptedEventSecret,
+                          final EventMetadataDeSerializer eventMetadataDeSerializer,
+                          final EventPayloadDeserializer eventPayloadDeserializer) {
         eventId = decryptableEvent.eventId();
         eventType = decryptableEvent.eventType();
         creationDate = decryptableEvent.creationDate();
