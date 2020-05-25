@@ -2,9 +2,9 @@ package com.damdamdeo.eventdataspreader.event.infrastructure.consumer;
 
 // TODO in event-api I should extract infrastructure into an another module ...
 
-import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventMetadataSubtypes;
-import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonEventPayloadSubtypes;
-import com.damdamdeo.eventdataspreader.event.infrastructure.spi.JacksonSubtype;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.spi.JacksonAggregateRootEventMetadataConsumerImplementationDiscovery;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.spi.JacksonAggregateRootEventPayloadConsumerImplementationDiscovery;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.spi.JacksonDynamicImplementation;
 
 import javax.enterprise.inject.Produces;
 import java.util.Collections;
@@ -12,15 +12,15 @@ import java.util.Collections;
 public class JacksonProducers {
 
     @Produces
-    public JacksonEventMetadataSubtypes jacksonEventMetadataSubtypes() {
+    public JacksonAggregateRootEventMetadataConsumerImplementationDiscovery jacksonAggregateRootEventMetadataConsumerImplementationDiscovery() {
         return () -> Collections.singletonList(
-                new JacksonSubtype<>(DefaultEventMetadata.class, "DefaultEventMetadata"));
+                new JacksonDynamicImplementation<>(ExecutedByAggregateRootEventMetadataConsumer.class, JacksonExecutedByAggregateRootEventMetadataConsumer.class, "ExecutedByAggregateRootEventMetadata"));
     }
 
     @Produces
-    public JacksonEventPayloadSubtypes jacksonEventPayloadSubtypes() {
+    public JacksonAggregateRootEventPayloadConsumerImplementationDiscovery jacksonAggregateRootEventPayloadConsumerImplementationDiscovery() {
         return () -> Collections.singletonList(
-                new JacksonSubtype<>(AccountAggregateAccountDebitedEventPayload.class, "AccountAggregateAccountDebitedEventPayload"));
+                new JacksonDynamicImplementation<>(AccountAggregateAccountDebitedAggregateRootEventPayloadConsumer.class, JacksonAccountAggregateAccountDebitedAggregateRootEventPayloadConsumer.class, "AccountAggregateAccountDebitedAggregateRootEventPayload"));
     }
 
 }

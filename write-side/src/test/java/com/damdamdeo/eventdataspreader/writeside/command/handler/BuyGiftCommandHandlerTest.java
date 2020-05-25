@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.DefaultAggregateRootRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,16 +28,16 @@ public class BuyGiftCommandHandlerTest extends AbstractCommandHandlerTest {
     public void should_buy_gift() throws Throwable {
         // Given
         final BuyGiftCommand buyGiftCommand = new BuyGiftCommand("lapinou", "damdamdeo");
-        final GiftAggregate giftAggregate = mock(GiftAggregate.class);
-        doReturn(giftAggregate).when(giftAggregateRootProvider).create();
+        final GiftAggregateRoot giftAggregateRoot = mock(GiftAggregateRoot.class);
+        doReturn(giftAggregateRoot).when(giftAggregateRootProvider).create();
         when(mockDefaultAggregateRootRepository.save(any())).then(returnsFirstArg());
 
         // When
-        final GiftAggregate giftAggregateCreated = buyGiftCommandHandler.execute(buyGiftCommand);
+        final GiftAggregateRoot giftAggregateRootCreated = buyGiftCommandHandler.execute(buyGiftCommand);
 
         // Then
-        verify(giftAggregate, times(1)).handle(buyGiftCommand);
-        assertEquals(giftAggregateCreated, giftAggregate);
+        verify(giftAggregateRoot, times(1)).handle(buyGiftCommand);
+        assertEquals(giftAggregateRootCreated, giftAggregateRoot);
         verify(giftAggregateRootProvider, times(1)).create();
         verify(mockDefaultAggregateRootRepository, times(1)).save(any());
 

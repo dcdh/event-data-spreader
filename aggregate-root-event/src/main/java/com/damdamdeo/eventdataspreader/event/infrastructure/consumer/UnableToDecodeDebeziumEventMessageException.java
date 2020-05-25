@@ -8,7 +8,7 @@ public class UnableToDecodeDebeziumEventMessageException extends Exception {
     private final String topic;
     private final Long offset;
 
-    public UnableToDecodeDebeziumEventMessageException(final KafkaSource kafkaSource,
+    public UnableToDecodeDebeziumEventMessageException(final KafkaInfrastructureMetadata kafkaSource,
                                                        final String message) {
         super(message);
         this.partition = Objects.requireNonNull(kafkaSource.partition());

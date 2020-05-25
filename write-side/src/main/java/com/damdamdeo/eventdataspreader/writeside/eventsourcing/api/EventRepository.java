@@ -4,8 +4,8 @@ import java.util.List;
 
 public interface EventRepository {
 
-    void save(List<Event> events);
+    void save(List<AggregateRootEvent> aggregateRootEvents);
 
-    List<Event> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType);
+    List<AggregateRootEvent> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType);
 
 }

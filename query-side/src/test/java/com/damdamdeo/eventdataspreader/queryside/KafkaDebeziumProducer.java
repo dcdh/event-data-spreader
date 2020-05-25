@@ -29,7 +29,7 @@ public class KafkaDebeziumProducer {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, JsonbSerializer.class.getName());
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonbSerializer.class.getName());
         config.put(ProducerConfig.ACKS_CONFIG, "1");
-        producer = new KafkaProducer(config);
+        producer = new KafkaProducer<>(config);
     }
 
     public void produce(final String testResourceFileName) throws Exception {

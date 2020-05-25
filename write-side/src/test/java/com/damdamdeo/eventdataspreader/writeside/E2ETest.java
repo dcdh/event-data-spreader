@@ -1,16 +1,17 @@
 package com.damdamdeo.eventdataspreader.writeside;
 
-import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.KafkaEventConsumedRepository;
-import com.damdamdeo.eventdataspreader.event.api.EventId;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootId;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.KafkaAggregateRootEventConsumedRepository;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootEventId;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEvent;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLDecryptableEvent;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLEventId;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure.PostgreSQLAggregateRootEventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -43,21 +44,21 @@ public class E2ETest {
     AgroalDataSource secretStoreDataSource;
 
     @Inject
-    @DataSource("aggregate-root-projection-event-store")
-    AgroalDataSource aggregateRootProjectionEventStoreDataSource;
+    @DataSource("aggregate-root-materialized-state")
+    AgroalDataSource aggregateRootMaterializedStateDataSource;
 
     @Inject
     @DataSource("consumed-events")
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    EventMetadataDeSerializer eventMetadataDeSerializer;
+    AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
 
     @Inject
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
 
     @Inject
-    KafkaEventConsumedRepository kafkaEventConsumedRepository;
+    KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -72,9 +73,9 @@ public class E2ETest {
                 .when()
                 .delete("http://localhost:8083/connectors/test-connector");
 
-        try (final Connection con = aggregateRootProjectionEventStoreDataSource.getConnection();
+        try (final Connection con = aggregateRootMaterializedStateDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
-            stmt.executeUpdate("TRUNCATE TABLE AGGREGATE_ROOT_PROJECTION");
+            stmt.executeUpdate("TRUNCATE TABLE AGGREGATE_ROOT_MATERIALIZED_STATE");
             stmt.executeUpdate("TRUNCATE TABLE EVENT");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -125,26 +126,31 @@ public class E2ETest {
                 .statusCode(204);
     }
 
-    private static final class TestEventId implements EventId {
+    private static final class TestAggregateRootEventId implements AggregateRootEventId {
 
         private final String aggregateRootId;
         private final String aggregateRootType;
         private final Long version;
 
-        public TestEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
+        public TestAggregateRootEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
             this.aggregateRootId = aggregateRootId;
             this.aggregateRootType = aggregateRootType;
             this.version = version;
         }
 
         @Override
-        public String aggregateRootId() {
-            return aggregateRootId;
-        }
+        public AggregateRootId aggregateRootId() {
+            return new AggregateRootId() {
+                @Override
+                public String aggregateRootId() {
+                    return aggregateRootId;
+                }
 
-        @Override
-        public String aggregateRootType() {
-            return aggregateRootType;
+                @Override
+                public String aggregateRootType() {
+                    return aggregateRootType;
+                }
+            };
         }
 
         @Override
@@ -156,35 +162,35 @@ public class E2ETest {
     @Test
     public void should_buy_offer_the_gift_and_debit_account() throws Exception{
         // Given
-        final GiftAggregate giftAggregate = new GiftAggregate();
-        giftAggregate.handle(new BuyGiftCommand("Motorola G6","damdamdeo"));
-        giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
+        final GiftAggregateRoot giftAggregateRoot = new GiftAggregateRoot();
+        giftAggregateRoot.handle(new BuyGiftCommand("lapinou","damdamdeo"));
+        giftAggregateRoot.handle(new OfferGiftCommand("lapinou", "toto","damdamdeo"));
 
         // When
-        aggregateRootRepository.save(giftAggregate);
+        aggregateRootRepository.save(giftAggregateRoot);
 
         // Then
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("Motorola G6", "GiftAggregate", 0l)));
+                        new TestAggregateRootEventId("lapinou", "GiftAggregateRoot", 0l)));
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("Motorola G6", "GiftAggregate", 1l)));
+                        new TestAggregateRootEventId("lapinou", "GiftAggregateRoot", 1l)));
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("damdamdeo", "AccountAggregate", 0l)));
+                        new TestAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l)));
 
-        final List<Event> events = loadOrderByCreationDateASC();
+        final List<AggregateRootEvent> aggregateRootEvents = loadOrderByCreationDateASC();
 
         // -- GiftBought
-        assertEquals("GiftAggregate", events.get(0).aggregateRootType());
-        assertEquals("GiftBought", events.get(0).eventType());
+        assertEquals("GiftAggregateRoot", aggregateRootEvents.get(0).aggregateRootType());
+        assertEquals("GiftAggregateRootGiftBoughtAggregateRootEventPayload", aggregateRootEvents.get(0).eventType());
         // -- GiftOffered
-        assertEquals("GiftAggregate", events.get(1).aggregateRootType());
-        assertEquals("GiftOffered", events.get(1).eventType());
+        assertEquals("GiftAggregateRoot", aggregateRootEvents.get(1).aggregateRootType());
+        assertEquals("GiftAggregateRootGiftOfferedAggregateRootEventPayload", aggregateRootEvents.get(1).eventType());
         // -- AccountDebited
-        assertEquals("AccountAggregate", events.get(2).aggregateRootType());
-        assertEquals("AccountDebited", events.get(2).eventType());
+        assertEquals("AccountAggregateRoot", aggregateRootEvents.get(2).aggregateRootType());
+        assertEquals("AccountAggregateRootAccountDebitedAggregateRootEventPayload", aggregateRootEvents.get(2).eventType());
 
         final List<EventConsumed> eventsConsumed = new ArrayList<>();
         try (final Connection con = consumedEventsDataSource.getConnection();
@@ -199,21 +205,21 @@ public class E2ETest {
 
         eventsConsumed.forEach(eventConsumedEntity -> assertEquals(true, eventConsumedEntity.consumed(), "Event not consumed " + eventConsumedEntity.toString()));
 
-        assertEquals(events.get(0).eventId(), eventsConsumed.get(0).eventId());
-        assertEquals(events.get(1).eventId(), eventsConsumed.get(1).eventId());
-        assertEquals(events.get(2).eventId(), eventsConsumed.get(2).eventId());
+        assertEquals(aggregateRootEvents.get(0).eventId(), eventsConsumed.get(0).eventId());
+        assertEquals(aggregateRootEvents.get(1).eventId(), eventsConsumed.get(1).eventId());
+        assertEquals(aggregateRootEvents.get(2).eventId(), eventsConsumed.get(2).eventId());
     }
 
     private static final class EventConsumed {
-        private final PostgreSQLEventId eventId;
+        private final PostgreSQLAggregateRootEventId eventId;
         private final Boolean consumed;
 
         public EventConsumed(final ResultSet resultSet) throws Exception {
-            this.eventId = new PostgreSQLEventId(resultSet);
+            this.eventId = new PostgreSQLAggregateRootEventId(resultSet);
             this.consumed = resultSet.getBoolean("consumed");
         }
 
-        public PostgreSQLEventId eventId() {
+        public PostgreSQLAggregateRootEventId eventId() {
             return eventId;
         }
 
@@ -223,18 +229,18 @@ public class E2ETest {
 
     }
 
-    private List<Event> loadOrderByCreationDateASC() {
-        try (final Connection connection = aggregateRootProjectionEventStoreDataSource.getConnection();
+    private List<AggregateRootEvent> loadOrderByCreationDateASC() {
+        try (final Connection connection = aggregateRootMaterializedStateDataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e ORDER BY e.creationdate ASC")) {
             final ResultSet resultSet = stmt.executeQuery();
             // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
-            final List<Event> events = new ArrayList<>();
+            final List<AggregateRootEvent> aggregateRootEvents = new ArrayList<>();
             while (resultSet.next()) {
-                events.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(Optional.empty(),
-                        aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer));
+                aggregateRootEvents.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(Optional.empty(),
+                        aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer));
             }
             resultSet.close();
-            return events;
+            return aggregateRootEvents;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

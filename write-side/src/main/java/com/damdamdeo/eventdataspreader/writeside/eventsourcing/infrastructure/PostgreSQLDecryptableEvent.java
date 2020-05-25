@@ -1,11 +1,9 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.infrastructure;
 
-import com.damdamdeo.eventdataspreader.event.api.EventId;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
-import com.damdamdeo.eventdataspreader.event.api.EventMetadataDeSerializer;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootEventId;
 import com.damdamdeo.eventdataspreader.eventsourcing.api.*;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.*;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEvent;
 import org.apache.commons.lang3.Validate;
 
 import java.sql.Connection;
@@ -18,7 +16,7 @@ import java.util.Optional;
 
 public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
 
-    private final PostgreSQLEventId postgreSQLEventId;
+    private final PostgreSQLAggregateRootEventId postgreSQLEventId;
 
     private final LocalDateTime creationDate;
 
@@ -29,7 +27,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     private final String eventPayload;
 
     public PostgreSQLDecryptableEvent(final ResultSet resultSet) throws SQLException {
-        this.postgreSQLEventId = new PostgreSQLEventId(resultSet);
+        this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(resultSet);
         this.creationDate = resultSet.getObject("creationdate", LocalDateTime.class);
         this.eventType = resultSet.getString("eventtype");
         this.eventMetaData = resultSet.getString("eventmetadata");
@@ -39,19 +37,19 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     private PostgreSQLDecryptableEvent(final EncryptedEventBuilder builder,
                                        final Optional<EncryptedEventSecret> encryptedEventSecret,
                                        final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                       final EventMetadataDeSerializer eventMetadataDeSerializer) {
-        this.postgreSQLEventId = new PostgreSQLEventId(builder.eventId);
+                                       final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+        this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(builder.aggregateRootEventId);
         this.eventType = builder.eventType;
         this.creationDate = builder.creationDate;
         this.eventPayload = aggregateRootEventPayloadDeSerializer.serialize(encryptedEventSecret, builder.aggregateRootEventPayload);
-        this.eventMetaData = eventMetadataDeSerializer.serialize(encryptedEventSecret, builder.eventMetaData);
+        this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize(encryptedEventSecret, builder.aggregateRootEventMetadata);
     }
 
     public PreparedStatement insertStatement(final Connection con) throws SQLException {
         final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventmetadata, eventpayload) " +
                 "VALUES (?, ?, ?, ?, ?, to_json(?::json), to_json(?::json))");
-        preparedStatement.setString(1, postgreSQLEventId.aggregateRootId());
-        preparedStatement.setString(2, postgreSQLEventId.aggregateRootType());
+        preparedStatement.setString(1, postgreSQLEventId.aggregateRootId().aggregateRootId());
+        preparedStatement.setString(2, postgreSQLEventId.aggregateRootId().aggregateRootType());
         preparedStatement.setLong(3, postgreSQLEventId.version());
         preparedStatement.setObject(4, creationDate);
         preparedStatement.setString(5, eventType);
@@ -65,14 +63,14 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     }
 
     public static class EncryptedEventBuilder {
-        private EventId eventId;
+        private AggregateRootEventId aggregateRootEventId;
         private String eventType;
         private LocalDateTime creationDate;
         private AggregateRootEventPayload aggregateRootEventPayload;
-        private EventMetadata eventMetaData;
+        private AggregateRootEventMetadata aggregateRootEventMetadata;
 
-        public EncryptedEventBuilder withEventId(final EventId eventId) {
-            this.eventId = eventId;
+        public EncryptedEventBuilder withEventId(final AggregateRootEventId aggregateRootEventId) {
+            this.aggregateRootEventId = aggregateRootEventId;
             return this;
         }
 
@@ -91,31 +89,31 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
             return this;
         }
 
-        public EncryptedEventBuilder withEventMetaData(final EventMetadata eventMetaData) {
-            this.eventMetaData = eventMetaData;
+        public EncryptedEventBuilder withEventMetaData(final AggregateRootEventMetadata aggregateRootEventMetadata) {
+            this.aggregateRootEventMetadata = aggregateRootEventMetadata;
             return this;
         }
 
         public PostgreSQLDecryptableEvent build(final Optional<EncryptedEventSecret> encryptedEventSecret,
                                                 final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                                final EventMetadataDeSerializer eventMetadataDeSerializer) {
-            Validate.notNull(eventId);
+                                                final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+            Validate.notNull(aggregateRootEventId);
             Validate.notNull(eventType);
             Validate.notNull(creationDate);
             Validate.notNull(aggregateRootEventPayload);
-            Validate.notNull(eventMetaData);
+            Validate.notNull(aggregateRootEventMetadata);
             Validate.notNull(encryptedEventSecret);
             Validate.notNull(aggregateRootEventPayloadDeSerializer);
-            Validate.notNull(eventMetadataDeSerializer);
-            Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(eventId.aggregateRootId()) : true);
-            Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(eventId.aggregateRootType()) : true);
-            return new PostgreSQLDecryptableEvent(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer);
+            Validate.notNull(aggregateRootEventMetadataDeSerializer);
+            Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(aggregateRootEventId.aggregateRootId().aggregateRootId()) : true);
+            Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(aggregateRootEventId.aggregateRootId().aggregateRootType()) : true);
+            return new PostgreSQLDecryptableEvent(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer);
         }
 
     }
 
     @Override
-    public EventId eventId() {
+    public AggregateRootEventId eventId() {
         return postgreSQLEventId;
     }
 
@@ -132,28 +130,28 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     @Override
     public AggregateRootEventPayload eventPayload(final Optional<EncryptedEventSecret> encryptedEventSecret,
                                                   final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer) {
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId()) : true);
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootType()) : true);
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId().aggregateRootId()) : true);
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootId().aggregateRootType()) : true);
         return aggregateRootEventPayloadDeSerializer.deserialize(encryptedEventSecret, eventPayload);
     }
 
     @Override
-    public EventMetadata eventMetaData(final Optional<EncryptedEventSecret> encryptedEventSecret,
-                                       final EventMetadataDeSerializer eventMetadataDeserializer) {
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId()) : true);
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootType()) : true);
-        return eventMetadataDeserializer.deserialize(encryptedEventSecret, eventMetaData);
+    public AggregateRootEventMetadata eventMetaData(final Optional<EncryptedEventSecret> encryptedEventSecret,
+                                                    final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId().aggregateRootId()) : true);
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootId().aggregateRootType()) : true);
+        return aggregateRootEventMetadataDeSerializer.deserialize(encryptedEventSecret, eventMetaData);
     }
 
-    public Event toEvent(final Optional<EncryptedEventSecret> encryptedEventSecret,
-                         final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                         final EventMetadataDeSerializer eventMetadataDeSerializer) {
+    public AggregateRootEvent toEvent(final Optional<EncryptedEventSecret> encryptedEventSecret,
+                                      final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                                      final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
         Validate.notNull(encryptedEventSecret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
-        Validate.notNull(eventMetadataDeSerializer);
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId()) : true);
-        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootType()) : true);
-        return new Event(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, eventMetadataDeSerializer);
+        Validate.notNull(aggregateRootEventMetadataDeSerializer);
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootId().equals(postgreSQLEventId.aggregateRootId().aggregateRootId()) : true);
+        Validate.validState(encryptedEventSecret.isPresent() ? encryptedEventSecret.get().aggregateRootType().equals(postgreSQLEventId.aggregateRootId().aggregateRootType()) : true);
+        return new AggregateRootEvent(this, encryptedEventSecret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer);
     }
 
     @Override

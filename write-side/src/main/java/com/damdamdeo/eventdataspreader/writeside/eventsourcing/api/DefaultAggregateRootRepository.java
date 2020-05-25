@@ -10,12 +10,16 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
 
     private final EventRepository eventRepository;
 
-    private final AggregateRootProjectionRepository aggregateRootProjectionRepository;
+    private final AggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository;
+
+    private final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
 
     public DefaultAggregateRootRepository(final EventRepository eventRepository,
-                                          final AggregateRootProjectionRepository aggregateRootProjectionRepository) {
+                                          final AggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository,
+                                          final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
         this.eventRepository = Objects.requireNonNull(eventRepository);
-        this.aggregateRootProjectionRepository = Objects.requireNonNull(aggregateRootProjectionRepository);
+        this.aggregateRootMaterializedStateRepository = Objects.requireNonNull(aggregateRootMaterializedStateRepository);
+        this.aggregateRootMaterializedStateSerializer = Objects.requireNonNull(aggregateRootMaterializedStateSerializer);
     }
 
     @Override
@@ -24,20 +28,22 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         Objects.requireNonNull(aggregateRoot);
         eventRepository.save(aggregateRoot.unsavedEvents());
         aggregateRoot.deleteUnsavedEvents();
-        aggregateRootProjectionRepository.merge(aggregateRoot);
+        final String serializedMaterializedState = aggregateRootMaterializedStateSerializer.serialize(aggregateRoot);
+        aggregateRootMaterializedStateRepository.persist(new AggregateRootMaterializedState(aggregateRoot, serializedMaterializedState));
         return aggregateRoot;
     }
 
     @Override
     @Transactional
-    public <T extends AggregateRoot> T load(String aggregateRootId, Class<T> clazz) throws UnknownAggregateRootException {
+    public <T extends AggregateRoot> T load(final String aggregateRootId, final Class<T> clazz) throws UnknownAggregateRootException {
         Objects.requireNonNull(aggregateRootId);
+        Objects.requireNonNull(clazz);
         final T instance = createNewInstance(clazz);
-        final List<Event> events = eventRepository.loadOrderByVersionASC(aggregateRootId, instance.getClass().getSimpleName());
-        if (events.size() == 0) {
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, instance.getClass().getSimpleName());
+        if (aggregateRootEvents.size() == 0) {
             throw new UnknownAggregateRootException(aggregateRootId);
         }
-        instance.loadFromHistory(events);
+        instance.loadFromHistory(aggregateRootEvents);
         return instance;
     }
 

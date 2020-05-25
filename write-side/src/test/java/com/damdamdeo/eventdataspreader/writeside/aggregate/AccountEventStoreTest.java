@@ -1,10 +1,10 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.AccountAggregateAccountDebitedEventPayload;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.metadata.UserAggregateRootEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.payload.AccountAggregateRootAccountDebitedAggregateRootEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.DebitAccountCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEvent;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
@@ -27,24 +27,24 @@ public class AccountEventStoreTest extends AbstractTest {
     @Test
     public void should_debit_account() {
         // Given
-        final AccountAggregate accountAggregate = new AccountAggregate();
-        accountAggregate.handle(new DebitAccountCommand("owner", new BigDecimal("100.01"), "executedBy"));
+        final AccountAggregateRoot accountAggregateRoot = new AccountAggregateRoot();
+        accountAggregateRoot.handle(new DebitAccountCommand("owner", new BigDecimal("100.01"), "executedBy"));
 
         // When save
-        final AccountAggregate accountAggregateSaved = aggregateRootRepository.save(accountAggregate);
+        final AccountAggregateRoot accountAggregateRootSaved = aggregateRootRepository.save(accountAggregateRoot);
 
         // Then
-        assertEquals(new AccountAggregate("owner", "owner", new BigDecimal("899.99"), 0l), accountAggregateSaved);
-        final List<Event> events = eventRepository.loadOrderByVersionASC("owner", "AccountAggregate");
-        assertEquals(1, events.size());
+        assertEquals(new AccountAggregateRoot("owner", "owner", new BigDecimal("899.99"), 0l), accountAggregateRootSaved);
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("owner", "AccountAggregateRoot");
+        assertEquals(1, aggregateRootEvents.size());
         // -- AccountDebited
-        assertEquals("owner", events.get(0).aggregateRootId());
-        assertEquals("AccountAggregate", events.get(0).aggregateRootType());
-        assertEquals("AccountDebited", events.get(0).eventType());
-        assertEquals(0L, events.get(0).version());
-        assertNotNull(events.get(0).creationDate());
-        assertEquals(new DefaultEventMetadata("executedBy"), events.get(0).eventMetaData());
-        assertEquals(new AccountAggregateAccountDebitedEventPayload("owner", new BigDecimal("100.01"), new BigDecimal("899.99")), events.get(0).eventPayload());
+        assertEquals("owner", aggregateRootEvents.get(0).aggregateRootId());
+        assertEquals("AccountAggregateRoot", aggregateRootEvents.get(0).aggregateRootType());
+        assertEquals("AccountAggregateRootAccountDebitedAggregateRootEventPayload", aggregateRootEvents.get(0).eventType());
+        assertEquals(0L, aggregateRootEvents.get(0).version());
+        assertNotNull(aggregateRootEvents.get(0).creationDate());
+        assertEquals(new UserAggregateRootEventMetadata("executedBy"), aggregateRootEvents.get(0).eventMetaData());
+        assertEquals(new AccountAggregateRootAccountDebitedAggregateRootEventPayload("owner", new BigDecimal("100.01"), new BigDecimal("899.99")), aggregateRootEvents.get(0).eventPayload());
     }
 
 }

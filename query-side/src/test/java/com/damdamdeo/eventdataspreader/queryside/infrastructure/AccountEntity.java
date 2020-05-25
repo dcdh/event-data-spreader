@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.queryside.infrastructure;
 
-import com.damdamdeo.eventdataspreader.event.api.EventId;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootEventId;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -24,10 +24,10 @@ public class AccountEntity {
 
     public AccountEntity() {}
 
-    public void onAccountDebited(final String owner, final BigDecimal balance, final EventId eventId) {
+    public void onAccountDebited(final String owner, final BigDecimal balance, final AggregateRootEventId aggregateRootEventId) {
         this.owner = Objects.requireNonNull(owner);
         this.balance = Objects.requireNonNull(balance);
-        this.version = Objects.requireNonNull(eventId.version());
+        this.version = Objects.requireNonNull(aggregateRootEventId.version());
     }
 
     public String owner() {

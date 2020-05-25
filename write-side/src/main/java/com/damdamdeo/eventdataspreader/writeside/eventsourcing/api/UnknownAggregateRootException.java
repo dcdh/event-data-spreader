@@ -2,7 +2,7 @@ package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
 import java.util.Objects;
 
-public class UnknownAggregateRootException extends RuntimeException {
+public final class UnknownAggregateRootException extends RuntimeException {
 
     private final String unknownAggregateId;
 

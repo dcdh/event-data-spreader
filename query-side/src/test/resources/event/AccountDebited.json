@@ -2,19 +2,19 @@
   "topic": "event-query-in",
   "key": {
     "aggregaterootid": "damdamdeo",
-    "aggregateroottype": "AccountAggregate",
+    "aggregateroottype": "AccountAggregateRoot",
     "version": 0
   },
   "value": {
     "before": null,
     "after": {
       "aggregaterootid": "damdamdeo",
-      "aggregateroottype": "AccountAggregate",
+      "aggregateroottype": "AccountAggregateRoot",
       "version": 0,
       "creationdate": 1569174260987000,
       "eventtype": "AccountDebited",
-      "eventmetadata": "{\"@type\": \"DefaultEventMetadata\", \"executedBy\": \"damdamdeo\"}",
-      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}"
+      "eventmetadata": "{\"@type\": \"UserAggregateRootEventMetadata\", \"executedBy\": \"damdamdeo\"}",
+      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateRootAccountDebitedAggregateRootEventPayload\", \"balance\": \"900.00\"}"
     },
     "source": {
       "version": "0.10.0.Beta2",

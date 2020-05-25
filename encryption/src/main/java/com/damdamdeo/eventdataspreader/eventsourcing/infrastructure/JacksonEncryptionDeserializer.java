@@ -22,6 +22,7 @@ public class JacksonEncryptionDeserializer extends JsonDeserializer<String> {
     @Override
     public String deserialize(final JsonParser jsonParser,
                               final DeserializationContext deserializationContext) throws IOException {
+        @SuppressWarnings("unchecked")
         final Optional<EncryptedEventSecret> encryptedEventSecret = (Optional<EncryptedEventSecret>) deserializationContext
                 .getAttribute(JacksonEncryptionSerializer.ENCODER_SECRET);
         if (encryptedEventSecret.isPresent()) {

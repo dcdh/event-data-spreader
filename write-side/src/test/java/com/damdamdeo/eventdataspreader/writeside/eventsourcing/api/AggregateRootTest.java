@@ -1,6 +1,5 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -25,19 +24,19 @@ public class AggregateRootTest {
         // Given
         final AggregateRoot aggregateRoot = spy(new TestAggregateRoot());
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
-        final EventMetadata eventMetadata = mock(EventMetadata.class);
+        final AggregateRootEventMetadata aggregateRootEventMetadata = mock(AggregateRootEventMetadata.class);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("0123456789");
-        when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
+        when(aggregateRootEventPayload.eventPayloadName()).thenReturn("eventName");
         when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
 
         // When
-        aggregateRoot.apply(aggregateRootEventPayload, eventMetadata);
+        aggregateRoot.apply(aggregateRootEventPayload, aggregateRootEventMetadata);
 
         // Then
         assertEquals(0l, aggregateRoot.version());
 
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootId();
-        verify(aggregateRootEventPayload, atLeastOnce()).eventName();
+        verify(aggregateRootEventPayload, atLeastOnce()).eventPayloadName();
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootType();
     }
 
@@ -46,13 +45,13 @@ public class AggregateRootTest {
         // Given
         final AggregateRoot aggregateRoot = spy(new TestAggregateRoot("0123456789"));
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
-        final EventMetadata eventMetadata = mock(EventMetadata.class);
+        final AggregateRootEventMetadata aggregateRootEventMetadata = mock(AggregateRootEventMetadata.class);
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("0123456789");
-        when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
+        when(aggregateRootEventPayload.eventPayloadName()).thenReturn("eventName");
         when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
 
         // When
-        aggregateRoot.apply(aggregateRootEventPayload, eventMetadata);
+        aggregateRoot.apply(aggregateRootEventPayload, aggregateRootEventMetadata);
 
         // Then
         assertEquals("0123456789", aggregateRoot.unsavedEvents().get(0).aggregateRootId());
@@ -60,13 +59,13 @@ public class AggregateRootTest {
         assertNotNull(aggregateRoot.unsavedEvents().get(0).eventType());
         assertEquals(0, aggregateRoot.unsavedEvents().get(0).version());
         assertNotNull(aggregateRoot.unsavedEvents().get(0).creationDate());
-        assertEquals(eventMetadata, aggregateRoot.unsavedEvents().get(0).eventMetaData());
+        assertEquals(aggregateRootEventMetadata, aggregateRoot.unsavedEvents().get(0).eventMetaData());
         assertEquals(aggregateRootEventPayload, aggregateRoot.unsavedEvents().get(0).eventPayload());
         assertEquals(0l, aggregateRoot.version());
         assertEquals(1, aggregateRoot.unsavedEvents().size());
 
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootId();
-        verify(aggregateRootEventPayload, atLeastOnce()).eventName();
+        verify(aggregateRootEventPayload, atLeastOnce()).eventPayloadName();
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootType();
     }
 
@@ -79,7 +78,7 @@ public class AggregateRootTest {
 
         // When && Then
         assertThrows(NullPointerException.class,
-                () -> aggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class)),
+                () -> aggregateRoot.apply(aggregateRootEventPayload, mock(AggregateRootEventMetadata.class)),
                 "Aggregate root id can't be null"
         );
         verify(aggregateRootEventPayload, times(1)).aggregateRootId();
@@ -94,7 +93,7 @@ public class AggregateRootTest {
 
         // When && Then
         assertThrows(IllegalStateException.class,
-                () -> aggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class)),
+                () -> aggregateRoot.apply(aggregateRootEventPayload, mock(AggregateRootEventMetadata.class)),
                 "Aggregate root id and event aggregate root id mismatch"
         );
         verify(aggregateRootEventPayload, times(1)).aggregateRootId();
@@ -115,17 +114,17 @@ public class AggregateRootTest {
     public void should_load_from_history_fail_fast_if_events_ids_are_different() {
         // Given
         final AggregateRoot aggregateRoot = spy(new TestAggregateRoot());
-        final List<Event> events = new ArrayList<>();
-        final Event event1 = mock(Event.class);
-        doReturn("0123456789").when(event1).aggregateRootId();
-        final Event event2 = mock(Event.class);
-        doReturn("azerty").when(event2).aggregateRootId();
-        events.add(event1);
-        events.add(event2);
+        final List<AggregateRootEvent> aggregateRootEvents = new ArrayList<>();
+        final AggregateRootEvent aggregateRootEvent1 = mock(AggregateRootEvent.class);
+        doReturn("0123456789").when(aggregateRootEvent1).aggregateRootId();
+        final AggregateRootEvent aggregateRootEvent2 = mock(AggregateRootEvent.class);
+        doReturn("azerty").when(aggregateRootEvent2).aggregateRootId();
+        aggregateRootEvents.add(aggregateRootEvent1);
+        aggregateRootEvents.add(aggregateRootEvent2);
 
         // When && Then
         assertThrows(IllegalStateException.class,
-                () -> aggregateRoot.loadFromHistory(events),
+                () -> aggregateRoot.loadFromHistory(aggregateRootEvents),
                 "Aggregate Root ids events mismatch");
     }
 
@@ -145,18 +144,18 @@ public class AggregateRootTest {
     public void should_load_from_history_apply_given_events() {
         // Given
         final AggregateRoot aggregateRoot = spy(new TestAggregateRoot());
-        final Event event = mock(Event.class);
+        final AggregateRootEvent aggregateRootEvent = mock(AggregateRootEvent.class);
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class);
-        doReturn(0l).when(event).version();
-        doReturn(aggregateRootEventPayload).when(event).eventPayload();
-        final List<Event> events = Collections.singletonList(event);
+        doReturn(0l).when(aggregateRootEvent).version();
+        doReturn(aggregateRootEventPayload).when(aggregateRootEvent).eventPayload();
+        final List<AggregateRootEvent> aggregateRootEvents = Collections.singletonList(aggregateRootEvent);
 
         // When
-        aggregateRoot.loadFromHistory(events);
+        aggregateRoot.loadFromHistory(aggregateRootEvents);
 
         // Then
-        verify(event).version();
-        verify(event).eventPayload();
+        verify(aggregateRootEvent).version();
+        verify(aggregateRootEvent).eventPayload();
         verify(aggregateRootEventPayload).apply(aggregateRoot);
         assertEquals(0l, aggregateRoot.version());
         assertEquals(0l, aggregateRoot.unsavedEvents().size());
@@ -167,13 +166,13 @@ public class AggregateRootTest {
         // Given
         final AggregateRoot aggregateRoot = spy(new TestAggregateRoot("0123456789"));
         final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
-        final EventMetadata eventMetadata = mock(EventMetadata.class);
+        final AggregateRootEventMetadata aggregateRootEventMetadata = mock(AggregateRootEventMetadata.class);
 
         when(aggregateRootEventPayload.aggregateRootId()).thenReturn("0123456789");
-        when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
+        when(aggregateRootEventPayload.eventPayloadName()).thenReturn("eventName");
         when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
 
-        aggregateRoot.apply(aggregateRootEventPayload, eventMetadata);
+        aggregateRoot.apply(aggregateRootEventPayload, aggregateRootEventMetadata);
 
         // When
         aggregateRoot.deleteUnsavedEvents();
@@ -181,7 +180,7 @@ public class AggregateRootTest {
         // Then
         assertEquals(0l, aggregateRoot.unsavedEvents().size());
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootId();
-        verify(aggregateRootEventPayload, atLeastOnce()).eventName();
+        verify(aggregateRootEventPayload, atLeastOnce()).eventPayloadName();
         verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootType();
     }
 

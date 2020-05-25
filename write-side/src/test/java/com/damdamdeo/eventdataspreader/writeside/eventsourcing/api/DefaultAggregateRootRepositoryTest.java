@@ -1,72 +1,146 @@
 package com.damdamdeo.eventdataspreader.writeside.eventsourcing.api;
 
-import com.damdamdeo.eventdataspreader.event.api.EventMetadata;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
+import org.mockito.ArgumentMatchers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class DefaultAggregateRootRepositoryTest {
 
-    private final class TestAggregateRoot extends AggregateRoot {}
+    private DefaultAggregateRootRepository defaultAggregateRootRepository;
+    private EventRepository eventRepository;
+    private AggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository;
+    private AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
+
+    public final class TestAggregateRoot extends AggregateRoot {
+
+        public TestAggregateRoot() {}
+
+    }
+
+    @BeforeEach
+    public void setup() {
+        eventRepository = mock(EventRepository.class);
+        aggregateRootMaterializedStateRepository = mock(AggregateRootMaterializedStateRepository.class);
+        aggregateRootMaterializedStateSerializer = mock(AggregateRootMaterializedStateSerializer.class);
+
+        defaultAggregateRootRepository = spy(new DefaultAggregateRootRepository(eventRepository,
+                aggregateRootMaterializedStateRepository, aggregateRootMaterializedStateSerializer));
+    }
 
     @Test
-    public void should_fail_fast_when_aggregateRoot_is_null() {
+    public void should_fail_fast_when_save_null_aggregateRoot() {
         // Given
-        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
-                mock(EventRepository.class), mock(AggregateRootProjectionRepository.class));
-
         // When && Then
         assertThrows(NullPointerException.class, () -> defaultAggregateRootRepository.save(null));
     }
 
     @Test
-    public void should_save_unsaved_event_next_delete_them() throws Exception {
+    public void should_save_events() throws Exception {
         // Given
-        final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
-        final EventRepository eventRepository = mock(EventRepository.class);
-        final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
-        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
-                eventRepository, aggregateRootProjectionRepository);
-        final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
-        when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
-        when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
-        when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
-        testAggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class));
-        final InOrder inOrder = inOrder(testAggregateRoot);
+        final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
+        doReturn("aggregateRootId").when(aggregateRoot).aggregateRootId();
+        doReturn("aggregateRootType").when(aggregateRoot).aggregateRootType();
+        doReturn(0l).when(aggregateRoot).version();
+        doReturn("{}").when(aggregateRootMaterializedStateSerializer).serialize(aggregateRoot);
+        final List<AggregateRootEvent> unsavedAggregateRootEvents = Collections.singletonList(mock(AggregateRootEvent.class));
+        doReturn(unsavedAggregateRootEvents).when(aggregateRoot).unsavedEvents();
 
         // When
-        defaultAggregateRootRepository.save(testAggregateRoot);
+        final AggregateRoot aggregateRootSaved = defaultAggregateRootRepository.save(aggregateRoot);
 
         // Then
-        verify(eventRepository).save(anyList());
-        inOrder.verify(testAggregateRoot).unsavedEvents();
-        inOrder.verify(testAggregateRoot).deleteUnsavedEvents();
-        verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootId();
-        verify(aggregateRootEventPayload, atLeastOnce()).eventName();
-        verify(aggregateRootEventPayload, atLeastOnce()).aggregateRootType();
+        assertEquals(aggregateRoot, aggregateRootSaved);
+        verify(eventRepository, times(1)).save(unsavedAggregateRootEvents);
+        verify(aggregateRoot, times(1)).unsavedEvents();
+        verify(aggregateRoot, times(1)).deleteUnsavedEvents();
+        verify(aggregateRoot, times(1)).aggregateRootId();
+        verify(aggregateRoot, times(1)).aggregateRootType();
+        verify(aggregateRoot, times(1)).version();
+        verify(aggregateRootMaterializedStateSerializer, times(1)).serialize(any());
     }
 
     @Test
-    public void should_save_aggregate_root_projection() throws Exception {
+    public void should_purge_events_after_save() throws Exception {
         // Given
-        final TestAggregateRoot testAggregateRoot = spy(new TestAggregateRoot());
-        final EventRepository eventRepository = mock(EventRepository.class);
-        final AggregateRootProjectionRepository aggregateRootProjectionRepository = mock(AggregateRootProjectionRepository.class);
-        final DefaultAggregateRootRepository defaultAggregateRootRepository = new DefaultAggregateRootRepository(
-                eventRepository, aggregateRootProjectionRepository);
-        final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class, RETURNS_DEEP_STUBS);
-        when(aggregateRootEventPayload.aggregateRootId()).thenReturn("aggregateRootId");
-        when(aggregateRootEventPayload.eventName()).thenReturn("eventName");
-        when(aggregateRootEventPayload.aggregateRootType()).thenReturn("aggregateRootType");
-        testAggregateRoot.apply(aggregateRootEventPayload, mock(EventMetadata.class));
+        final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
+        doReturn("aggregateRootId").when(aggregateRoot).aggregateRootId();
+        doReturn("aggregateRootType").when(aggregateRoot).aggregateRootType();
+        doReturn(0l).when(aggregateRoot).version();
+        doReturn("{}").when(aggregateRootMaterializedStateSerializer).serialize(aggregateRoot);
 
         // When
-        defaultAggregateRootRepository.save(testAggregateRoot);
-// TODO revoir tests !
+        defaultAggregateRootRepository.save(aggregateRoot);
+
         // Then
-        verify(aggregateRootProjectionRepository).merge(testAggregateRoot);
+        verify(aggregateRoot, times(1)).deleteUnsavedEvents();
+        verify(aggregateRoot, times(1)).aggregateRootId();
+        verify(aggregateRoot, times(1)).aggregateRootType();
+        verify(aggregateRoot, times(1)).version();
+        verify(aggregateRootMaterializedStateSerializer, times(1)).serialize(any());
+    }
+
+    @Test
+    public void should_save_aggregate() throws Exception {
+        // Given
+        final AggregateRoot aggregateRoot = mock(AggregateRoot.class);
+        doReturn("aggregateRootId").when(aggregateRoot).aggregateRootId();
+        doReturn("aggregateRootType").when(aggregateRoot).aggregateRootType();
+        doReturn(0l).when(aggregateRoot).version();
+        doReturn("{}").when(aggregateRootMaterializedStateSerializer).serialize(aggregateRoot);
+
+        // When
+        defaultAggregateRootRepository.save(aggregateRoot);
+
+        // Then
+        verify(aggregateRootMaterializedStateSerializer, times(1)).serialize(aggregateRoot);
+        verify(aggregateRootMaterializedStateRepository, times(1)).persist(any());
+        verify(aggregateRoot, times(1)).aggregateRootId();
+        verify(aggregateRoot, times(1)).aggregateRootType();
+        verify(aggregateRoot, times(1)).version();
+        verify(aggregateRootMaterializedStateSerializer, times(1)).serialize(any());
+    }
+
+    @Test
+    public void should_load_aggregateRoot() {
+        // Given
+        final List<AggregateRootEvent> aggregateRootEvents = Collections.singletonList(mock(AggregateRootEvent.class));
+        doReturn(aggregateRootEvents).when(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        final TestAggregateRoot aggregateRoot = mock(TestAggregateRoot.class);
+        doReturn(aggregateRoot).when(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
+
+        // When
+        final TestAggregateRoot aggregateRootLoaded = defaultAggregateRootRepository.load("aggregateRootId", TestAggregateRoot.class);
+
+        // Then
+        assertEquals(aggregateRoot, aggregateRootLoaded);
+        verify(aggregateRoot).loadFromHistory(aggregateRootEvents);
+        verify(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        verify(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
+    }
+
+    @Test
+    public void should_throw_exception_when_no_events_are_presents() {
+        // Given
+        doReturn(Collections.emptyList()).when(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
+        final TestAggregateRoot aggregateRoot = mock(TestAggregateRoot.class);
+        doReturn(aggregateRoot).when(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
+
+        // When && Then
+        Assertions.assertThrows(UnknownAggregateRootException.class, () -> {
+            defaultAggregateRootRepository.load("aggregateRootId", TestAggregateRoot.class);
+        });
+
+        verify(aggregateRoot, never()).loadFromHistory(ArgumentMatchers.anyList());
+        verify(defaultAggregateRootRepository).createNewInstance(TestAggregateRoot.class);
+        verify(eventRepository).loadOrderByVersionASC(ArgumentMatchers.eq("aggregateRootId"), ArgumentMatchers.anyString());
     }
 
 }

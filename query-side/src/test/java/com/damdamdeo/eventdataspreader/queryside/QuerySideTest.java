@@ -1,7 +1,8 @@
 package com.damdamdeo.eventdataspreader.queryside;
 
-import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.KafkaEventConsumedRepository;
-import com.damdamdeo.eventdataspreader.event.api.EventId;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootId;
+import com.damdamdeo.eventdataspreader.event.infrastructure.consumer.KafkaAggregateRootEventConsumedRepository;
+import com.damdamdeo.eventdataspreader.event.api.AggregateRootEventId;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.AccountEntity;
 import com.damdamdeo.eventdataspreader.queryside.infrastructure.GiftEntity;
 import io.agroal.api.AgroalDataSource;
@@ -44,7 +45,7 @@ public class QuerySideTest {
     AgroalDataSource consumedEventsDataSource;
 
     @Inject
-    KafkaEventConsumedRepository kafkaEventConsumedRepository;
+    KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
 
     @BeforeEach
     @Transactional
@@ -68,26 +69,31 @@ public class QuerySideTest {
         entityManager.createQuery("DELETE FROM AccountEntity").executeUpdate();
     }
 
-    private static final class TestEventId implements EventId {
+    private static final class TestAggregateRootEventId implements AggregateRootEventId {
 
         private final String aggregateRootId;
         private final String aggregateRootType;
         private final Long version;
 
-        public TestEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
+        public TestAggregateRootEventId(final String aggregateRootId, final String aggregateRootType, final Long version) {
             this.aggregateRootId = aggregateRootId;
             this.aggregateRootType = aggregateRootType;
             this.version = version;
         }
 
         @Override
-        public String aggregateRootId() {
-            return aggregateRootId;
-        }
+        public AggregateRootId aggregateRootId() {
+            return new AggregateRootId() {
+                @Override
+                public String aggregateRootId() {
+                    return aggregateRootId;
+                }
 
-        @Override
-        public String aggregateRootType() {
-            return aggregateRootType;
+                @Override
+                public String aggregateRootType() {
+                    return aggregateRootType;
+                }
+            };
         }
 
         @Override
@@ -106,20 +112,20 @@ public class QuerySideTest {
         // Then
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("MotorolaG6", "GiftAggregate", 0l)));
+                        new TestAggregateRootEventId("lapinou", "GiftAggregateRoot", 0l)));
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("MotorolaG6", "GiftAggregate", 1l)));
+                        new TestAggregateRootEventId("lapinou", "GiftAggregateRoot", 1l)));
         await().atMost(10, TimeUnit.SECONDS)
                 .until(() -> kafkaEventConsumedRepository.hasFinishedConsumingEvent(
-                        new TestEventId("damdamdeo", "AccountAggregate", 0l)));
+                        new TestAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l)));
 
         transaction.begin();
-        final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "MotorolaG6");
+        final GiftEntity giftEntity = entityManager.find(GiftEntity.class, "lapinou");
         final AccountEntity accountEntity = entityManager.find(AccountEntity.class, "damdamdeo");
         transaction.commit();
-//FCK
-        assertEquals("MotorolaG6", giftEntity.name());
+
+        assertEquals("lapinou", giftEntity.name());
         assertEquals("toto", giftEntity.offeredTo());
         assertEquals(1l, giftEntity.version());
 

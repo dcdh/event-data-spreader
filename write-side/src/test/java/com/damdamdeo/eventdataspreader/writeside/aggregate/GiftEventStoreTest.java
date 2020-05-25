@@ -1,12 +1,12 @@
 package com.damdamdeo.eventdataspreader.writeside.aggregate;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.DefaultEventMetadata;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftBoughtEventPayload;
-import com.damdamdeo.eventdataspreader.writeside.aggregate.event.GiftAggregateGiftOfferedEventPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.metadata.UserAggregateRootEventMetadata;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.payload.GiftAggregateRootGiftBoughtAggregateRootEventPayload;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.payload.GiftAggregateRootGiftOfferedAggregateRootEventPayload;
 import com.damdamdeo.eventdataspreader.writeside.command.BuyGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
+import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootEvent;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.AggregateRootRepository;
-import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.Event;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.EventRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
@@ -29,34 +29,34 @@ public class GiftEventStoreTest extends AbstractTest {
     @Test
     public void should_buy_and_offer_the_gift() {
         // Given
-        final GiftAggregate giftAggregate = new GiftAggregate();
-        giftAggregate.handle(new BuyGiftCommand("Motorola G6","damdamdeo"));
-        giftAggregate.handle(new OfferGiftCommand("Motorola G6", "toto","damdamdeo"));
+        final GiftAggregateRoot giftAggregateRoot = new GiftAggregateRoot();
+        giftAggregateRoot.handle(new BuyGiftCommand("lapinou","damdamdeo"));
+        giftAggregateRoot.handle(new OfferGiftCommand("lapinou", "toto","damdamdeo"));
 
         // When save
-        final GiftAggregate giftAggregateSaved = aggregateRootRepository.save(giftAggregate);
+        final GiftAggregateRoot giftAggregateRootSaved = aggregateRootRepository.save(giftAggregateRoot);
 
         // Then
-        assertEquals(new GiftAggregate("Motorola G6", "Motorola G6", "toto", 1l), giftAggregateSaved);
+        assertEquals(new GiftAggregateRoot("lapinou", "lapinou", "toto", 1l), giftAggregateRootSaved);
 
-        final List<Event> events = eventRepository.loadOrderByVersionASC("Motorola G6", "GiftAggregate");
-        assertEquals(2, events.size());
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("lapinou", "GiftAggregateRoot");
+        assertEquals(2, aggregateRootEvents.size());
         // -- GiftBought
-        assertEquals("Motorola G6", events.get(0).aggregateRootId());
-        assertEquals("GiftAggregate", events.get(0).aggregateRootType());
-        assertEquals("GiftBought", events.get(0).eventType());
-        assertEquals(0L, events.get(0).version());
-        assertNotNull(events.get(0).creationDate());
-        assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(0).eventMetaData());
-        assertEquals(new GiftAggregateGiftBoughtEventPayload("Motorola G6"), events.get(0).eventPayload());
+        assertEquals("lapinou", aggregateRootEvents.get(0).aggregateRootId());
+        assertEquals("GiftAggregateRoot", aggregateRootEvents.get(0).aggregateRootType());
+        assertEquals("GiftAggregateRootGiftBoughtAggregateRootEventPayload", aggregateRootEvents.get(0).eventType());
+        assertEquals(0L, aggregateRootEvents.get(0).version());
+        assertNotNull(aggregateRootEvents.get(0).creationDate());
+        assertEquals(new UserAggregateRootEventMetadata("damdamdeo"), aggregateRootEvents.get(0).eventMetaData());
+        assertEquals(new GiftAggregateRootGiftBoughtAggregateRootEventPayload("lapinou"), aggregateRootEvents.get(0).eventPayload());
         // -- GiftOffered
-        assertEquals("Motorola G6", events.get(1).aggregateRootId());
-        assertEquals("GiftAggregate", events.get(1).aggregateRootType());
-        assertEquals("GiftOffered", events.get(1).eventType());
-        assertEquals(1L, events.get(1).version());
-        assertNotNull(events.get(1).creationDate());
-        assertEquals(new DefaultEventMetadata("damdamdeo"), events.get(1).eventMetaData());
-        assertEquals(new GiftAggregateGiftOfferedEventPayload("Motorola G6", "toto"), events.get(1).eventPayload());
+        assertEquals("lapinou", aggregateRootEvents.get(1).aggregateRootId());
+        assertEquals("GiftAggregateRoot", aggregateRootEvents.get(1).aggregateRootType());
+        assertEquals("GiftAggregateRootGiftOfferedAggregateRootEventPayload", aggregateRootEvents.get(1).eventType());
+        assertEquals(1L, aggregateRootEvents.get(1).version());
+        assertNotNull(aggregateRootEvents.get(1).creationDate());
+        assertEquals(new UserAggregateRootEventMetadata("damdamdeo"), aggregateRootEvents.get(1).eventMetaData());
+        assertEquals(new GiftAggregateRootGiftOfferedAggregateRootEventPayload("lapinou", "toto"), aggregateRootEvents.get(1).eventPayload());
     }
 
 }

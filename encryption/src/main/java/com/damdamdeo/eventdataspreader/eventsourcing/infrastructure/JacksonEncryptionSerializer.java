@@ -23,6 +23,7 @@ public class JacksonEncryptionSerializer extends JsonSerializer<String> {
     public void serialize(final String value,
                           final JsonGenerator jsonGenerator,
                           final SerializerProvider serializerProvider) throws IOException {
+        @SuppressWarnings("unchecked")
         final Optional<EncryptedEventSecret> encryptedEventSecret = (Optional<EncryptedEventSecret>) serializerProvider.getAttribute(ENCODER_SECRET);
         Validate.validState(encryptedEventSecret.isPresent());
         final String secret = encryptedEventSecret.map(EncryptedEventSecret::secret).get();

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventdataspreader.writeside.command.handler;
 
-import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregate;
+import com.damdamdeo.eventdataspreader.writeside.aggregate.GiftAggregateRoot;
 import com.damdamdeo.eventdataspreader.writeside.command.OfferGiftCommand;
 import com.damdamdeo.eventdataspreader.writeside.eventsourcing.api.DefaultAggregateRootRepository;
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,17 +28,17 @@ public class OfferGiftCommandHandlerTest extends AbstractCommandHandlerTest {
     public void should_offer_gift() throws Throwable {
         // Given
         final OfferGiftCommand offerGiftCommand = new OfferGiftCommand("lapinou", "damdamdeo", "damdamdeo");
-        final GiftAggregate giftAggregate = mock(GiftAggregate.class);
-        when(mockDefaultAggregateRootRepository.save(giftAggregate)).then(returnsFirstArg());
-        doReturn(giftAggregate).when(mockDefaultAggregateRootRepository).load("lapinou", GiftAggregate.class);
+        final GiftAggregateRoot giftAggregateRoot = mock(GiftAggregateRoot.class);
+        when(mockDefaultAggregateRootRepository.save(giftAggregateRoot)).then(returnsFirstArg());
+        doReturn(giftAggregateRoot).when(mockDefaultAggregateRootRepository).load("lapinou", GiftAggregateRoot.class);
 
         // When
-        final GiftAggregate giftAggregateOffered = offerGiftCommandHandler.execute(offerGiftCommand);
+        final GiftAggregateRoot giftAggregateRootOffered = offerGiftCommandHandler.execute(offerGiftCommand);
 
         // Then
-        verify(giftAggregate, times(1)).handle(offerGiftCommand);
+        verify(giftAggregateRoot, times(1)).handle(offerGiftCommand);
 
-        assertEquals(giftAggregateOffered, giftAggregate);
+        assertEquals(giftAggregateRootOffered, giftAggregateRoot);
         verify(mockDefaultAggregateRootRepository, times(1)).save(any());
         verify(mockDefaultAggregateRootRepository, times(1)).load(any(), any());
         verify(spyCommandExecutor, times(1)).execute(any());

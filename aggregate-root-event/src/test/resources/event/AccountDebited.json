@@ -2,14 +2,14 @@
   "topic": "event",
   "key": {
     "aggregaterootid": "damdamdeo",
-    "aggregateroottype": "AccountAggregate",
+    "aggregateroottype": "AccountAggregateRoot",
     "version": 0
   },
   "value": {
     "before": null,
     "after": {
       "aggregaterootid": "damdamdeo",
-      "aggregateroottype": "AccountAggregate",
+      "aggregateroottype": "AccountAggregateRoot",
       "version": 0,
       "creationdate": 1569174260987000,
       "eventtype": "AccountDebited",
