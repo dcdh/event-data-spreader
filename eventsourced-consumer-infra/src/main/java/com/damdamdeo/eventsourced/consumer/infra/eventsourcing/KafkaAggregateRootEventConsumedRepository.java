@@ -1,0 +1,6 @@
+package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
+
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumedRepository;
+
+public interface KafkaAggregateRootEventConsumedRepository extends AggregateRootEventConsumedRepository<KafkaInfrastructureMetadata> {
+}

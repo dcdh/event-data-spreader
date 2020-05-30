@@ -1,0 +1,72 @@
+package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization;
+
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventPayloadConsumer;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadConsumerAggregateRootImplementationDiscovery;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootDynamicImplementation;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
+
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@QuarkusTest
+public class JacksonAggregateRootEventPayloadConsumerDeserializerTest {
+
+    @Inject
+    JacksonAggregateRootEventPayloadConsumerDeserializer jacksonAggregateRootEventPayloadConsumerDeserializer;
+
+    @Produces
+    public JacksonAggregateRootEventPayloadConsumerAggregateRootImplementationDiscovery jacksonAggregateRootEventPayloadConsumerImplementationDiscovery() {
+        return () -> Collections.singletonList(
+                new JacksonAggregateRootDynamicImplementation<>(TestAggregateRootEventPayloadConsumer.class, JacksonTestAggregateRootEventPayloadConsumer.class, "TestAggregateRootEventPayload"));
+    }
+
+    public static final class TestAggregateRootEventPayloadConsumer extends AggregateRootEventPayloadConsumer {
+
+        private final String dummy;
+
+        public TestAggregateRootEventPayloadConsumer(final String dummy) {
+            this.dummy = Objects.requireNonNull(dummy);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TestAggregateRootEventPayloadConsumer that = (TestAggregateRootEventPayloadConsumer) o;
+            return Objects.equals(dummy, that.dummy);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dummy);
+        }
+    }
+
+    public static abstract class JacksonTestAggregateRootEventPayloadConsumer extends JacksonAggregateRootEventPayloadConsumer {
+
+        @JsonCreator
+        public JacksonTestAggregateRootEventPayloadConsumer(@JsonProperty("dummy") final String dummy) {
+        }
+
+    }
+
+    @Test
+    public void should_deserialize() {
+        // Given
+
+        // When
+        final AggregateRootEventPayloadConsumer deserialized = jacksonAggregateRootEventPayloadConsumerDeserializer.deserialize(Optional.empty(),
+                "{\"@type\":\"TestAggregateRootEventPayload\",\"dummy\":\"dummy\"}");
+
+        // Then
+        assertEquals(new TestAggregateRootEventPayloadConsumer("dummy"), deserialized);
+    }
+}

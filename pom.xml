@@ -12,17 +12,20 @@
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <surefire-plugin.version>2.22.0</surefire-plugin.version>
-        <quarkus.version>1.4.1.Final</quarkus.version>
+        <quarkus.version>1.4.2.Final</quarkus.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <modules>
-        <module>aggregate-root-event</module>
-        <module>write-side</module>
-        <module>query-side</module>
-        <module>encryption</module>
+<!--        <module>eventsourced-model-api</module>-->
+<!--        <module>eventsourced-consumer-api</module>-->
+<!--        <module>eventsourced-encryption-api</module>-->
+<!--        <module>eventsourced-encryption-infra</module>-->
+<!--        <module>eventsourced-consumer-infra</module>-->
+<!--        <module>eventsourced-mutable-api</module>-->
+        <module>eventsourced-mutable-infra</module>
     </modules>
 
     <dependencyManagement>
@@ -83,6 +86,15 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>

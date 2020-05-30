@@ -19,7 +19,7 @@ services:
       - zookeeper
     environment:
       - ZOOKEEPER_CONNECT=zookeeper:2181
-      - CREATE_TOPICS=event:1:1:delete,aggregateroot:1:1:delete,flyway_schema_history:1:1:delete,test:1:1:delete
+      - CREATE_TOPICS=event:1:1:delete
       - KAFKA_LOG_RETENTION_MS=5000
       - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=5000
       - LOG_LEVEL=WARN
@@ -59,7 +59,7 @@ services:
       - 8083:8083
     links:
       - kafka
-      - event-store
+      - mutable
     environment:
       - BOOTSTRAP_SERVERS=kafka:9092
       - GROUP_ID=1
@@ -68,14 +68,14 @@ services:
       - STATUS_STORAGE_TOPIC=my_connect_statuses
       - LOG_LEVEL=WARN
 
-  event-store:
+  mutable:
     image: dcdh1983/postgresql-10-debezium-centos7:latest
     ports:
       - 5432:5432
     environment:
       - POSTGRESQL_USER=postgresuser
       - POSTGRESQL_PASSWORD=postgrespassword
-      - POSTGRESQL_DATABASE=event-store
+      - POSTGRESQL_DATABASE=mutable
 
   query:
     image: debezium/postgres:11-alpine
