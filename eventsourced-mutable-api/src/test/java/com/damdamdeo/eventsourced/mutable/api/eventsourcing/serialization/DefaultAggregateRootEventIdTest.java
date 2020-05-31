@@ -1,6 +1,5 @@
-package com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent;
+package com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.DefaultAggregateRootEventId;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
