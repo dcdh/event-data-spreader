@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.AggregateRootEventMetadata;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootDynamicImplementation;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventMetadataImplementationDiscovery;
 import com.fasterxml.jackson.annotation.JsonCreator;

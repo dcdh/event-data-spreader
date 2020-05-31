@@ -1,9 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.DefaultAggregateRootEventId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.AggregateRootEventMetadata;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.AggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.DefaultAggregateRootEventId;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
 import org.apache.commons.lang3.Validate;
 
 import java.io.Serializable;

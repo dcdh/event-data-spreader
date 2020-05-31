@@ -1,8 +1,8 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.AggregateRootEventMetadata;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.AggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

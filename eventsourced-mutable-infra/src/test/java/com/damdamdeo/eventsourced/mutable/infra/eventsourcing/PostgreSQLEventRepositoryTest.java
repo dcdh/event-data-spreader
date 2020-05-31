@@ -6,7 +6,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent.*;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.*;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;

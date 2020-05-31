@@ -1,4 +1,4 @@
-package com.damdamdeo.eventsourced.mutable.api.eventsourcing.aggregaterootevent;
+package com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 
