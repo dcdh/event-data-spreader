@@ -19,12 +19,12 @@
     </properties>
 
     <modules>
-<!--        <module>eventsourced-model-api</module>-->
-<!--        <module>eventsourced-consumer-api</module>-->
-<!--        <module>eventsourced-encryption-api</module>-->
-<!--        <module>eventsourced-encryption-infra</module>-->
-<!--        <module>eventsourced-consumer-infra</module>-->
-<!--        <module>eventsourced-mutable-api</module>-->
+        <module>eventsourced-model-api</module>
+        <module>eventsourced-consumer-api</module>
+        <module>eventsourced-encryption-api</module>
+        <module>eventsourced-encryption-infra</module>
+        <module>eventsourced-consumer-infra</module>
+        <module>eventsourced-mutable-api</module>
         <module>eventsourced-mutable-infra</module>
     </modules>
 
