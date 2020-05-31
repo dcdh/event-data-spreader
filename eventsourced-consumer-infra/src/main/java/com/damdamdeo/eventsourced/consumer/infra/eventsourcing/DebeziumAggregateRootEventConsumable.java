@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-public final class DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent implements DecryptableAggregateRootEvent {
+public final class DebeziumAggregateRootEventConsumable {
 
     private static final String AFTER = "after";
     private static final String OPERATION = "op";;
@@ -29,11 +29,11 @@ public final class DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent impl
     private final String eventMetaData;
     private final String eventPayload;
 
-    public DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent(final DebeziumAggregateRootEventId aggregateRootEventId,
-                                                                    final LocalDateTime creationDate,
-                                                                    final String eventType,
-                                                                    final String eventMetaData,
-                                                                    final String eventPayload) {
+    public DebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventId aggregateRootEventId,
+                                                final LocalDateTime creationDate,
+                                                final String eventType,
+                                                final String eventMetaData,
+                                                final String eventPayload) {
         this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.eventType = Objects.requireNonNull(eventType);
@@ -41,7 +41,7 @@ public final class DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent impl
         this.eventPayload = Objects.requireNonNull(eventPayload);
     }
 
-    public DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent(final IncomingKafkaRecord<JsonObject, JsonObject> record)
+    public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record)
             throws UnableToDecodeDebeziumEventMessageException {
         if (record.getKey() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaInfrastructureMetadata(record),
@@ -68,28 +68,23 @@ public final class DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent impl
         this.eventPayload = Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD));
     }
 
-    @Override
     public AggregateRootEventId eventId() {
         return aggregateRootEventId;
     }
 
-    @Override
     public LocalDateTime creationDate() {
         return creationDate;
     }
 
-    @Override
     public String eventType() {
         return eventType;
     }
 
-    @Override
     public AggregateRootEventMetadataConsumer eventMetaData(final Optional<AggregateRootSecret> aggregateRootSecret,
                                                             final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer) {
         return aggregateRootEventMetadataConsumerDeSerializer.deserialize(aggregateRootSecret, eventMetaData);
     }
 
-    @Override
     public AggregateRootEventPayloadConsumer eventPayload(final Optional<AggregateRootSecret> aggregateRootSecret,
                                                           final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer) {
         return aggregateRootEventPayloadConsumerDeserializer.deserialize(aggregateRootSecret, eventPayload);
@@ -98,8 +93,8 @@ public final class DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent impl
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent)) return false;
-        DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent that = (DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent) o;
+        if (!(o instanceof DebeziumAggregateRootEventConsumable)) return false;
+        DebeziumAggregateRootEventConsumable that = (DebeziumAggregateRootEventConsumable) o;
         return Objects.equals(aggregateRootEventId, that.aggregateRootEventId) &&
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(eventType, that.eventType) &&

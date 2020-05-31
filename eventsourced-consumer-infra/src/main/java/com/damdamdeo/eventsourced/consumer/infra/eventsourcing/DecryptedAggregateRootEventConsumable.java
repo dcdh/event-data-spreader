@@ -16,7 +16,7 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     private final AggregateRootEventPayloadConsumer aggregateRootEventPayloadConsumer;
     private final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer;
 
-    public DecryptedAggregateRootEventConsumable(final DecryptableAggregateRootEvent decryptableAggregateRootEvent,
+    public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent,
                                                  final Optional<AggregateRootSecret> aggregateRootSecret,
                                                  final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
                                                  final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer) {

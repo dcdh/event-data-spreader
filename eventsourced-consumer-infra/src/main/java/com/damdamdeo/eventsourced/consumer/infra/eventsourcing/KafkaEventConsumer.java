@@ -73,7 +73,7 @@ public class KafkaEventConsumer {
             boolean processedSuccessfully = true;
             do {
                 try {
-                    final DecryptableAggregateRootEvent decryptableAggregateRootEvent = new DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent(record);
+                    final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent = new DebeziumAggregateRootEventConsumable(record);
                     final String aggregateRootType = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootType();
                     final String aggregateRootId = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootId();
                     final Optional<AggregateRootSecret> aggregateRootSecret = secretStore.read(aggregateRootType, aggregateRootId);

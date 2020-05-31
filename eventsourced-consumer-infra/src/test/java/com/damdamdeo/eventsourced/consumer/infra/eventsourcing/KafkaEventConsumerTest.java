@@ -105,7 +105,7 @@ public class KafkaEventConsumerTest {
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
         final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(
-                new DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent(
+                new DebeziumAggregateRootEventConsumable(
                         new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
                         LocalDateTime.of(2019, Month.SEPTEMBER, 22, 19, 44, 20, 987000000),
                         "AccountDebited",
