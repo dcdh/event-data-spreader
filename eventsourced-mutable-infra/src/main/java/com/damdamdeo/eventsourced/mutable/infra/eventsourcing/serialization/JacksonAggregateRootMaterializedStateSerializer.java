@@ -5,7 +5,7 @@ import com.damdamdeo.eventsourced.encryption.api.SerializationException;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootMaterializedStateImplementationDiscovery;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootMaterializedStateMixInSubtypeDiscovery;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,13 +21,13 @@ public class JacksonAggregateRootMaterializedStateSerializer implements Aggregat
     private final ObjectMapper OBJECT_MAPPER;
     private final Encryption encryption;
 
-    public JacksonAggregateRootMaterializedStateSerializer(final JacksonAggregateRootMaterializedStateImplementationDiscovery jacksonAggregateRootMaterializedStateImplementationDiscoveryBean,
+    public JacksonAggregateRootMaterializedStateSerializer(final JacksonAggregateRootMaterializedStateMixInSubtypeDiscovery jacksonAggregateRootMaterializedStateMixInSubtypeDiscovery,
                                                            final Encryption encryption) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         OBJECT_MAPPER.addMixIn(AggregateRoot.class, JacksonAggregateRootMaterializedState.class);
-        jacksonAggregateRootMaterializedStateImplementationDiscoveryBean.registerJacksonDynamicImplementations(OBJECT_MAPPER);
+        jacksonAggregateRootMaterializedStateMixInSubtypeDiscovery.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);
     }
 

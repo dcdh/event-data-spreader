@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumer;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumerDeserializer;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventMetadataConsumerAggregateRootImplementationDiscovery;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventMetadataConsumerMixInSubtypeDiscovery;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SerializationException;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
@@ -21,13 +21,13 @@ public class JacksonAggregateRootEventMetadataConsumerDeserializer implements Ag
     private final ObjectMapper OBJECT_MAPPER;
     private final Encryption encryption;
 
-    public JacksonAggregateRootEventMetadataConsumerDeserializer(final JacksonAggregateRootEventMetadataConsumerAggregateRootImplementationDiscovery jacksonAggregateRootEventMetadataConsumerImplementationDiscoveryBean,
+    public JacksonAggregateRootEventMetadataConsumerDeserializer(final JacksonAggregateRootEventMetadataConsumerMixInSubtypeDiscovery jacksonAggregateRootEventMetadataConsumerImplementationDiscoveryBean,
                                                                  final Encryption encryption) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         OBJECT_MAPPER.addMixIn(AggregateRootEventMetadataConsumer.class, JacksonAggregateRootEventMetadataConsumer.class);
-        jacksonAggregateRootEventMetadataConsumerImplementationDiscoveryBean.registerJacksonDynamicImplementations(OBJECT_MAPPER);
+        jacksonAggregateRootEventMetadataConsumerImplementationDiscoveryBean.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);
     }
 

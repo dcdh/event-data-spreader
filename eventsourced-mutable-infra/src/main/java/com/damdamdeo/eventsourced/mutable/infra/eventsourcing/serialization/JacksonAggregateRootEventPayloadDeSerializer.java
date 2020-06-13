@@ -5,7 +5,7 @@ import com.damdamdeo.eventsourced.encryption.api.SerializationException;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadImplementationDiscovery;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadMixInSubtypeDiscovery;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.*;
@@ -20,13 +20,13 @@ public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRo
     private final ObjectMapper OBJECT_MAPPER;
     private final Encryption encryption;
 
-    public JacksonAggregateRootEventPayloadDeSerializer(final JacksonAggregateRootEventPayloadImplementationDiscovery jacksonAggregateRootEventPayloadImplementationDiscoveryBean,
+    public JacksonAggregateRootEventPayloadDeSerializer(final JacksonAggregateRootEventPayloadMixInSubtypeDiscovery jacksonAggregateRootEventPayloadMixInSubtypeDiscovery,
                                                         final Encryption encryption) {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         OBJECT_MAPPER.addMixIn(AggregateRootEventPayload.class, JacksonAggregateRootEventPayload.class);
-        jacksonAggregateRootEventPayloadImplementationDiscoveryBean.registerJacksonDynamicImplementations(OBJECT_MAPPER);
+        jacksonAggregateRootEventPayloadMixInSubtypeDiscovery.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);
     }
 

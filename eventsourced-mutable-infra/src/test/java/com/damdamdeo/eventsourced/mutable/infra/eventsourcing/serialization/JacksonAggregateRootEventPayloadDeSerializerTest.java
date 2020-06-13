@@ -3,8 +3,8 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootDynamicImplementation;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadImplementationDiscovery;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadMixInSubtypeDiscovery;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonMixInSubtype;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.test.junit.QuarkusTest;
@@ -25,9 +25,9 @@ public class JacksonAggregateRootEventPayloadDeSerializerTest {
     JacksonAggregateRootEventPayloadDeSerializer jacksonAggregateRootEventPayloadDeSerializer;
 
     @Produces
-    public JacksonAggregateRootEventPayloadImplementationDiscovery jacksonAggregateRootEventPayloadImplementationDiscovery() {
+    public JacksonAggregateRootEventPayloadMixInSubtypeDiscovery jacksonAggregateRootEventPayloadMixInSubtypeDiscovery() {
         return () -> Collections.singletonList(
-                new JacksonAggregateRootDynamicImplementation<>(TestAggregateRootEventPayload.class, JacksonTestAggregateRootEventPayload.class, "TestAggregateRootEventPayload"));
+                new JacksonMixInSubtype<>(TestAggregateRootEventPayload.class, JacksonTestAggregateRootEventPayload.class, "TestAggregateRootEventPayload"));
     }
 
     public static final class TestAggregateRootEventPayload extends AggregateRootEventPayload {

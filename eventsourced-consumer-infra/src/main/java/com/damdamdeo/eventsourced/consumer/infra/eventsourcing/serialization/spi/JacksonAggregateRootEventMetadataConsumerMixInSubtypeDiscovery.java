@@ -3,7 +3,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.sp
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumer;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.JacksonAggregateRootEventMetadataConsumer;
 
-public interface JacksonAggregateRootEventMetadataConsumerAggregateRootImplementationDiscovery
-        extends JacksonAggregateRootImplementationDiscovery<AggregateRootEventMetadataConsumer, JacksonAggregateRootEventMetadataConsumer> {
+public interface JacksonAggregateRootEventMetadataConsumerMixInSubtypeDiscovery
+        extends JacksonMixInSubtypeDiscovery<AggregateRootEventMetadataConsumer, JacksonAggregateRootEventMetadataConsumer> {
 
 }
