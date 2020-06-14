@@ -49,8 +49,6 @@ public class JacksonAggregateRootMaterializedStateSerializer implements Aggregat
         try {
             return OBJECT_MAPPER
                     .writer()
-//                    .withAttribute(JacksonEncryptionSerializer.ENCODER_SECRET, encryptedEventSecret)
-                    .withAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY, encryption)
                     .writeValueAsString(aggregateRoot);
         } catch (final Exception e) {
             throw new SerializationException(e);

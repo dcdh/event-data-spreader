@@ -1,9 +1,6 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumable;
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumer;
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumerDeserializer;
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventPayloadConsumerDeserializer;
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import io.quarkus.arc.AlternativePriority;
 import io.quarkus.test.junit.QuarkusTest;
@@ -37,6 +34,9 @@ public class KafkaEventConsumerTest {
 
     @InjectMock
     AggregateRootEventMetadataConsumerDeserializer mockedAggregateRootEventMetadataConsumerDeSerializer;
+
+    @InjectMock
+    AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer;
 
     @InjectMock
     UserTransaction mockedUserTransaction;
@@ -110,10 +110,13 @@ public class KafkaEventConsumerTest {
                         LocalDateTime.of(2019, Month.SEPTEMBER, 22, 19, 44, 20, 987000000),
                         "AccountDebited",
                         "{\"@type\": \"UserEventMetadata\", \"executedBy\": \"damdamdeo\"}",
-                        "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}"
+                        "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}",
+                        "{\"@type\": \"AccountAggregateRoot\", \"aggregateRootId\": \"damdamdeo\", \"version\": 1, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}"
                 ),
                 Optional.empty(),
-                mockedAggregateRootEventMetadataConsumerDeSerializer, mockedAggregateRootEventPayloadConsumerDeserializer);
+                mockedAggregateRootEventMetadataConsumerDeSerializer,
+                mockedAggregateRootEventPayloadConsumerDeserializer,
+                aggregateRootMaterializedStateConsumerDeserializer);
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumable);
         verify(mockedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }

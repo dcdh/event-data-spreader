@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS EVENT (
     eventtype character varying(255),
     eventmetadata jsonb,
     eventpayload jsonb,
+    materializedstate jsonb,
     CONSTRAINT event_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version),
     CONSTRAINT event_unique UNIQUE (aggregaterootid, aggregateroottype, version)
 )!!

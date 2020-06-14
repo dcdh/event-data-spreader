@@ -1,11 +1,10 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
-import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.*;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -25,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
@@ -40,16 +40,13 @@ public class PostgreSQLEventRepositoryTest {
     PostgreSQLEventRepository eventRepository;
 
     @InjectMock
-    SecretStore secretStore;
-
-    @InjectMock
     AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
 
     @InjectMock
     AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
 
     @InjectMock
-    Encryption encryption;
+    AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
 
     @BeforeEach
     public void setupEncryption() {
@@ -64,8 +61,6 @@ public class PostgreSQLEventRepositoryTest {
                 return null;
             }
         };
-        doReturn(aggregateRootSecret).when(secretStore).store(any(), any(), any());
-        doReturn(Optional.empty()).when(secretStore).read(any(), any());
     }
 
     @BeforeEach
@@ -83,7 +78,7 @@ public class PostgreSQLEventRepositoryTest {
     public void setupInjectedServicesMocks() {
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadDeSerializer).serialize(any(), any());
         doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize(any(), any());
-
+        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStateSerializer).serialize(any(), any());
         doReturn(new TestAggregateRootEventPayload("dummy")).when(aggregateRootEventPayloadDeSerializer).deserialize(any(), any());
         doReturn(new TestAggregateRootEventMetadata("dummy")).when(aggregateRootEventMetadataDeSerializer).deserialize(any(), any());
     }
@@ -128,7 +123,14 @@ public class PostgreSQLEventRepositoryTest {
         }
     }
 
-    public static final class TestAggregateRoot extends AggregateRoot {}
+    public static final class TestAggregateRoot extends AggregateRoot {
+
+        public void apply(final TestAggregateRootEventPayload testAggregateRootEventPayload,
+                          final TestAggregateRootEventMetadata testAggregateRootEventMetadata) {
+            super.apply(testAggregateRootEventPayload, testAggregateRootEventMetadata);
+        }
+
+    }
 
     public static final class TestAggregateRootEventMetadata extends AggregateRootEventMetadata {
 
@@ -202,31 +204,74 @@ public class PostgreSQLEventRepositoryTest {
     }
 
     @Test
-    public void should_save_event_with_generated_encrypted_key() throws SQLException {
+    public void should_save_event() throws SQLException {
         // Given
         final LocalDateTime creationDate = LocalDateTime.now();
 
         final AggregateRootEvent aggregateRootEvent = new AggregateRootEvent(
-                new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 0l),
+                new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "TestAggregateRoot"), 0l),
                 "eventType",
                 creationDate,
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
 
         // When
-        eventRepository.save(Collections.singletonList(aggregateRootEvent));
+        eventRepository.save(Collections.singletonList(aggregateRootEvent), Optional.empty());
 
         // Then
+        try (final Connection con = mutableDataSource.getConnection();
+             final Statement stmt = con.createStatement();
+             final ResultSet resultSet = stmt.executeQuery("SELECT COUNT(*) AS count FROM EVENT")) {
+            resultSet.next();
+            assertEquals(1l, resultSet.getLong("count"));
+        }
         try (final Connection con = mutableDataSource.getConnection();
              final Statement stmt = con.createStatement();
              final ResultSet resultSet = stmt.executeQuery("SELECT * FROM EVENT")) {
             resultSet.next();
             assertEquals("aggregateRootId", resultSet.getString("aggregaterootid"));
-            assertEquals("aggregateRootType", resultSet.getString("aggregateroottype"));
+            assertEquals("TestAggregateRoot", resultSet.getString("aggregateroottype"));
             assertEquals(0, resultSet.getLong("version"));
             assertEquals(creationDate, resultSet.getObject("creationdate", LocalDateTime.class));
             assertEquals("{\"meta\": {}}", resultSet.getString("eventmetadata"));
             assertEquals("{\"payload\": {}}", resultSet.getString("eventpayload"));
+            assertNull(resultSet.getString("materializedstate"));
+        }
+    }
+
+    @Test
+    public void should_save_materialized_state() throws SQLException {
+        // Given
+        final AggregateRootId aggregateRootId = new TestAggregateRootId("aggregateRootId", "TestAggregateRoot");
+        final TestAggregateRootEventPayload testAggregateRootEventPayload = new TestAggregateRootEventPayload("dummy");
+        final TestAggregateRootEventMetadata testAggregateRootEventMetadata = new TestAggregateRootEventMetadata("dummy");
+        final AggregateRootEvent aggregateRootEvent = new AggregateRootEvent(
+                new DefaultAggregateRootEventId(aggregateRootId, 0l),
+                "eventType",
+                LocalDateTime.now(),
+                testAggregateRootEventPayload,
+                testAggregateRootEventMetadata);
+        eventRepository.save(Collections.singletonList(aggregateRootEvent), Optional.empty());
+        final TestAggregateRoot testAggregateRoot = new TestAggregateRoot();
+        testAggregateRoot.apply(testAggregateRootEventPayload, testAggregateRootEventMetadata);
+
+        // When
+        eventRepository.saveMaterializedState(testAggregateRoot, Optional.empty());
+
+        // Then
+        try (final Connection con = mutableDataSource.getConnection();
+             final Statement stmt = con.createStatement();
+             final ResultSet resultSet = stmt.executeQuery("SELECT COUNT(*) AS count FROM EVENT")) {
+            resultSet.next();
+            assertEquals(1l, resultSet.getLong("count"));
+        }
+        try (final Connection con = mutableDataSource.getConnection();
+             final Statement stmt = con.createStatement();
+             final ResultSet resultSet = stmt.executeQuery("SELECT * FROM EVENT")) {
+            resultSet.next();
+            assertEquals("aggregateRootId", resultSet.getString("aggregaterootid"));
+            assertEquals("TestAggregateRoot", resultSet.getString("aggregateRootType"));
+            assertEquals("{\"materializedState\": {}}", resultSet.getString("materializedstate"));
         }
     }
 
@@ -241,7 +286,7 @@ public class PostgreSQLEventRepositoryTest {
                 creationDate,
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
-        eventRepository.save(Collections.singletonList(aggregateRootEvent0));
+        eventRepository.save(Collections.singletonList(aggregateRootEvent0), Optional.empty());
 
         final AggregateRootEvent aggregateRootEvent1 = new AggregateRootEvent(
                 new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 1l),
@@ -251,7 +296,7 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventMetadata("dummy"));
 
         // When
-        eventRepository.save(Collections.singletonList(aggregateRootEvent1));
+        eventRepository.save(Collections.singletonList(aggregateRootEvent1), Optional.empty());
 
         // Then
         try (final Connection con = mutableDataSource.getConnection();
@@ -274,17 +319,65 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
 
-        eventRepository.save(Arrays.asList(aggregateRootEvent));
+        eventRepository.save(Arrays.asList(aggregateRootEvent), Optional.empty());
 
         // When
-        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType");
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", Optional.empty());
 
         // Then
         assertEquals(Arrays.asList(
                 new AggregateRootEvent(new PostgreSQLAggregateRootEventId(
                         new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 0l)),
-                        "eventType", creationDate, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy")))
-                , aggregateRootEvents);
+                        "eventType", creationDate, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy"))
+                ),
+                aggregateRootEvents);
+    }
+
+    @Test
+    public void should_load_events_ordered_by_version_asc_with_expected_versions() {
+        // Given
+        final LocalDateTime creationDate0 = LocalDateTime.now();
+
+        final AggregateRootEvent aggregateRootEvent0 = new AggregateRootEvent(
+                new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 0l),
+                "eventType",
+                creationDate0,
+                new TestAggregateRootEventPayload("dummy"),
+                new TestAggregateRootEventMetadata("dummy"));
+
+        final LocalDateTime creationDate1 = LocalDateTime.now();
+
+        final AggregateRootEvent aggregateRootEvent1 = new AggregateRootEvent(
+                new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 1l),
+                "eventType",
+                creationDate1,
+                new TestAggregateRootEventPayload("dummy"),
+                new TestAggregateRootEventMetadata("dummy"));
+
+        final LocalDateTime creationDate2 = LocalDateTime.now();
+
+        final AggregateRootEvent aggregateRootEvent2 = new AggregateRootEvent(
+                new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 2l),
+                "eventType",
+                creationDate2,
+                new TestAggregateRootEventPayload("dummy"),
+                new TestAggregateRootEventMetadata("dummy"));
+
+        eventRepository.save(Arrays.asList(aggregateRootEvent0, aggregateRootEvent1, aggregateRootEvent2), Optional.empty());
+
+        // When
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", Optional.empty(), 1l);
+
+        // Then
+        assertEquals(Arrays.asList(
+                new AggregateRootEvent(new PostgreSQLAggregateRootEventId(
+                        new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 0l)),
+                        "eventType", creationDate0, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy")),
+                new AggregateRootEvent(new PostgreSQLAggregateRootEventId(
+                        new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 1l)),
+                        "eventType", creationDate1, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy"))
+                ),
+                aggregateRootEvents);
     }
 
 }

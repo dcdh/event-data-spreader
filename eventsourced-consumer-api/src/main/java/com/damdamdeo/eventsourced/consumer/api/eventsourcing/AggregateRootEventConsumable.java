@@ -16,4 +16,6 @@ public interface AggregateRootEventConsumable {
 
     AggregateRootEventMetadataConsumer eventMetaData();
 
+    AggregateRootMaterializedStateConsumer materializedState();
+
 }

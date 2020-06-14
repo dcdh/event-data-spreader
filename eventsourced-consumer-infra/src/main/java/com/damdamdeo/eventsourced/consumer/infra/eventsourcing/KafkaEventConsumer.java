@@ -35,6 +35,7 @@ public class KafkaEventConsumer {
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer;
     private final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer;
+    private final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer;
     private final UserTransaction transaction;
     private final Instance<AggregateRootEventConsumer> eventConsumersBeans;
     private final String gitCommitId;
@@ -45,6 +46,7 @@ public class KafkaEventConsumer {
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
                               final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
                               final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
+                              final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer,
                               final UserTransaction transaction,
                               @Any final Instance<AggregateRootEventConsumer> eventConsumersBeans,
                               final CreatedAtProvider createdAtProvider) {
@@ -52,6 +54,7 @@ public class KafkaEventConsumer {
         this.kafkaEventConsumedRepository = Objects.requireNonNull(kafkaEventConsumedRepository);
         this.aggregateRootEventPayloadConsumerDeserializer = Objects.requireNonNull(aggregateRootEventPayloadConsumerDeserializer);
         this.aggregateRootEventMetadataConsumerDeSerializer = Objects.requireNonNull(aggregateRootEventMetadataConsumerDeSerializer);
+        this.aggregateRootMaterializedStateConsumerDeserializer = Objects.requireNonNull(aggregateRootMaterializedStateConsumerDeserializer);
         this.transaction = Objects.requireNonNull(transaction);
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
         this.executor = Executors.newSingleThreadExecutor();
@@ -86,7 +89,7 @@ public class KafkaEventConsumer {
                                 .collect(Collectors.toList());
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
                             final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(decryptableAggregateRootEvent, aggregateRootSecret,
-                                    aggregateRootEventMetadataConsumerDeSerializer, aggregateRootEventPayloadConsumerDeserializer);
+                                    aggregateRootEventMetadataConsumerDeSerializer, aggregateRootEventPayloadConsumerDeserializer, aggregateRootMaterializedStateConsumerDeserializer);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional

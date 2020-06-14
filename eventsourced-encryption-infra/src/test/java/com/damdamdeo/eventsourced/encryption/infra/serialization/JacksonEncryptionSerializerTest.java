@@ -65,4 +65,17 @@ public class JacksonEncryptionSerializerTest {
         assertThrows(JsonMappingException.class, () -> objectWriter.writeValueAsString(person));
     }
 
+    @Test
+    public void should_not_encrypt_when_no_encryption_strategy_has_been_provided() throws Exception {
+        // Given
+        final ObjectWriter objectWriter = new ObjectMapper().writer();
+        final Person person = new Person("id", "Damien");
+
+        // When
+        final String serializedPerson = objectWriter.writeValueAsString(person);
+
+        // Then
+        assertEquals("{\"id\":\"id\",\"name\":\"Damien\"}", serializedPerson);
+    }
+
 }

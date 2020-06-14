@@ -21,6 +21,7 @@ public final class DebeziumAggregateRootEventConsumable {
     private static final String EVENT_EVENT_TYPE = "eventtype";
     private static final String EVENT_EVENT_METADATA = "eventmetadata";
     private static final String EVENT_EVENT_PAYLOAD = "eventpayload";
+    private static final String MATERIALIZED_STATE = "materializedstate";
 
     private final DebeziumAggregateRootEventId aggregateRootEventId;
     private final LocalDateTime creationDate;
@@ -28,17 +29,20 @@ public final class DebeziumAggregateRootEventConsumable {
     private final String eventType;
     private final String eventMetaData;
     private final String eventPayload;
+    private final String materializedState;
 
     public DebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventId aggregateRootEventId,
                                                 final LocalDateTime creationDate,
                                                 final String eventType,
                                                 final String eventMetaData,
-                                                final String eventPayload) {
+                                                final String eventPayload,
+                                                final String materializedState) {
         this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.eventType = Objects.requireNonNull(eventType);
         this.eventMetaData = Objects.requireNonNull(eventMetaData);
         this.eventPayload = Objects.requireNonNull(eventPayload);
+        this.materializedState = Objects.requireNonNull(materializedState);
     }
 
     public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record)
@@ -66,6 +70,7 @@ public final class DebeziumAggregateRootEventConsumable {
         this.eventType = Objects.requireNonNull(after.getString(EVENT_EVENT_TYPE));
         this.eventMetaData = Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA));
         this.eventPayload = Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD));
+        this.materializedState = Objects.requireNonNull(after.getString(MATERIALIZED_STATE));
     }
 
     public AggregateRootEventId eventId() {
@@ -90,31 +95,38 @@ public final class DebeziumAggregateRootEventConsumable {
         return aggregateRootEventPayloadConsumerDeserializer.deserialize(aggregateRootSecret, eventPayload);
     }
 
+    public AggregateRootMaterializedStateConsumer materializedState(final Optional<AggregateRootSecret> aggregateRootSecret,
+                                                                    final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
+        return aggregateRootMaterializedStateConsumerDeserializer.deserialize(aggregateRootSecret, materializedState);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebeziumAggregateRootEventConsumable)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         DebeziumAggregateRootEventConsumable that = (DebeziumAggregateRootEventConsumable) o;
         return Objects.equals(aggregateRootEventId, that.aggregateRootEventId) &&
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(eventMetaData, that.eventMetaData) &&
-                Objects.equals(eventPayload, that.eventPayload);
+                Objects.equals(eventPayload, that.eventPayload) &&
+                Objects.equals(materializedState, that.materializedState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootEventId, creationDate, eventType, eventMetaData, eventPayload);
+        return Objects.hash(aggregateRootEventId, creationDate, eventType, eventMetaData, eventPayload, materializedState);
     }
 
     @Override
     public String toString() {
-        return "DebeziumIncomingKafkaRecordDecryptableAggregateRootEvent{" +
-                "eventId=" + aggregateRootEventId +
+        return "DebeziumAggregateRootEventConsumable{" +
+                "aggregateRootEventId=" + aggregateRootEventId +
                 ", creationDate=" + creationDate +
                 ", eventType='" + eventType + '\'' +
                 ", eventMetaData='" + eventMetaData + '\'' +
                 ", eventPayload='" + eventPayload + '\'' +
+                ", materializedState='" + materializedState + '\'' +
                 '}';
     }
 }

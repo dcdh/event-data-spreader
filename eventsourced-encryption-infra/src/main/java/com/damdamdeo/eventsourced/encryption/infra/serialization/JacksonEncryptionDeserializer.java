@@ -18,6 +18,7 @@ public class JacksonEncryptionDeserializer extends JsonDeserializer<String> {
                               final DeserializationContext deserializationContext) throws IOException {
         @SuppressWarnings("unchecked")
         final Encryption encryption = (Encryption) deserializationContext.getAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY);
+        @SuppressWarnings("unchecked")
         final Optional<AggregateRootSecret> aggregateRootSecret = (Optional<AggregateRootSecret>) deserializationContext
                 .getAttribute(AggregateRootSecret.SECRET_KEY);
         final String value = jsonParser.getValueAsString();

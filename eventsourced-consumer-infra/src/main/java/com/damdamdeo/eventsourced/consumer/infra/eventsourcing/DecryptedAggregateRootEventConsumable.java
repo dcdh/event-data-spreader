@@ -15,16 +15,19 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     private final LocalDateTime creationDate;
     private final AggregateRootEventPayloadConsumer aggregateRootEventPayloadConsumer;
     private final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer;
+    private final AggregateRootMaterializedStateConsumer aggregateRootMaterializedStateConsumer;
 
     public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent,
                                                  final Optional<AggregateRootSecret> aggregateRootSecret,
                                                  final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
-                                                 final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer) {
+                                                 final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
+                                                 final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
         aggregateRootEventId = decryptableAggregateRootEvent.eventId();
         eventType = decryptableAggregateRootEvent.eventType();
         creationDate = decryptableAggregateRootEvent.creationDate();
         aggregateRootEventPayloadConsumer = decryptableAggregateRootEvent.eventPayload(aggregateRootSecret, aggregateRootEventPayloadConsumerDeserializer);
         aggregateRootEventMetaDataConsumer = decryptableAggregateRootEvent.eventMetaData(aggregateRootSecret, aggregateRootEventMetadataConsumerDeSerializer);
+        aggregateRootMaterializedStateConsumer = decryptableAggregateRootEvent.materializedState(aggregateRootSecret, aggregateRootMaterializedStateConsumerDeserializer);
     }
 
     @Override
@@ -53,6 +56,11 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     }
 
     @Override
+    public AggregateRootMaterializedStateConsumer materializedState() {
+        return aggregateRootMaterializedStateConsumer;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -61,11 +69,12 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(aggregateRootEventPayloadConsumer, that.aggregateRootEventPayloadConsumer) &&
-                Objects.equals(aggregateRootEventMetaDataConsumer, that.aggregateRootEventMetaDataConsumer);
+                Objects.equals(aggregateRootEventMetaDataConsumer, that.aggregateRootEventMetaDataConsumer) &&
+                Objects.equals(aggregateRootMaterializedStateConsumer, that.aggregateRootMaterializedStateConsumer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventPayloadConsumer, aggregateRootEventMetaDataConsumer);
+        return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventPayloadConsumer, aggregateRootEventMetaDataConsumer, aggregateRootMaterializedStateConsumer);
     }
 }

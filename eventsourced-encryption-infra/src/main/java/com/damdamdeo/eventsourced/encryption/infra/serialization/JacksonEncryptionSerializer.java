@@ -16,12 +16,18 @@ public class JacksonEncryptionSerializer extends JsonSerializer<String> {
     public void serialize(final String value,
                           final JsonGenerator jsonGenerator,
                           final SerializerProvider serializerProvider) throws IOException {
-        @SuppressWarnings("unchecked")
-        final Encryption encryption = (Encryption) serializerProvider.getAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY);
-        final Optional<AggregateRootSecret> aggregateRootSecret = (Optional<AggregateRootSecret>) serializerProvider.getAttribute(AggregateRootSecret.SECRET_KEY);
-        Validate.validState(aggregateRootSecret.isPresent());
-        final String secret = aggregateRootSecret.map(AggregateRootSecret::secret).get();
-        jsonGenerator.writeString(encryption.encrypt(value, secret));
+        if (serializerProvider.getAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY) == null) {
+            // no encryption strategy has been defined. Do not encrypt.
+            jsonGenerator.writeString(value);
+        } else {
+            @SuppressWarnings("unchecked")
+            final Encryption encryption = (Encryption) serializerProvider.getAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY);
+            @SuppressWarnings("unchecked")
+            final Optional<AggregateRootSecret> aggregateRootSecret = (Optional<AggregateRootSecret>) serializerProvider.getAttribute(AggregateRootSecret.SECRET_KEY);
+            Validate.validState(aggregateRootSecret.isPresent());
+            final String secret = aggregateRootSecret.map(AggregateRootSecret::secret).get();
+            jsonGenerator.writeString(encryption.encrypt(value, secret));
+        }
     }
 
 }
