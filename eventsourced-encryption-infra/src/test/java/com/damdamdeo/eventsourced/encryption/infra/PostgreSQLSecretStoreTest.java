@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
-public class AgroalDataSourcePostgresqlSecretStoreTest {
+public class PostgreSQLSecretStoreTest {
 
     @Inject
     SecretStore secretStore;
