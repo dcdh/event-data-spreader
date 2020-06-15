@@ -53,3 +53,15 @@ Follow theses steps to downgrade your version of Jenkins
 > Do not worry. When Jenkins will be restarted it will setup all pipelines from the ones defined in OpenShift.
 1. oc set triggers dc/jenkins --from-image=openshift/jenkins-2-centos7:e2a35ea --containers=jenkins
 1. oc scale --replicas=1 dc jenkins
+
+## Intellij IDEA
+
+### Setup Junit testing
+
+To run test we need to define the environment variable `TESTCONTAINERS_RYUK_DISABLED` to `true`.
+
+To do this :
+1. go to `Run > Edit Configurations...`
+1. remove all defined tests in `JUnit`
+1. go to `Templates > JUnit`
+1. in `Environment variables:` add `TESTCONTAINERS_RYUK_DISABLED=true`
