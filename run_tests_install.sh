@@ -1,2 +1,2 @@
 #!/bin/bash
-mvn clean test install
+export TESTCONTAINERS_RYUK_DISABLED=true; mvn clean test install

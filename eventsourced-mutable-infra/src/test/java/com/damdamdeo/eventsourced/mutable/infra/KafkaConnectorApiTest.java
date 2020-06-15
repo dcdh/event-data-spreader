@@ -1,7 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.infra;
 
+import com.damdamdeo.eventsourced.mutable.infra.resources.DebeziumTestResource;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.api.ResourcePath;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -18,6 +20,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
+@QuarkusTestResource(DebeziumTestResource.class)
 public class KafkaConnectorApiTest {
 
     @Inject
@@ -27,11 +30,14 @@ public class KafkaConnectorApiTest {
     @ResourcePath("debezium.json")
     Template debeziumTemplate;
 
+    @ConfigProperty(name = "kafka-connector-api/mp-rest/url")
+    String kafkaConnectorRemoteApi;
+
     @BeforeEach
     public void purge() {
         RestAssured.given()
                 .when()
-                .delete("http://localhost:8083/connectors/event-sourced-connector");
+                .delete(kafkaConnectorRemoteApi + "/connectors/event-sourced-connector");
     }
 
     @ConfigProperty(name = "connector.mutable.database.hostname") String mutableHostname;
@@ -49,7 +55,7 @@ public class KafkaConnectorApiTest {
                 .accept("application/json")
                 .body(connectorConfiguration)
                 .when()
-                .post("http://localhost:8083/connectors/");
+                .post(kafkaConnectorRemoteApi + "/connectors/");
     }
 
     @Test
@@ -62,7 +68,7 @@ public class KafkaConnectorApiTest {
                 .accept("application/json")
                 .body(connectorConfiguration)
                 .when()
-                .post("http://localhost:8083/connectors/")
+                .post(kafkaConnectorRemoteApi + "/connectors/")
                 .then()
                 .log()
                 .all()
@@ -86,7 +92,7 @@ public class KafkaConnectorApiTest {
         // Then
         RestAssured.given()
                 .when()
-                .get("http://localhost:8083/connectors/event-sourced-connector")
+                .get(kafkaConnectorRemoteApi + "/connectors/event-sourced-connector")
                 .then()
                 .statusCode(200);
     }

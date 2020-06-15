@@ -1,9 +1,12 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.resources.KafkaTestResource;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.resources.PostgreSQLTestResource;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +21,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
+@QuarkusTestResource(PostgreSQLTestResource.class)
+@QuarkusTestResource(KafkaTestResource.class)
 public class PostgreSQLKafkaAggregateRootEventConsumedRepositoryTest {
 
     @Inject

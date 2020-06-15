@@ -1,9 +1,10 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateRepository;
+import com.damdamdeo.eventsourced.mutable.infra.resources.PostgreSQLTestResource;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +20,7 @@ import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
+@QuarkusTestResource(PostgreSQLTestResource.class)
 public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
 
     @Inject
