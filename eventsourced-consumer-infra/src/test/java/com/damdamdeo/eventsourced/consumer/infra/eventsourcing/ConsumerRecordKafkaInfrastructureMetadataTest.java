@@ -1,6 +1,5 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.ConsumerRecordKafkaInfrastructureMetadata;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 

@@ -6,10 +6,8 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.*;
-import com.damdamdeo.eventsourced.mutable.infra.resources.PostgreSQLTestResource;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.AfterEach;
@@ -32,7 +30,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 
 @QuarkusTest
-@QuarkusTestResource(PostgreSQLTestResource.class)
 public class PostgreSQLEventRepositoryTest {
 
     @Inject

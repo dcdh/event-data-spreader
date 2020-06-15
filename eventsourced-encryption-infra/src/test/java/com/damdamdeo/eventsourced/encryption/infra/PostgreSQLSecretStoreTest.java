@@ -1,11 +1,9 @@
 package com.damdamdeo.eventsourced.encryption.infra;
 
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
-import com.damdamdeo.eventsourced.encryption.infra.resources.PostgreSQLTestResource;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
-@QuarkusTestResource(PostgreSQLTestResource.class)
 public class PostgreSQLSecretStoreTest {
 
     @Inject

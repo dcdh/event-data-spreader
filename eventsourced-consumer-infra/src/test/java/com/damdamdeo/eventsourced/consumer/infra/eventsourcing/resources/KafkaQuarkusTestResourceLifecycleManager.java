@@ -6,7 +6,7 @@ import org.testcontainers.containers.KafkaContainer;
 import java.util.Collections;
 import java.util.Map;
 
-public class KafkaTestResource implements QuarkusTestResourceLifecycleManager {
+public class KafkaQuarkusTestResourceLifecycleManager implements QuarkusTestResourceLifecycleManager {
 
     private KafkaContainer kafkaContainer;
 

@@ -1,11 +1,8 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.resources.KafkaTestResource;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.resources.PostgreSQLTestResource;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import io.quarkus.arc.AlternativePriority;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-@QuarkusTestResource(PostgreSQLTestResource.class)
-@QuarkusTestResource(KafkaTestResource.class)
 public class KafkaEventConsumerTest {
 
     @InjectMock

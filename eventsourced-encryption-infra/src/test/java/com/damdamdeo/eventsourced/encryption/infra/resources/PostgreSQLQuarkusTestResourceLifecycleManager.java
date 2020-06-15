@@ -6,7 +6,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.util.Collections;
 import java.util.Map;
 
-public class PostgreSQLTestResource implements QuarkusTestResourceLifecycleManager {
+public class PostgreSQLQuarkusTestResourceLifecycleManager implements QuarkusTestResourceLifecycleManager {
 
     private PostgreSQLContainer<?> postgresContainer;
 

@@ -1,9 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra;
 
-import com.damdamdeo.eventsourced.mutable.infra.resources.DebeziumTestResource;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.api.ResourcePath;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,7 +18,6 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-@QuarkusTestResource(DebeziumTestResource.class)
 public class KafkaConnectorApiTest {
 
     @Inject

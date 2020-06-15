@@ -9,7 +9,7 @@ import io.debezium.testing.testcontainers.DebeziumContainer;
 import java.util.Collections;
 import java.util.Map;
 
-public class DebeziumTestResource implements QuarkusTestResourceLifecycleManager {
+public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestResourceLifecycleManager {
 
     private Network network;
 
