@@ -2,14 +2,13 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
-import io.quarkus.arc.AlternativePriority;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.transaction.UserTransaction;
 import java.time.LocalDateTime;
@@ -47,32 +46,13 @@ public class KafkaEventConsumerTest {
     @Inject
     KafkaDebeziumProducer kafkaDebeziumProducer;
 
-    @Inject// It is a spy... not supported yet by Quarkus ... maybe in version 1.5.0.Final
-            // TODO: use @InjectSpy when available and next remove TestBeanProducers
+    @InjectSpy
     AccountDebitedAggregateRootEventConsumer spiedAccountDebitedAggregateRootEventConsumer;
 
     @BeforeEach
     public void setup() {
-        reset(spiedAccountDebitedAggregateRootEventConsumer);
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
         doReturn(Optional.empty()).when(mockedSecretStore).read("AccountAggregateRoot", "damdamdeo");
-    }
-
-    // FCK spybean !!!
-    @ApplicationScoped
-    public static class TestBeanProducers {
-        private final AccountDebitedAggregateRootEventConsumer aggregateRootEventConsumer;
-
-        private TestBeanProducers() {
-            aggregateRootEventConsumer = spy(new AccountDebitedAggregateRootEventConsumer());
-        }
-
-        @Produces
-        @AlternativePriority(1)
-        public AccountDebitedAggregateRootEventConsumer aggregateRootEventConsumer() {
-            return aggregateRootEventConsumer;
-        }
-
     }
 
     @ApplicationScoped
@@ -133,7 +113,7 @@ public class KafkaEventConsumerTest {
         // Then
         verify(mockedKafkaEventConsumedRepository, times(1)).addEventConsumerConsumed(
                 eq(new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l)),
-                eq(spiedAccountDebitedAggregateRootEventConsumer.getClass()),
+                any(),// Got the proxy of spiedAccountDebitedAggregateRootEventConsumer !
                 eq(LocalDateTime.of(1980,01,01,0,0,0,0)),
                 any(ConsumerRecordKafkaInfrastructureMetadata.class),// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
                 eq("3bc9898721c64c5d6d17724bf6ec1c715cca0f69"));
