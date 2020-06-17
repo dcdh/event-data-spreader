@@ -1,9 +1,11 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
@@ -26,6 +29,9 @@ public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
 
     @Inject
     PostgreSQLAggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository;
+
+    @InjectMock
+    GitCommitProvider gitCommitProvider;
 
     @Test
     public void should_tables_be_initialised_at_application_startup() {
@@ -53,6 +59,8 @@ public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
     @Test
     public void should_persist_new_aggregate_root() throws SQLException {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
+
         final AggregateRootMaterializedState aggregateRootMaterializedState
                 = new PostgreSQLAggregateRootMaterializedState(new PostgreSQLAggregateRootId("aggregateRootId", "aggregateRootType"), "{}", 0L);
 
@@ -68,12 +76,16 @@ public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
             assertEquals("aggregateRootType", resultSet.getString("aggregateroottype"));
             assertEquals("{}", resultSet.getString("serializedmaterializedstate"));
             assertEquals(0, resultSet.getLong("version"));
+            assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", resultSet.getString("gitcommitid"));
         }
+        verify(gitCommitProvider, times(1)).gitCommitId();
     }
 
     @Test
     public void should_update_aggregate_root() throws SQLException {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
+
         aggregateRootMaterializedStateRepository.persist(
                 new PostgreSQLAggregateRootMaterializedState(
                         new PostgreSQLAggregateRootId("aggregateRootId", "aggregateRootType"), "{}", 0L));
@@ -92,6 +104,8 @@ public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
             assertEquals("aggregateRootType", resultSet.getString("aggregateroottype"));
             assertEquals("{}", resultSet.getString("serializedmaterializedstate"));
             assertEquals(1, resultSet.getLong("version"));
+            assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", resultSet.getString("gitcommitid"));
         }
+        verify(gitCommitProvider, times(2)).gitCommitId();
     }
 }

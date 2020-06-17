@@ -5,6 +5,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.*;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -26,8 +27,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 @QuarkusTest
 public class PostgreSQLEventRepositoryTest {
@@ -47,6 +48,9 @@ public class PostgreSQLEventRepositoryTest {
 
     @InjectMock
     AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
+
+    @InjectMock
+    GitCommitProvider gitCommitProvider;
 
     @BeforeEach
     public void setupEncryption() {
@@ -206,6 +210,7 @@ public class PostgreSQLEventRepositoryTest {
     @Test
     public void should_save_event() throws SQLException {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         final LocalDateTime creationDate = LocalDateTime.now();
 
         final AggregateRootEvent aggregateRootEvent = new AggregateRootEvent(
@@ -236,12 +241,15 @@ public class PostgreSQLEventRepositoryTest {
             assertEquals("{\"meta\": {}}", resultSet.getString("eventmetadata"));
             assertEquals("{\"payload\": {}}", resultSet.getString("eventpayload"));
             assertNull(resultSet.getString("materializedstate"));
+            assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", resultSet.getString("gitcommitid"));
         }
+        verify(gitCommitProvider, times(1)).gitCommitId();
     }
 
     @Test
     public void should_save_materialized_state() throws SQLException {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         final AggregateRootId aggregateRootId = new TestAggregateRootId("aggregateRootId", "TestAggregateRoot");
         final TestAggregateRootEventPayload testAggregateRootEventPayload = new TestAggregateRootEventPayload("dummy");
         final TestAggregateRootEventMetadata testAggregateRootEventMetadata = new TestAggregateRootEventMetadata("dummy");
@@ -272,12 +280,15 @@ public class PostgreSQLEventRepositoryTest {
             assertEquals("aggregateRootId", resultSet.getString("aggregaterootid"));
             assertEquals("TestAggregateRoot", resultSet.getString("aggregateRootType"));
             assertEquals("{\"materializedState\": {}}", resultSet.getString("materializedstate"));
+            assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", resultSet.getString("gitcommitid"));
         }
+        verify(gitCommitProvider, times(1)).gitCommitId();
     }
 
     @Test
     public void should_use_same_key_for_aggregate_with_multiple_events() throws SQLException {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         final LocalDateTime creationDate = LocalDateTime.now();
 
         final AggregateRootEvent aggregateRootEvent0 = new AggregateRootEvent(
@@ -305,11 +316,13 @@ public class PostgreSQLEventRepositoryTest {
             resultSet.next();
             assertEquals(2, resultSet.getLong("nbEvents"));
         }
+        verify(gitCommitProvider, times(2)).gitCommitId();
     }
 
     @Test
     public void should_load_events_ordered_by_version_asc() {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         final LocalDateTime creationDate = LocalDateTime.now();
 
         final AggregateRootEvent aggregateRootEvent = new AggregateRootEvent(
@@ -331,11 +344,13 @@ public class PostgreSQLEventRepositoryTest {
                         "eventType", creationDate, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy"))
                 ),
                 aggregateRootEvents);
+        verify(gitCommitProvider, times(1)).gitCommitId();
     }
 
     @Test
     public void should_load_events_ordered_by_version_asc_with_expected_versions() {
         // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         final LocalDateTime creationDate0 = LocalDateTime.now();
 
         final AggregateRootEvent aggregateRootEvent0 = new AggregateRootEvent(
@@ -378,6 +393,7 @@ public class PostgreSQLEventRepositoryTest {
                         "eventType", creationDate1, new TestAggregateRootEventPayload("dummy"), new TestAggregateRootEventMetadata("dummy"))
                 ),
                 aggregateRootEvents);
+        verify(gitCommitProvider, times(3)).gitCommitId();
     }
 
 }

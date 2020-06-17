@@ -2,6 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,14 +17,15 @@ public final class PostgreSQLAggregateRootMaterializedState implements Aggregate
 
     private final Long version;
 
-    public PreparedStatement upsertStatement(final Connection con) throws SQLException {
-        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO AGGREGATE_ROOT_MATERIALIZED_STATE (aggregaterootid, aggregateroottype, serializedmaterializedstate, version) " +
-                "VALUES (?, ?, to_json(?::json), ?) " +
-                "ON CONFLICT ON CONSTRAINT aggregaterootmaterializedstate_pkey DO UPDATE SET serializedmaterializedstate = EXCLUDED.serializedmaterializedstate, version = EXCLUDED.version");
+    public PreparedStatement upsertStatement(final Connection con, final GitCommitProvider gitCommitProvider) throws SQLException {
+        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO AGGREGATE_ROOT_MATERIALIZED_STATE (aggregaterootid, aggregateroottype, serializedmaterializedstate, version, gitcommitid) " +
+                "VALUES (?, ?, to_json(?::json), ?, ?) " +
+                "ON CONFLICT ON CONSTRAINT aggregaterootmaterializedstate_pkey DO UPDATE SET serializedmaterializedstate = EXCLUDED.serializedmaterializedstate, version = EXCLUDED.version, gitcommitid = EXCLUDED.gitcommitid");
         preparedStatement.setString(1, aggregateRootId.aggregateRootId());
         preparedStatement.setString(2, aggregateRootId.aggregateRootType());
         preparedStatement.setString(3, serializedMaterializedState);
         preparedStatement.setLong(4, version);
+        preparedStatement.setString(5, gitCommitProvider.gitCommitId());
         return preparedStatement;
     }
 

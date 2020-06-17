@@ -4,6 +4,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.DecryptableEvent;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
@@ -49,9 +50,9 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize(aggregateRootSecret, builder.aggregateRootEventMetadata);
     }
 
-    public PreparedStatement insertStatement(final Connection con) throws SQLException {
-        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventmetadata, eventpayload) " +
-                "VALUES (?, ?, ?, ?, ?, to_json(?::json), to_json(?::json))");
+    public PreparedStatement insertStatement(final Connection con, final GitCommitProvider gitCommitProvider) throws SQLException {
+        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventmetadata, eventpayload, gitcommitid) " +
+                "VALUES (?, ?, ?, ?, ?, to_json(?::json), to_json(?::json), ?)");
         preparedStatement.setString(1, postgreSQLEventId.aggregateRootId().aggregateRootId());
         preparedStatement.setString(2, postgreSQLEventId.aggregateRootId().aggregateRootType());
         preparedStatement.setLong(3, postgreSQLEventId.version());
@@ -59,6 +60,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         preparedStatement.setString(5, eventType);
         preparedStatement.setString(6, eventMetaData);
         preparedStatement.setString(7, eventPayload);
+        preparedStatement.setString(8, gitCommitProvider.gitCommitId());
         return preparedStatement;
     }
 

@@ -2,6 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateRepository;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.Startup;
@@ -23,9 +24,12 @@ public class PostgreSQLAggregateRootMaterializedStateRepository implements Aggre
     private static final String POSTGRESQL_DDL_FILE = "/sql/aggregate-root-materialized-state-postgresql.ddl";
 
     private final AgroalDataSource mutableDataSource;
+    private final GitCommitProvider gitCommitProvider;
 
-    public PostgreSQLAggregateRootMaterializedStateRepository(@DataSource("mutable") final AgroalDataSource mutableDataSource) {
+    public PostgreSQLAggregateRootMaterializedStateRepository(@DataSource("mutable") final AgroalDataSource mutableDataSource,
+                                                              final GitCommitProvider gitCommitProvider) {
         this.mutableDataSource = Objects.requireNonNull(mutableDataSource);
+        this.gitCommitProvider = Objects.requireNonNull(gitCommitProvider);
     }
 
     @PostConstruct
@@ -49,7 +53,7 @@ public class PostgreSQLAggregateRootMaterializedStateRepository implements Aggre
     public void persist(final AggregateRootMaterializedState aggregateRootMaterializedState) {
         final PostgreSQLAggregateRootMaterializedState postgreSQLAggregateRootMaterializedState = new PostgreSQLAggregateRootMaterializedState(aggregateRootMaterializedState);
         try (final Connection connection = mutableDataSource.getConnection();
-             final PreparedStatement preparedStatement = postgreSQLAggregateRootMaterializedState.upsertStatement(connection)) {
+             final PreparedStatement preparedStatement = postgreSQLAggregateRootMaterializedState.upsertStatement(connection, gitCommitProvider)) {
             preparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);

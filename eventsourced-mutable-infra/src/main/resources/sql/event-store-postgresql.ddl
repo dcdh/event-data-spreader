@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS EVENT (
     eventmetadata jsonb,
     eventpayload jsonb,
     materializedstate jsonb,
+    gitcommitid character varying(255) NOT NULL,
     CONSTRAINT event_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version),
     CONSTRAINT event_unique UNIQUE (aggregaterootid, aggregateroottype, version)
 )!!

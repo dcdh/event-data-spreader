@@ -2,10 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.EventRepository;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
 import io.agroal.api.AgroalDataSource;
@@ -34,15 +31,18 @@ public class PostgreSQLEventRepository implements EventRepository {
     final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
     final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
     final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
+    final GitCommitProvider gitCommitProvider;
 
     public PostgreSQLEventRepository(@DataSource("mutable") final AgroalDataSource mutableDataSource,
                                      final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
                                      final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                     final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
+                                     final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer,
+                                     final GitCommitProvider gitCommitProvider) {
         this.mutableDataSource = Objects.requireNonNull(mutableDataSource);
         this.aggregateRootEventPayloadDeSerializer = Objects.requireNonNull(aggregateRootEventPayloadDeSerializer);
         this.aggregateRootEventMetadataDeSerializer = Objects.requireNonNull(aggregateRootEventMetadataDeSerializer);
         this.aggregateRootMaterializedStateSerializer = Objects.requireNonNull(aggregateRootMaterializedStateSerializer);
+        this.gitCommitProvider = Objects.requireNonNull(gitCommitProvider);
     }
 
     @PostConstruct
@@ -79,7 +79,7 @@ public class PostgreSQLEventRepository implements EventRepository {
                 .collect(Collectors.toList());
         try (final Connection connection = mutableDataSource.getConnection()) {
             for (final PostgreSQLDecryptableEvent postgreSQLDecryptableEvent : eventsToSave) {
-                try (final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection)) {
+                try (final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection, gitCommitProvider)) {
                     preparedStatement.executeUpdate();
                 }
             }
