@@ -2,17 +2,15 @@
 
 Create a sample cqrs library.
 
-keywords: **Openshift 3.11**, **cqrs**, **Quarkus**, **Kafka**, **Debezium**  
+keywords: **Openshift 3.11**, **cqrs**, **eventsourcing**, **Quarkus**, **Kafka**, **Debezium**  
 
 ## CQRS
 
-Split in three modules:
-1. debezium-event-consumer
-Module used by write side and query side to consume message sent in kafka.
-1. write-side
-Write side module: allow to create event and push them by using Debezium in a Kafka topic.
-1. query-side
-Query side module: consume events from Kafka.
+Split in two parts:
+1. mutable
+The mutable part deal with data manipulation using event sourcing pattern.
+1. consumer
+The consumer part deal with consuming event sourced data
 
 ## Openshift
 
