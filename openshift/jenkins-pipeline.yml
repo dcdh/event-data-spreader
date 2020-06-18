@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: event-data-spreader-build-pipeline-template
+metadata:
+  name: event-data-spreader-build-pipeline-template
+objects:
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      labels:
+        name: event-data-spreader-build-pipeline
+      name: event-data-spreader-build-pipeline
+    spec:
+      nodeSelector: {}
+      output: {}
+      postCommit: {}
+      resources: {}
+      serviceAccount: builder
+      strategy:
+        jenkinsPipelineStrategy:
+          jenkinsfile: |-
+            try {
+              timeout(time: 60, unit: 'MINUTES') {
+                def label = "test-${UUID.randomUUID().toString()}"
+                podTemplate(
+                  label: label,
+                  serviceAccount: 'jenkins',
+                  cloud: 'openshift', //This needs to match the cloud name in jenkins-kubernetes-plugin config
+                  containers: [
+                    //Jenkins agent. Also executes the integration test. Having a 'jnlp' container is mandatory.
+                    containerTemplate(name: 'jnlp',
+                                      image: 'openshift/jenkins-agent-maven-35-centos7:v3.11',
+                                      args: '${computer.jnlpmac} ${computer.name}',
+                                      workingDir: '/home/jenkins',
+                                      ttyEnabled: true,
+                                      resourceLimitCpu: '1',
+                                      resourceLimitMemory: '500Mi',
+                                      resourceRequestCpu: '100m',
+                                      resourceRequestMemory: '500Mi',
+                                      envVars: [
+                                        //Heap for mvn and surefire process is 1/4 of resourceLimitMemory by default
+                                        envVar(key: 'JNLP_MAX_HEAP_UPPER_BOUND_MB', value: '64')
+                                      ]),
+                    containerTemplate(name: 'jdk',
+                                      image: 'adoptopenjdk/maven-openjdk8',
+                                      workingDir: '/home/jenkins',
+                                      ttyEnabled: true,
+                                      command: 'cat',
+                                      resourceLimitCpu: '1',
+                                      resourceLimitMemory: '2Gi',
+                                      resourceRequestCpu: '200m',
+                                      resourceRequestMemory: '2Gi',
+                                      envVars: [
+                                              envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375'),
+                                              envVar(key: 'JAVA_TOOL_OPTIONS', value: '-Xmx1024m -Xms1024m'),
+                                              // define .m2 repository in conjunction of maven-repo persistent volume
+                                              envVar(key: 'MAVEN_OPTS', value: '-Duser.home=/home/jenkins'),
+                                              // I should have a conf directory with a settings.xml in it
+                                              // I cannot write into /home/jenkins/.m2 directory - permission denied
+                                              envVar(key: 'MAVEN_CLI_OPTS', value: '-s /home/jenkins/workspace/ci-cd/ci-cd-event-data-spreader-build-pipeline/settings.xml'),
+                                      ]),
+                    containerTemplate(name: 'docker',
+                                      image: 'docker:18.09.7-dind',
+                                      args: '--registry-mirror=http://nexus.ci-cd.svc:8082 --insecure-registry=nexus.ci-cd.svc:8082',
+                                      workingDir: '/home/jenkins',
+                                      ttyEnabled: true,
+                                      // give a lot of cpu and ram to ensure docker images will run at expected speed
+                                      resourceLimitCpu: '2',
+                                      resourceLimitMemory: '2Gi',
+                                      resourceRequestCpu: '1000m',
+                                      resourceRequestMemory: '2Gi',
+                                      privileged: true,
+                                      envVars: [
+                                      ]
+                    ),
+                    containerTemplate(name: 'tools',
+                                      image: 'busybox',
+                                      workingDir: '/home/jenkins',
+                                      ttyEnabled: true,
+                                      command: 'cat',
+                                      envVars: [
+                                      ]
+                    )
+                  ], volumes: [
+                      emptyDirVolume(mountPath: '/var/lib/jenkins', memory: false), emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
+                      persistentVolumeClaim(mountPath: '/home/jenkins/.m2/repository', claimName: 'maven-repo', readOnly: false)
+                     ]) {
+                        node(label) {
+                           stage('checkout') {
+                               // Cloning repository wipes entire workspace.
+                               // So we first clone the project and next create settings.xml.
+                               git url: "https://github.com/dcdh/event-data-spreader.git", branch: "master"
+                           }
+                           writeFile file: 'settings.xml', text: """
+            <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                <server>
+                  <id>internal-server</id>
+                  <username>admin</username>
+                  <password>admin123</password>
+                </server>
+              </servers>
+
+              <profiles>
+                <profile>
+                  <id>internal</id>
+                  <properties>
+                    <altSnapshotDeploymentRepository>internal-server::default::http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/maven-snapshots</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>internal-server::default::http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/maven-releases</altReleaseDeploymentRepository>
+                  </properties>
+                  <repositories>
+                    <repository>
+                      <id>central</id>
+                      <url>http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/maven-all-public</url>
+                      <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                      </releases>
+                      <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                      </snapshots>
+                    </repository>
+                  </repositories>
+                  <pluginRepositories>
+                    <pluginRepository>
+                      <id>central</id>
+                      <url>http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/maven-all-public</url>
+                      <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                      </releases>
+                      <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                      </snapshots>
+                    </pluginRepository>
+                  </pluginRepositories>
+                </profile>
+              </profiles>
+              <activeProfiles>
+                <activeProfile>internal</activeProfile>
+              </activeProfiles>
+            </settings>
+                           """
+                           stage('pre pull images') {
+                               container('docker') {
+                                   // We pre pull images from internal nexus to avoid download them from internet and go so much faster !
+                                   sh """
+                                   docker pull nexus.ci-cd.svc:8082/debezium/postgres:11
+                                   docker pull nexus.ci-cd.svc:8082/debezium/connect:1.2.0.Beta2
+                                   docker pull nexus.ci-cd.svc:8082/confluentinc/cp-kafka:5.2.1
+                                   docker tag nexus.ci-cd.svc:8082/debezium/postgres:11 debezium/postgres:11
+                                   docker tag nexus.ci-cd.svc:8082/debezium/connect:1.2.0.Beta2 debezium/connect:1.2.0.Beta2
+                                   docker tag nexus.ci-cd.svc:8082/confluentinc/cp-kafka:5.2.1 confluentinc/cp-kafka:5.2.1
+                                   """
+                               }
+                           }
+                           stage('test') {
+                               container('jdk') {
+                                   // We do not want RYUK to manage containers lifecycle during test as QuarkusTestResourceLifecycleManager are used to manage it
+                                   sh "export TESTCONTAINERS_RYUK_DISABLED=true;mvn \${MAVEN_CLI_OPTS} clean test install deploy"
+                               }
+                           }
+                        }
+                  }
+                }
+            } catch (err) {
+              echo "in catch block"
+              echo "Caught: ${err}"
+              // We could add a sleep here to be able to have enough time to connect inside containers in pod and debug
+              throw err
+            }
+        type: JenkinsPipeline

@@ -12,49 +12,10 @@ The mutable part deal with data manipulation using event sourcing pattern.
 1. consumer
 The consumer part deal with consuming event sourced data
 
-## Openshift
+## How to
 
-git clone https://github.com/dcdh/event-data-spreader.git
-
-oc process -f templates/event-data-spreader-build-pipeline.yml | oc create -f - -n ci
-
-docker pull openshift/jenkins-agent-maven-35-centos7:v3.11 && \
-docker pull debezium/zookeeper:1.1.1.Final && \
-docker pull debezium/kafka:1.1.1.Final && \
-docker pull debezium/connect:1.1.1.Final && \
-docker pull dcdh1983/postgresql-10-debezium-centos7:latest && \
-docker pull giantswarm/tiny-tools && \
-docker pull maven:3.6.3-jdk-8-slim && \
-docker pull vault:1.3.2
-
-### Fix jenkins build
-> An issue is present following the last version of **openshift/jenkins-agent-maven-35-centos7:v3.11**
-> https://github.com/openshift/jenkins/issues/997
-> We need to downgrade the version of jenkins used to this commit id **e2a35ea**
-> /!\ I do not know if earlier one from **e2a35ea** are working.
-
-Follow theses steps to downgrade your version of Jenkins
-
-1. oc scale --replicas=0 dc jenkins
-1. git clone https://github.com/openshift/jenkins.git
-1. cd jenkins
-1. git checkout e2a35ea
-1. make build
-1. docker tag docker.io/openshift/jenkins-agent-maven-35-centos7:latest docker.io/openshift/jenkins-agent-maven-35-centos7:e2a35ea
-1. docker tag docker.io/openshift/jenkins-2-centos7:latest 172.30.247.189:5000/openshift/jenkins-2-centos7:e2a35ea
-1. oc login -u sandbox -p sandbox (log to openshift using our appropriate username and passord)
-1. docker login -u openshift -p $(oc whoami -t) 172.30.247.189:5000
-1. docker push 172.30.247.189:5000/openshift/jenkins-2-centos7:e2a35ea
-1. purge volume used by previous jenkins version (if using persistent jenkins template)
-> If you've used a persistent version of jenkins deployment, you'll need to purge the filesystem bound to it.
-> However, the previous configuration, plugins... will clash with the ones used by this image.
-> Do not worry. When Jenkins will be restarted it will setup all pipelines from the ones defined in OpenShift.
-1. oc set triggers dc/jenkins --from-image=openshift/jenkins-2-centos7:e2a35ea --containers=jenkins
-1. oc scale --replicas=1 dc jenkins
-
-## Intellij IDEA
-
-### Setup Junit testing
+### Intellij IDEA testing
+> Setup Junit testing
 
 To run test we need to define the environment variable `TESTCONTAINERS_RYUK_DISABLED` to `true`.
 
@@ -63,3 +24,45 @@ To do this :
 1. remove all defined tests in `JUnit`
 1. go to `Templates > JUnit`
 1. in `Environment variables:` add `TESTCONTAINERS_RYUK_DISABLED=true`
+
+### local installation
+
+From the console under the project run this:
+
+```bash
+docker pull debezium/postgres:11-alpine && \
+  docker pull debezium/connect:1.2.0.Beta2 && \
+  docker pull confluentinc/cp-kafka:5.2.1 && \
+  docker kill $(docker ps -aq); docker rm $(docker ps -aq); docker volume prune -f; \
+  export TESTCONTAINERS_RYUK_DISABLED=true; \
+  mvn clean test install
+```
+
+### OKD 3.11 installation
+
+> git clone https://github.com/dcdh/event-data-spreader.git
+
+```bash
+ssh damien@master.okd.local 'docker pull debezium/postgres:11-alpine' && \
+  ssh damien@master.okd.local 'docker pull debezium/connect:1.2.0.Beta2' && \
+  ssh damien@master.okd.local 'docker pull confluentinc/cp-kafka:5.2.1' && \
+  ssh damien@master.okd.local 'docker pull adoptopenjdk/maven-openjdk8' && \
+  ssh damien@master.okd.local 'docker pull docker:18.09.7-dind' && \
+  ssh damien@master.okd.local 'docker pull busybox' && \
+  scp -r -p openshift/jenkins-pipeline.yml damien@master.okd.local:/tmp && \
+  ssh damien@master.okd.local 'oc process -f /tmp/jenkins-pipeline.yml | oc apply -f - -n ci-cd' && \
+  ssh damien@master.okd.local 'oc adm policy add-scc-to-user -z jenkins privileged -n ci-cd'
+```
+
+## References
+
+> testcontainers : https://www.testcontainers.org/
+>
+> testcontainers Spring Boot : https://github.com/testcontainers/testcontainers-spring-boot
+>
+> jenkins kubernetes : https://timmhirsens.de/posts/2019/07/testcontainers_on_jenkins_with_kubernetes/
+>
+> OKD 3.11 fix jenkins version : https://github.com/dcdh/okd-3x-local-installation/blob/master/jenkins_fix.md
+>
+> OKD 3.11 local installation : https://github.com/dcdh/okd-3x-local-installation/blob/master/nexus_docker_proxy_repository_installation.md
+> 
