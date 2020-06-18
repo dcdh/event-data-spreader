@@ -77,4 +77,16 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     public int hashCode() {
         return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventPayloadConsumer, aggregateRootEventMetaDataConsumer, aggregateRootMaterializedStateConsumer);
     }
+
+    @Override
+    public String toString() {
+        return "DecryptedAggregateRootEventConsumable{" +
+                "aggregateRootEventId=" + aggregateRootEventId +
+                ", eventType='" + eventType + '\'' +
+                ", creationDate=" + creationDate +
+                ", aggregateRootEventPayloadConsumer=" + aggregateRootEventPayloadConsumer +
+                ", aggregateRootEventMetaDataConsumer=" + aggregateRootEventMetaDataConsumer +
+                ", aggregateRootMaterializedStateConsumer=" + aggregateRootMaterializedStateConsumer +
+                '}';
+    }
 }
