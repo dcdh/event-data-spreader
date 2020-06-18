@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 public final class DebeziumAggregateRootEventConsumable {
@@ -66,7 +66,7 @@ public final class DebeziumAggregateRootEventConsumable {
         final JsonObject after = Objects.requireNonNull(record.getPayload().getJsonObject(AFTER));
         this.aggregateRootEventId = new DebeziumAggregateRootEventId(after);
         final Instant instant = Instant.ofEpochMilli(Objects.requireNonNull(after.getLong(EVENT_CREATION_DATE)) / 1000);
-        this.creationDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        this.creationDate = instant.atZone(ZoneOffset.UTC).toLocalDateTime();
         this.eventType = Objects.requireNonNull(after.getString(EVENT_EVENT_TYPE));
         this.eventMetaData = Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA));
         this.eventPayload = Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD));

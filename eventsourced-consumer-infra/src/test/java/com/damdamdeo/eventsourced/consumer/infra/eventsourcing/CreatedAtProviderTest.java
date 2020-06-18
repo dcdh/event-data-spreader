@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,11 +18,11 @@ public class CreatedAtProviderTest {
     @Test
     public void should_generate_at_call() {
         // Given
-        final LocalDateTime startInclusive = LocalDateTime.now();
+        final LocalDateTime startInclusive = LocalDateTime.now(ZoneOffset.UTC);
 
         // When
         final LocalDateTime createdAt = createdAtProvider.createdAt();
-        final LocalDateTime endInclusive = LocalDateTime.now();
+        final LocalDateTime endInclusive = LocalDateTime.now(ZoneOffset.UTC);
 
         // Then
         assertTrue((createdAt.isAfter(startInclusive) || createdAt.equals(startInclusive))

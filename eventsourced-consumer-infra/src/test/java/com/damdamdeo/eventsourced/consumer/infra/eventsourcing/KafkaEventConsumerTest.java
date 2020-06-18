@@ -106,7 +106,7 @@ public class KafkaEventConsumerTest {
         final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(
                 new DebeziumAggregateRootEventConsumable(
                         new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
-                        LocalDateTime.of(2019, Month.SEPTEMBER, 22, 19, 44, 20, 987000000),
+                        LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
                         "AccountDebited",
                         "{\"@type\": \"UserEventMetadata\", \"executedBy\": \"damdamdeo\"}",
                         "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}",
