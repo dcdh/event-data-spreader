@@ -17,17 +17,33 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     private final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer;
     private final AggregateRootMaterializedStateConsumer aggregateRootMaterializedStateConsumer;
 
+    public DecryptedAggregateRootEventConsumable(final AggregateRootEventId aggregateRootEventId,
+                                                 final String eventType,
+                                                 final LocalDateTime creationDate,
+                                                 final AggregateRootEventPayloadConsumer aggregateRootEventPayloadConsumer,
+                                                 final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer,
+                                                 final AggregateRootMaterializedStateConsumer aggregateRootMaterializedStateConsumer) {
+        this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
+        this.eventType = Objects.requireNonNull(eventType);
+        this.creationDate = Objects.requireNonNull(creationDate);
+        this.aggregateRootEventPayloadConsumer = Objects.requireNonNull(aggregateRootEventPayloadConsumer);
+        this.aggregateRootEventMetaDataConsumer = Objects.requireNonNull(aggregateRootEventMetaDataConsumer);
+        this.aggregateRootMaterializedStateConsumer = Objects.requireNonNull(aggregateRootMaterializedStateConsumer);
+    }
+
     public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent,
                                                  final Optional<AggregateRootSecret> aggregateRootSecret,
                                                  final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
                                                  final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
                                                  final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
-        aggregateRootEventId = decryptableAggregateRootEvent.eventId();
-        eventType = decryptableAggregateRootEvent.eventType();
-        creationDate = decryptableAggregateRootEvent.creationDate();
-        aggregateRootEventPayloadConsumer = decryptableAggregateRootEvent.eventPayload(aggregateRootSecret, aggregateRootEventPayloadConsumerDeserializer);
-        aggregateRootEventMetaDataConsumer = decryptableAggregateRootEvent.eventMetaData(aggregateRootSecret, aggregateRootEventMetadataConsumerDeSerializer);
-        aggregateRootMaterializedStateConsumer = decryptableAggregateRootEvent.materializedState(aggregateRootSecret, aggregateRootMaterializedStateConsumerDeserializer);
+        this(
+                decryptableAggregateRootEvent.eventId(),
+                decryptableAggregateRootEvent.eventType(),
+                decryptableAggregateRootEvent.creationDate(),
+                decryptableAggregateRootEvent.eventPayload(aggregateRootSecret, aggregateRootEventPayloadConsumerDeserializer),
+                decryptableAggregateRootEvent.eventMetaData(aggregateRootSecret, aggregateRootEventMetadataConsumerDeSerializer),
+                decryptableAggregateRootEvent.materializedState(aggregateRootSecret, aggregateRootMaterializedStateConsumerDeserializer)
+        );
     }
 
     @Override

@@ -58,6 +58,13 @@ public class KafkaEventConsumerTest {
     AgroalDataSource consumedEventsDataSource;
 
     @BeforeEach
+    public void setupDeserializers() {
+        doReturn(mock(AggregateRootEventPayloadConsumer.class)).when(mockedAggregateRootEventPayloadConsumerDeserializer).deserialize(any(), any());
+        doReturn(mock(AggregateRootEventMetadataConsumer.class)).when(mockedAggregateRootEventMetadataConsumerDeSerializer).deserialize(any(), any());
+        doReturn(mock(AggregateRootMaterializedStateConsumer.class)).when(aggregateRootMaterializedStateConsumerDeserializer).deserialize(any(), any());
+    }
+
+    @BeforeEach
     public void setup() {
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
         doReturn(Optional.empty()).when(mockedSecretStore).read("AccountAggregateRoot", "damdamdeo");
