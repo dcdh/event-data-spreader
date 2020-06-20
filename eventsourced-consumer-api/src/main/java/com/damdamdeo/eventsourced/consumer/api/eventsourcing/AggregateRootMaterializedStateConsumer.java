@@ -17,4 +17,18 @@ public abstract class AggregateRootMaterializedStateConsumer {
         this.version = Objects.requireNonNull(version);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AggregateRootMaterializedStateConsumer that = (AggregateRootMaterializedStateConsumer) o;
+        return Objects.equals(aggregateRootId, that.aggregateRootId) &&
+                Objects.equals(aggregateRootType, that.aggregateRootType) &&
+                Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(aggregateRootId, aggregateRootType, version);
+    }
 }
