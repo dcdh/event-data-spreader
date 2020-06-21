@@ -17,6 +17,16 @@ public abstract class AggregateRoot implements Serializable {
     private Long version = -1l;
     private String aggregateRootType;
 
+    public AggregateRoot() {}
+
+    public AggregateRoot(final String aggregateRootId,
+                         final String aggregateRootType,
+                         final Long version) {
+        this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+        this.version = Objects.requireNonNull(version);
+    }
+
     @SuppressWarnings("unchecked")
     protected final void apply(final AggregateRootEventPayload aggregateRootEventPayload, final AggregateRootEventMetadata aggregateRootEventMetaData) {
         Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(aggregateRootEventPayload.aggregateRootId().aggregateRootId()),
