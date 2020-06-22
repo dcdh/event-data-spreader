@@ -67,7 +67,7 @@ public class KafkaEventConsumerTest {
     @BeforeEach
     public void setup() {
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
-        doReturn(Optional.empty()).when(mockedSecretStore).read("AccountAggregateRoot", "damdamdeo");
+        doReturn(null).when(mockedSecretStore).read("AccountAggregateRoot", "damdamdeo");
     }
 
     @BeforeEach

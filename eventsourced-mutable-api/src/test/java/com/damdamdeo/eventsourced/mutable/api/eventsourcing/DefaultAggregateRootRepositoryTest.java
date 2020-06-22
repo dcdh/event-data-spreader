@@ -65,10 +65,10 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn("{}").when(aggregateRootMaterializedStateSerializer).serialize(aggregateRoot);
         final AggregateRootEvent aggregateRootEvent = mock(AggregateRootEvent.class, RETURNS_DEEP_STUBS);
         when(aggregateRootEvent.version()).thenReturn(0l);
-        final Optional<AggregateRootSecret> aggregateRootSecret = mock(Optional.class);
+        final AggregateRootSecret aggregateRootSecret = mock(AggregateRootSecret.class);
         doReturn(aggregateRootSecret).when(secretStore).read(any(), eq("aggregateRootId"));
         doReturn(singletonList(aggregateRootEvent)).when(eventRepository)
-                .loadOrderByVersionASC(eq("aggregateRootId"), any(), eq(aggregateRootSecret), eq(0l));
+                .loadOrderByVersionASC(eq("aggregateRootId"), any(), eq(Optional.of(aggregateRootSecret)), eq(0l));
         final List<AggregateRootEvent> unsavedAggregateRootEvents = singletonList(aggregateRootEvent);
 
         doReturn(unsavedAggregateRootEvents).when(aggregateRoot).unsavedEvents();
@@ -222,6 +222,7 @@ public class DefaultAggregateRootRepositoryTest {
         when(aggregateRoot.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
         doReturn(1l).when(aggregateRoot).version();
         doReturn("{}").when(aggregateRootMaterializedStateSerializer).serialize(aggregateRoot);
+        doReturn(mock(AggregateRootSecret.class)).when(secretStore).read("aggregateRootType", "aggregateRootId");
 
         // When
         defaultAggregateRootRepository.save(aggregateRoot);

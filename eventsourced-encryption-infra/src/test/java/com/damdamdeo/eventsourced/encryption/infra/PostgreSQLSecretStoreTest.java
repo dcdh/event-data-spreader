@@ -17,8 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class PostgreSQLSecretStoreTest {
@@ -61,7 +60,7 @@ public class PostgreSQLSecretStoreTest {
 
         // When
         final AggregateRootSecret storedSecret = secretStore.store("aggregateRootType", "aggregateRootId", secret);
-        final AggregateRootSecret readSecret = secretStore.read("aggregateRootType", "aggregateRootId").get();
+        final AggregateRootSecret readSecret = secretStore.read("aggregateRootType", "aggregateRootId");
 
         // Then
         assertEquals(new JdbcAggregateRootSecret("aggregateRootType", "aggregateRootId", "Hello World"),
@@ -70,8 +69,8 @@ public class PostgreSQLSecretStoreTest {
     }
 
     @Test
-    public void should_return_optional_empty_if_secret_does_not_exists() {
-        assertFalse(secretStore.read("aggregateRootType", "aggregateRootId").isPresent());
+    public void should_return_null_if_secret_does_not_exists() {
+        assertNull(secretStore.read("aggregateRootType", "aggregateRootId"));
     }
 
 }

@@ -4,7 +4,6 @@ import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Optional;
 
 @ApplicationScoped
 public class UnsupportedSecretStore implements SecretStore {
@@ -15,7 +14,7 @@ public class UnsupportedSecretStore implements SecretStore {
     }
 
     @Override
-    public Optional<AggregateRootSecret> read(final String aggregateRootType, final String aggregateRootId) {
+    public AggregateRootSecret read(final String aggregateRootType, final String aggregateRootId) {
         throw new UnsupportedOperationException("Must be mocked !");
     }
 

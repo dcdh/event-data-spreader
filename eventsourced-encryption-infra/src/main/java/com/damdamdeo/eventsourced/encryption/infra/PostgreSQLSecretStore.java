@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Scanner;
 
 @Startup
@@ -51,6 +50,7 @@ public class PostgreSQLSecretStore implements SecretStore {
 
     @Override
     @CacheInvalidate(cacheName = "secret-cache")
+    @CacheResult(cacheName = "secret-cache")
     public AggregateRootSecret store(@CacheKey final String aggregateRootType,
                                      @CacheKey final String aggregateRootId,
                                      final String secret) {
@@ -67,16 +67,14 @@ public class PostgreSQLSecretStore implements SecretStore {
 
     @Override
     @CacheResult(cacheName = "secret-cache")
-    public Optional<AggregateRootSecret> read(final String aggregateRootType, final String aggregateRootId) {
+    public AggregateRootSecret read(@CacheKey final String aggregateRootType, @CacheKey final String aggregateRootId) {
         final String getSecretStatement = String.format("SELECT aggregateroottype, aggregaterootid, secret FROM SECRET_STORE WHERE aggregateroottype = '%s' AND aggregaterootid = '%s'",
                 aggregateRootType, aggregateRootId);
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement();
              final ResultSet resultSet = stmt.executeQuery(getSecretStatement)) {
-            if (resultSet.next()) {
-                return Optional.of(new JdbcAggregateRootSecret(resultSet));
-            }
-            return Optional.empty();
+            // TODO use null Object pattern
+            return resultSet.next() ? new JdbcAggregateRootSecret(resultSet) : null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

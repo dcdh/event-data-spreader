@@ -61,7 +61,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         Objects.requireNonNull(clazz);
         final T instance = createNewInstance(clazz);
         final String aggregateRootType = instance.getClass().getSimpleName();
-        final Optional<AggregateRootSecret> aggregateRootSecret = secretStore.read(aggregateRootType, aggregateRootId);
+        final Optional<AggregateRootSecret> aggregateRootSecret = Optional.ofNullable(secretStore.read(aggregateRootType, aggregateRootId));
         final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, aggregateRootSecret);
         if (aggregateRootEvents.size() == 0) {
             throw new UnknownAggregateRootException(aggregateRootId);
@@ -76,7 +76,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         Objects.requireNonNull(clazz);
         final T instance = createNewInstance(clazz);
         final String aggregateRootType = instance.getClass().getSimpleName();
-        final Optional<AggregateRootSecret> aggregateRootSecret = secretStore.read(aggregateRootType, aggregateRootId);
+        final Optional<AggregateRootSecret> aggregateRootSecret = Optional.ofNullable(secretStore.read(aggregateRootType, aggregateRootId));
         final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, aggregateRootSecret, version);
         if (aggregateRootEvents.size() == 0) {
             throw new UnknownAggregateRootException(aggregateRootId);
@@ -99,12 +99,11 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         final String aggregateRootType = aggregateRoot.aggregateRootId().aggregateRootType();
         if (aggregateRoot.version() == 0L) {
             final String newSecretToStore = encryption.generateNewSecret();
-            final AggregateRootSecret newAggregateRootSecret = secretStore.store(aggregateRootType,
+            return Optional.of(secretStore.store(aggregateRootType,
                     aggregateRootId,
-                    newSecretToStore);
-            return Optional.of(newAggregateRootSecret);
+                    newSecretToStore));
         }
-        return secretStore.read(aggregateRootType, aggregateRootId);
+        return Optional.of(secretStore.read(aggregateRootType, aggregateRootId));
     }
 
 }

@@ -79,7 +79,7 @@ public class KafkaEventConsumer {
                     final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent = new DebeziumAggregateRootEventConsumable(record);
                     final String aggregateRootType = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootType();
                     final String aggregateRootId = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootId();
-                    final Optional<AggregateRootSecret> aggregateRootSecret = secretStore.read(aggregateRootType, aggregateRootId);
+                    final AggregateRootSecret aggregateRootSecret = secretStore.read(aggregateRootType, aggregateRootId);
                     final AggregateRootEventId aggregateRootEventId = decryptableAggregateRootEvent.eventId();
                     if (!kafkaEventConsumedRepository.hasFinishedConsumingEvent(aggregateRootEventId)) {
                         final String eventType = decryptableAggregateRootEvent.eventType();
@@ -88,7 +88,7 @@ public class KafkaEventConsumer {
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
-                            final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(decryptableAggregateRootEvent, aggregateRootSecret,
+                            final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(decryptableAggregateRootEvent, Optional.ofNullable(aggregateRootSecret),
                                     aggregateRootEventMetadataConsumerDeSerializer, aggregateRootEventPayloadConsumerDeserializer, aggregateRootMaterializedStateConsumerDeserializer);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
