@@ -54,7 +54,7 @@ public class PostgreSQLSecretStore implements SecretStore {
     public AggregateRootSecret store(@CacheKey final String aggregateRootType,
                                      @CacheKey final String aggregateRootId,
                                      final String secret) {
-        final String storeSecretStatement = String.format("INSERT INTO SECRET_STORE (aggregateRootType, aggregateRootId, secret) VALUES ('%s', '%s', '%s')",
+        final String storeSecretStatement = String.format("INSERT INTO SECRET_STORE (aggregateroottype, aggregaterootid, secret) VALUES ('%s', '%s', '%s')",
                 aggregateRootType, aggregateRootId, secret);
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
@@ -68,7 +68,7 @@ public class PostgreSQLSecretStore implements SecretStore {
     @Override
     @CacheResult(cacheName = "secret-cache")
     public Optional<AggregateRootSecret> read(final String aggregateRootType, final String aggregateRootId) {
-        final String getSecretStatement = String.format("SELECT aggregateRootType, aggregateRootId, secret FROM SECRET_STORE WHERE aggregateRootType = '%s' AND aggregateRootId = '%s'",
+        final String getSecretStatement = String.format("SELECT aggregateroottype, aggregaterootid, secret FROM SECRET_STORE WHERE aggregateroottype = '%s' AND aggregaterootid = '%s'",
                 aggregateRootType, aggregateRootId);
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement();
