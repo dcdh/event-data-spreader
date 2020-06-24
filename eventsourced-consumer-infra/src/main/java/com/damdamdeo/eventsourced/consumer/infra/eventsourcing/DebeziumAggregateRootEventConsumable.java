@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 
@@ -85,19 +85,19 @@ public final class DebeziumAggregateRootEventConsumable {
         return eventType;
     }
 
-    public AggregateRootEventMetadataConsumer eventMetaData(final Optional<AggregateRootSecret> aggregateRootSecret,
+    public AggregateRootEventMetadataConsumer eventMetaData(final Secret secret,
                                                             final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer) {
-        return aggregateRootEventMetadataConsumerDeSerializer.deserialize(aggregateRootSecret, eventMetaData);
+        return aggregateRootEventMetadataConsumerDeSerializer.deserialize(secret, eventMetaData);
     }
 
-    public AggregateRootEventPayloadConsumer eventPayload(final Optional<AggregateRootSecret> aggregateRootSecret,
+    public AggregateRootEventPayloadConsumer eventPayload(final Secret secret,
                                                           final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer) {
-        return aggregateRootEventPayloadConsumerDeserializer.deserialize(aggregateRootSecret, eventPayload);
+        return aggregateRootEventPayloadConsumerDeserializer.deserialize(secret, eventPayload);
     }
 
-    public AggregateRootMaterializedStateConsumer materializedState(final Optional<AggregateRootSecret> aggregateRootSecret,
+    public AggregateRootMaterializedStateConsumer materializedState(final Secret secret,
                                                                     final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
-        return aggregateRootMaterializedStateConsumerDeserializer.deserialize(aggregateRootSecret, materializedState);
+        return aggregateRootMaterializedStateConsumerDeserializer.deserialize(secret, materializedState);
     }
 
     @Override

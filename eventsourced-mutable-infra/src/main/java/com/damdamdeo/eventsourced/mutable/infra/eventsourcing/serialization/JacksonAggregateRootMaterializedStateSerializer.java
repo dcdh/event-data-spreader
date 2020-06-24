@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SerializationException;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootMaterializedStateMixInSubtypeDiscovery;
@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
-import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonAggregateRootMaterializedStateSerializer implements AggregateRootMaterializedStateSerializer {
@@ -32,23 +31,12 @@ public class JacksonAggregateRootMaterializedStateSerializer implements Aggregat
     }
 
     @Override
-    public String serialize(final Optional<AggregateRootSecret> aggregateRootSecret, final AggregateRoot aggregateRoot) {
+    public String serialize(final Secret secret, final AggregateRoot aggregateRoot) {
         try {
             return OBJECT_MAPPER
                     .writer()
-                    .withAttribute(AggregateRootSecret.SECRET_KEY, aggregateRootSecret)
-                    .withAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY, encryption)
-                    .writeValueAsString(aggregateRoot);
-        } catch (final Exception e) {
-            throw new SerializationException(e);
-        }
-    }
-
-    @Override
-    public String serialize(final AggregateRoot aggregateRoot) {
-        try {
-            return OBJECT_MAPPER
-                    .writer()
+                    .withAttribute(Secret.SECRET_KEY, secret)
+                    .withAttribute(Secret.ENCRYPTION_STRATEGY, encryption)
                     .writeValueAsString(aggregateRoot);
         } catch (final Exception e) {
             throw new SerializationException(e);

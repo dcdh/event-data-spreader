@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
@@ -11,7 +11,6 @@ import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 public final class AggregateRootEvent {
 
@@ -34,18 +33,18 @@ public final class AggregateRootEvent {
     }
 
     public AggregateRootEvent(final DecryptableEvent decryptableEvent,
-                              final Optional<AggregateRootSecret> aggregateRootSecret,
+                              final Secret secret,
                               final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
                               final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
         Validate.notNull(decryptableEvent);
-        Validate.notNull(aggregateRootSecret);
+        Validate.notNull(secret);
         Validate.notNull(aggregateRootEventPayloadDeSerializer);
         Validate.notNull(aggregateRootEventMetadataDeSerializer);
         this.aggregateRootEventId = decryptableEvent.eventId();
         this.eventType = decryptableEvent.eventType();
         this.creationDate = decryptableEvent.creationDate();
-        this.aggregateRootEventPayload = decryptableEvent.eventPayload(aggregateRootSecret, aggregateRootEventPayloadDeSerializer);
-        this.aggregateRootEventMetaData = decryptableEvent.eventMetaData(aggregateRootSecret, aggregateRootEventMetadataDeSerializer);
+        this.aggregateRootEventPayload = decryptableEvent.eventPayload(secret, aggregateRootEventPayloadDeSerializer);
+        this.aggregateRootEventMetaData = decryptableEvent.eventMetaData(secret, aggregateRootEventMetadataDeSerializer);
     }
 
     public AggregateRootEventId eventId() {

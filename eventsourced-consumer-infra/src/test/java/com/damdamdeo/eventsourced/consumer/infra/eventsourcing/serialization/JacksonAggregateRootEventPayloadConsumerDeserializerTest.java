@@ -3,6 +3,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventPayloadConsumer;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadConsumerMixInSubtypeDiscovery;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonMixInSubtype;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.test.junit.QuarkusTest;
@@ -12,9 +13,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 @QuarkusTest
 public class JacksonAggregateRootEventPayloadConsumerDeserializerTest {
@@ -63,7 +64,7 @@ public class JacksonAggregateRootEventPayloadConsumerDeserializerTest {
         // Given
 
         // When
-        final AggregateRootEventPayloadConsumer deserialized = jacksonAggregateRootEventPayloadConsumerDeserializer.deserialize(Optional.empty(),
+        final AggregateRootEventPayloadConsumer deserialized = jacksonAggregateRootEventPayloadConsumerDeserializer.deserialize(mock(Secret.class),
                 "{\"@type\":\"TestAggregateRootEventPayload\",\"dummy\":\"dummy\"}");
 
         // Then

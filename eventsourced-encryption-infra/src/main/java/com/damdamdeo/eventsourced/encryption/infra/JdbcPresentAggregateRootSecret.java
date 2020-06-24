@@ -1,23 +1,24 @@
 package com.damdamdeo.eventsourced.encryption.infra;
 
+import com.damdamdeo.eventsourced.encryption.api.PresentSecret;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
-public final class JdbcAggregateRootSecret implements AggregateRootSecret {
+public final class JdbcPresentAggregateRootSecret {
 
     private final AggregateRootId aggregateRootId;
     private final String secret;
 
-    public JdbcAggregateRootSecret(final String aggregateRootType, final String aggregateRootId, final String secret) {
+    public JdbcPresentAggregateRootSecret(final String aggregateRootType, final String aggregateRootId, final String secret) {
         this.aggregateRootId = new JdbcAggregateRootId(aggregateRootId, aggregateRootType);
         this.secret = Objects.requireNonNull(secret);
     }
 
-    public JdbcAggregateRootSecret(final ResultSet resultSet) throws SQLException {
+    public JdbcPresentAggregateRootSecret(final ResultSet resultSet) throws SQLException {
         this(resultSet.getString("aggregateRootType"),
                 resultSet.getString("aggregateRootId"),
                 resultSet.getString("secret"));
@@ -27,7 +28,7 @@ public final class JdbcAggregateRootSecret implements AggregateRootSecret {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        JdbcAggregateRootSecret that = (JdbcAggregateRootSecret) o;
+        JdbcPresentAggregateRootSecret that = (JdbcPresentAggregateRootSecret) o;
         return Objects.equals(aggregateRootId, that.aggregateRootId) &&
                 Objects.equals(secret, that.secret);
     }
@@ -37,13 +38,8 @@ public final class JdbcAggregateRootSecret implements AggregateRootSecret {
         return Objects.hash(aggregateRootId, secret);
     }
 
-    @Override
-    public AggregateRootId aggregateRootId() {
-        return aggregateRootId;
+    public Secret aggregateRootSecret() {
+        return new PresentSecret(secret);
     }
 
-    @Override
-    public String secret() {
-        return secret;
-    }
 }

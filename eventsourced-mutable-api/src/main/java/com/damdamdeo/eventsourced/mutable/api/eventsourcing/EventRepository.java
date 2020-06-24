@@ -1,18 +1,17 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface EventRepository {
 
-    void save(List<AggregateRootEvent> aggregateRootEvents, Optional<AggregateRootSecret> aggregateRootSecret);
+    void save(List<AggregateRootEvent> aggregateRootEvents, Secret secret);
 
-    void saveMaterializedState(AggregateRoot aggregateRoot, Optional<AggregateRootSecret> aggregateRootSecret);
+    void saveMaterializedState(AggregateRoot aggregateRoot, Secret secret);
 
-    List<AggregateRootEvent> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType, Optional<AggregateRootSecret> aggregateRootSecret);
+    List<AggregateRootEvent> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType, Secret secret);
 
-    List<AggregateRootEvent> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType, Optional<AggregateRootSecret> aggregateRootSecret, Long version);
+    List<AggregateRootEvent> loadOrderByVersionASC(String aggregateRootId, String aggregateRootType, Secret secret, Long version);
 
 }

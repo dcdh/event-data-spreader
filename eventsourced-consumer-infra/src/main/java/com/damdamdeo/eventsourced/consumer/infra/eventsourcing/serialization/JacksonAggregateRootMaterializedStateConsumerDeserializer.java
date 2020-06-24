@@ -5,7 +5,7 @@ import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootMateri
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootMaterializedStateConsumerMixInSubtypeDiscovery;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SerializationException;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
-import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonAggregateRootMaterializedStateConsumerDeserializer implements AggregateRootMaterializedStateConsumerDeserializer {
@@ -32,12 +31,12 @@ public class JacksonAggregateRootMaterializedStateConsumerDeserializer implement
     }
 
     @Override
-    public AggregateRootMaterializedStateConsumer deserialize(Optional<AggregateRootSecret> aggregateRootSecret, String materializedState) {
+    public AggregateRootMaterializedStateConsumer deserialize(final Secret secret, final String materializedState) {
         try {
             return OBJECT_MAPPER
                     .readerFor(AggregateRootMaterializedStateConsumer.class)
-                    .withAttribute(AggregateRootSecret.SECRET_KEY, aggregateRootSecret)
-                    .withAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY, encryption)
+                    .withAttribute(Secret.SECRET_KEY, secret)
+                    .withAttribute(Secret.ENCRYPTION_STRATEGY, encryption)
                     .readValue(materializedState);
         } catch (final Exception e) {
             throw new SerializationException(e);

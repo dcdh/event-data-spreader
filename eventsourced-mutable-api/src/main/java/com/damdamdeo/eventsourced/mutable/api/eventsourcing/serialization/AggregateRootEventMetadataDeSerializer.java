@@ -1,13 +1,11 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
-
-import java.util.Optional;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 
 public interface AggregateRootEventMetadataDeSerializer {
 
-    String serialize(Optional<AggregateRootSecret> aggregateRootSecret, AggregateRootEventMetadata aggregateRootEventMetadata);
+    String serialize(Secret secret, AggregateRootEventMetadata aggregateRootEventMetadata);
 
-    AggregateRootEventMetadata deserialize(Optional<AggregateRootSecret> aggregateRootSecret, String eventMetadata);
+    AggregateRootEventMetadata deserialize(Secret secret, String eventMetadata);
 
 }

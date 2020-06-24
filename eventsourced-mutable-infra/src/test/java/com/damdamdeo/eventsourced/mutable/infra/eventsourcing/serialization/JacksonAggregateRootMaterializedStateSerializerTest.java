@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
@@ -15,10 +16,10 @@ import org.mockito.Mockito;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.Objects;
-import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 @QuarkusTest
 public class JacksonAggregateRootMaterializedStateSerializerTest {
@@ -100,7 +101,7 @@ public class JacksonAggregateRootMaterializedStateSerializerTest {
         testAggregateRoot.applyCreated();
 
         // When
-        final String serialized = jacksonAggregateRootMaterializedStateSerializer.serialize(Optional.empty(), testAggregateRoot);
+        final String serialized = jacksonAggregateRootMaterializedStateSerializer.serialize(mock(Secret.class), testAggregateRoot);
 
         // Then
         assertEquals("{\"@type\":\"TestAggregateRoot\",\"aggregateRootId\":\"dummy\",\"version\":0,\"aggregateRootType\":\"TestAggregateRoot\",\"dummy\":\"dummy\"}", serialized);

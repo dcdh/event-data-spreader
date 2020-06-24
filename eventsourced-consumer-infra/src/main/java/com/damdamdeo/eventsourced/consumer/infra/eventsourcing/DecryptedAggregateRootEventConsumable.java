@@ -2,11 +2,10 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable {
 
@@ -32,7 +31,7 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     }
 
     public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent,
-                                                 final Optional<AggregateRootSecret> aggregateRootSecret,
+                                                 final Secret secret,
                                                  final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
                                                  final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
                                                  final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
@@ -40,9 +39,9 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
                 decryptableAggregateRootEvent.eventId(),
                 decryptableAggregateRootEvent.eventType(),
                 decryptableAggregateRootEvent.creationDate(),
-                decryptableAggregateRootEvent.eventPayload(aggregateRootSecret, aggregateRootEventPayloadConsumerDeserializer),
-                decryptableAggregateRootEvent.eventMetaData(aggregateRootSecret, aggregateRootEventMetadataConsumerDeSerializer),
-                decryptableAggregateRootEvent.materializedState(aggregateRootSecret, aggregateRootMaterializedStateConsumerDeserializer)
+                decryptableAggregateRootEvent.eventPayload(secret, aggregateRootEventPayloadConsumerDeserializer),
+                decryptableAggregateRootEvent.eventMetaData(secret, aggregateRootEventMetadataConsumerDeSerializer),
+                decryptableAggregateRootEvent.materializedState(secret, aggregateRootMaterializedStateConsumerDeserializer)
         );
     }
 

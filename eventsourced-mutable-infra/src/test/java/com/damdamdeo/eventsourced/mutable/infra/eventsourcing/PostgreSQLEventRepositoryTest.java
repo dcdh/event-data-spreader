@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateSerializer;
@@ -51,21 +51,6 @@ public class PostgreSQLEventRepositoryTest {
 
     @InjectMock
     GitCommitProvider gitCommitProvider;
-
-    @BeforeEach
-    public void setupEncryption() {
-        final AggregateRootSecret aggregateRootSecret = new AggregateRootSecret() {
-            @Override
-            public AggregateRootId aggregateRootId() {
-                return new TestAggregateRootId("aggregateRootId", "aggregateRootType");
-            }
-
-            @Override
-            public String secret() {
-                return null;
-            }
-        };
-    }
 
     @BeforeEach
     @AfterEach
@@ -221,7 +206,7 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventMetadata("dummy"));
 
         // When
-        eventRepository.save(Collections.singletonList(aggregateRootEvent), Optional.empty());
+        eventRepository.save(Collections.singletonList(aggregateRootEvent), mock(Secret.class));
 
         // Then
         try (final Connection con = mutableDataSource.getConnection();
@@ -259,12 +244,12 @@ public class PostgreSQLEventRepositoryTest {
                 LocalDateTime.now(),
                 testAggregateRootEventPayload,
                 testAggregateRootEventMetadata);
-        eventRepository.save(Collections.singletonList(aggregateRootEvent), Optional.empty());
+        eventRepository.save(Collections.singletonList(aggregateRootEvent), mock(Secret.class));
         final TestAggregateRoot testAggregateRoot = new TestAggregateRoot();
         testAggregateRoot.apply(testAggregateRootEventPayload, testAggregateRootEventMetadata);
 
         // When
-        eventRepository.saveMaterializedState(testAggregateRoot, Optional.empty());
+        eventRepository.saveMaterializedState(testAggregateRoot, mock(Secret.class));
 
         // Then
         try (final Connection con = mutableDataSource.getConnection();
@@ -297,7 +282,7 @@ public class PostgreSQLEventRepositoryTest {
                 creationDate,
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
-        eventRepository.save(Collections.singletonList(aggregateRootEvent0), Optional.empty());
+        eventRepository.save(Collections.singletonList(aggregateRootEvent0), mock(Secret.class));
 
         final AggregateRootEvent aggregateRootEvent1 = new AggregateRootEvent(
                 new DefaultAggregateRootEventId(new TestAggregateRootId("aggregateRootId", "aggregateRootType"), 1l),
@@ -307,7 +292,7 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventMetadata("dummy"));
 
         // When
-        eventRepository.save(Collections.singletonList(aggregateRootEvent1), Optional.empty());
+        eventRepository.save(Collections.singletonList(aggregateRootEvent1), mock(Secret.class));
 
         // Then
         try (final Connection con = mutableDataSource.getConnection();
@@ -332,10 +317,10 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
 
-        eventRepository.save(Arrays.asList(aggregateRootEvent), Optional.empty());
+        eventRepository.save(Arrays.asList(aggregateRootEvent), mock(Secret.class));
 
         // When
-        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", Optional.empty());
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", mock(Secret.class));
 
         // Then
         assertEquals(Arrays.asList(
@@ -378,10 +363,10 @@ public class PostgreSQLEventRepositoryTest {
                 new TestAggregateRootEventPayload("dummy"),
                 new TestAggregateRootEventMetadata("dummy"));
 
-        eventRepository.save(Arrays.asList(aggregateRootEvent0, aggregateRootEvent1, aggregateRootEvent2), Optional.empty());
+        eventRepository.save(Arrays.asList(aggregateRootEvent0, aggregateRootEvent1, aggregateRootEvent2), mock(Secret.class));
 
         // When
-        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", Optional.empty(), 1l);
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC("aggregateRootId", "aggregateRootType", mock(Secret.class), 1l);
 
         // Then
         assertEquals(Arrays.asList(

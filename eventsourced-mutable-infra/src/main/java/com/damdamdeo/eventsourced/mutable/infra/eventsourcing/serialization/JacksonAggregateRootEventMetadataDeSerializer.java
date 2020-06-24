@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SerializationException;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventMetadataMixInSubtypeDiscovery;
@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
-import java.util.Optional;
 
 @ApplicationScoped
 public class JacksonAggregateRootEventMetadataDeSerializer implements AggregateRootEventMetadataDeSerializer {
@@ -32,12 +31,12 @@ public class JacksonAggregateRootEventMetadataDeSerializer implements AggregateR
     }
 
     @Override
-    public String serialize(final Optional<AggregateRootSecret> aggregateRootSecret, final AggregateRootEventMetadata aggregateRootEventMetadata) {
+    public String serialize(final Secret secret, final AggregateRootEventMetadata aggregateRootEventMetadata) {
         try {
             return OBJECT_MAPPER
                     .writer()
-                    .withAttribute(AggregateRootSecret.SECRET_KEY, aggregateRootSecret)
-                    .withAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY, encryption)
+                    .withAttribute(Secret.SECRET_KEY, secret)
+                    .withAttribute(Secret.ENCRYPTION_STRATEGY, encryption)
                     .writeValueAsString(aggregateRootEventMetadata);
         } catch (final Exception e) {
             throw new SerializationException(e);
@@ -45,12 +44,12 @@ public class JacksonAggregateRootEventMetadataDeSerializer implements AggregateR
     }
 
     @Override
-    public AggregateRootEventMetadata deserialize(final Optional<AggregateRootSecret> aggregateRootSecret, final String aggregateRootEventMetadata) {
+    public AggregateRootEventMetadata deserialize(final Secret secret, final String aggregateRootEventMetadata) {
         try {
             return OBJECT_MAPPER
                     .readerFor(AggregateRootEventMetadata.class)
-                    .withAttribute(AggregateRootSecret.SECRET_KEY, aggregateRootSecret)
-                    .withAttribute(AggregateRootSecret.ENCRYPTION_STRATEGY, encryption)
+                    .withAttribute(Secret.SECRET_KEY, secret)
+                    .withAttribute(Secret.ENCRYPTION_STRATEGY, encryption)
                     .readValue(aggregateRootEventMetadata);
         } catch (final Exception e) {
             throw new SerializationException(e);

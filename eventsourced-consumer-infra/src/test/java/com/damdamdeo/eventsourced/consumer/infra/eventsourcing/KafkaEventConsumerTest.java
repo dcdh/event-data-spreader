@@ -1,6 +1,7 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
@@ -19,7 +20,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
@@ -119,7 +119,7 @@ public class KafkaEventConsumerTest {
                         "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}",
                         "{\"@type\": \"AccountAggregateRoot\", \"aggregateRootId\": \"damdamdeo\", \"version\": 1, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}"
                 ),
-                Optional.empty(),
+                mock(Secret.class),
                 mockedAggregateRootEventMetadataConsumerDeSerializer,
                 mockedAggregateRootEventPayloadConsumerDeserializer,
                 aggregateRootMaterializedStateConsumerDeserializer);

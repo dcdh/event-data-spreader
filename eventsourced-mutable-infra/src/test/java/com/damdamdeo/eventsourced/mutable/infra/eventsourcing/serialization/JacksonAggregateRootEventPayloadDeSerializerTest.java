@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
@@ -14,9 +15,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 @QuarkusTest
 public class JacksonAggregateRootEventPayloadDeSerializerTest {
@@ -81,7 +82,7 @@ public class JacksonAggregateRootEventPayloadDeSerializerTest {
         final AggregateRootEventPayload testAggregateRootEventPayload = new TestAggregateRootEventPayload("dummy");
 
         // When
-        final String serialized = jacksonAggregateRootEventPayloadDeSerializer.serialize(Optional.empty(), testAggregateRootEventPayload);
+        final String serialized = jacksonAggregateRootEventPayloadDeSerializer.serialize(mock(Secret.class), testAggregateRootEventPayload);
 
         // Then
         assertEquals("{\"@type\":\"TestAggregateRootEventPayload\",\"dummy\":\"dummy\"}", serialized);
@@ -92,7 +93,7 @@ public class JacksonAggregateRootEventPayloadDeSerializerTest {
         // Given
 
         // When
-        final AggregateRootEventPayload deserialized = jacksonAggregateRootEventPayloadDeSerializer.deserialize(Optional.empty(),
+        final AggregateRootEventPayload deserialized = jacksonAggregateRootEventPayloadDeSerializer.deserialize(mock(Secret.class),
                 "{\"@type\":\"TestAggregateRootEventPayload\",\"dummy\":\"dummy\"}");
 
         // Then

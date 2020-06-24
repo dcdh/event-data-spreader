@@ -1,11 +1,9 @@
 package com.damdamdeo.eventsourced.consumer.api.eventsourcing;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
-
-import java.util.Optional;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 
 public interface AggregateRootEventPayloadConsumerDeserializer {
 
-    AggregateRootEventPayloadConsumer deserialize(Optional<AggregateRootSecret> aggregateRootSecret, String eventPayload);
+    AggregateRootEventPayloadConsumer deserialize(Secret secret, String eventPayload);
 
 }

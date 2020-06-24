@@ -1,9 +1,12 @@
 package com.damdamdeo.eventsourced.encryption.infra;
 
+import com.damdamdeo.eventsourced.encryption.api.MissingSecret;
+import com.damdamdeo.eventsourced.encryption.api.PresentSecret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
-import com.damdamdeo.eventsourced.model.api.AggregateRootSecret;
+import com.damdamdeo.eventsourced.encryption.api.Secret;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
+import io.quarkus.cache.runtime.CacheRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class PostgreSQLSecretStoreTest {
@@ -29,6 +32,9 @@ public class PostgreSQLSecretStoreTest {
     @DataSource("secret-store")
     AgroalDataSource secretStoreDataSource;
 
+    @Inject
+    CacheRepository cacheRepository;
+
     @BeforeEach
     @AfterEach
     public void setup() {
@@ -39,6 +45,8 @@ public class PostgreSQLSecretStoreTest {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        // flush cache
+        cacheRepository.getCache("secret-cache").invalidateAll();
     }
 
     @Test
@@ -54,23 +62,22 @@ public class PostgreSQLSecretStoreTest {
     }
 
     @Test
-    public void should_store_and_retrieve() {
+    public void should_store_and_retrieve_secret() {
         // Given
         final String secret = "Hello World";
 
         // When
-        final AggregateRootSecret storedSecret = secretStore.store("aggregateRootType", "aggregateRootId", secret);
-        final AggregateRootSecret readSecret = secretStore.read("aggregateRootType", "aggregateRootId");
+        final Secret storedSecret = secretStore.store("aggregateRootType", "aggregateRootId", secret);
+        final Secret readSecret = secretStore.read("aggregateRootType", "aggregateRootId");
 
         // Then
-        assertEquals(new JdbcAggregateRootSecret("aggregateRootType", "aggregateRootId", "Hello World"),
-                readSecret);
+        assertEquals(new PresentSecret("Hello World"), readSecret);
         assertEquals(storedSecret, readSecret);
     }
 
     @Test
-    public void should_return_null_if_secret_does_not_exists() {
-        assertNull(secretStore.read("aggregateRootType", "aggregateRootId"));
+    public void should_return_missing_secret_if_secret_does_not_exists() {
+        assertEquals(new MissingSecret(), secretStore.read("aggregateRootType", "aggregateRootId"));
     }
 
 }
