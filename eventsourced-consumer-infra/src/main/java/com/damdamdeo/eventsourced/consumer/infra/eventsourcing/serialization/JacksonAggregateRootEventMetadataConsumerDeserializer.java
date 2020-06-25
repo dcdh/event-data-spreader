@@ -2,6 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumer;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventMetadataConsumerDeserializer;
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.UnsupportedAggregateRootEventMetadataConsumer;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventMetadataConsumerMixInSubtypeDiscovery;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SerializationException;
@@ -26,6 +27,7 @@ public class JacksonAggregateRootEventMetadataConsumerDeserializer implements Ag
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         OBJECT_MAPPER.addMixIn(AggregateRootEventMetadataConsumer.class, JacksonAggregateRootEventMetadataConsumer.class);
+        OBJECT_MAPPER.addMixIn(UnsupportedAggregateRootEventMetadataConsumer.class, JacksonUnsupportedAggregateRootEventMetadataConsumer.class);
         jacksonAggregateRootEventMetadataConsumerImplementationDiscoveryBean.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);
     }

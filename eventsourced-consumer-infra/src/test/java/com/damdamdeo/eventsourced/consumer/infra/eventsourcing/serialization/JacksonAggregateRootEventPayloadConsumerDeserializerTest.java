@@ -1,6 +1,7 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventPayloadConsumer;
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.UnsupportedAggregateRootEventPayloadConsumer;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonAggregateRootEventPayloadConsumerMixInSubtypeDiscovery;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi.JacksonMixInSubtype;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @QuarkusTest
@@ -69,5 +71,17 @@ public class JacksonAggregateRootEventPayloadConsumerDeserializerTest {
 
         // Then
         assertEquals(new TestAggregateRootEventPayloadConsumer("dummy"), deserialized);
+    }
+
+    @Test
+    public void should_return_default_impl_when_deserializing_unknown_type() {
+        // Given
+
+        // When
+        final AggregateRootEventPayloadConsumer deserialized = jacksonAggregateRootEventPayloadConsumerDeserializer.deserialize(mock(Secret.class),
+                "{\"@type\":\"UnknownAggregateRootEventPayload\",\"dummy\":\"dummy\"}");
+
+        // Then
+        assertTrue(deserialized instanceof UnsupportedAggregateRootEventPayloadConsumer);
     }
 }
