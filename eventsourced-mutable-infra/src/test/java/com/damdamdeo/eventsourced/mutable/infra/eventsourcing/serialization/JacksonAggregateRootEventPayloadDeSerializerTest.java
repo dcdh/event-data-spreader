@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 @QuarkusTest
@@ -99,4 +100,17 @@ public class JacksonAggregateRootEventPayloadDeSerializerTest {
         // Then
         assertEquals(new TestAggregateRootEventPayload("dummy"), deserialized);
     }
+
+    @Test
+    public void should_return_null_instead_of_trowing_an_exception_when_deserializing_unknown_type() {
+        // Given
+
+        // When
+        final AggregateRootEventPayload deserialized = jacksonAggregateRootEventPayloadDeSerializer.deserialize(mock(Secret.class),
+                "{\"@type\":\"UnknownAggregateRootEventPayload\",\"dummy\":\"dummy\"}");
+
+        // Then
+        assertNull(deserialized);
+    }
+
 }
