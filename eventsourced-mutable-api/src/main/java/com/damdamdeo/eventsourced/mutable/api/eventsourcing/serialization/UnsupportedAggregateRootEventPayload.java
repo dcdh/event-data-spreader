@@ -20,4 +20,16 @@ public final class UnsupportedAggregateRootEventPayload extends AggregateRootEve
         throw new UnsupportedOperationException("Unsupported aggregate root type");
     }
 
+    @Override
+    public int hashCode() {
+        return 1;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        return true;
+    }
+
 }
