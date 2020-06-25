@@ -5,9 +5,9 @@ import java.util.Objects;
 // must be a class However it will be impossible to deserialize using Jackson
 public abstract class AggregateRootMaterializedStateConsumer {
 
-    private final String aggregateRootId;
-    private final String aggregateRootType;
-    private final Long version;
+    protected final String aggregateRootId;
+    protected final String aggregateRootType;
+    protected final Long version;
 
     public AggregateRootMaterializedStateConsumer(final String aggregateRootId,
                                                   final String aggregateRootType,
