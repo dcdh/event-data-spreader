@@ -3,7 +3,6 @@ package com.damdamdeo.eventsourced.mutable.infra.resources;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
 import io.debezium.testing.testcontainers.DebeziumContainer;
 
 import java.util.Collections;
@@ -13,7 +12,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
 
     private Network network;
 
-    private PostgreSQLContainer<?> postgresMutableContainer;
+    private OkdPostgreSQLContainer<?> postgresMutableContainer;
 
     private KafkaContainer kafkaContainer;
 
@@ -22,11 +21,8 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
     @Override
     public Map<String, String> start() {
         network = Network.newNetwork();
-        // I can't use my image 'dcdh1983/postgresql-10-debezium-centos7:latest' because environment variables and
-        // cmd use to run container is hardcoded in PostgreSQLContainer and do not reflect my image
-        // I could write one but I also do a big e2e test in OKD for a real application. I will write a specific one in my todo-app ;)
         final String networkAliases = "mutable";
-        postgresMutableContainer = new PostgreSQLContainer<>("debezium/postgres:11")
+        postgresMutableContainer = new OkdPostgreSQLContainer<>()
                 .withDatabaseName("mutable")
                 .withUsername("postgresuser")
                 .withPassword("postgrespassword")
