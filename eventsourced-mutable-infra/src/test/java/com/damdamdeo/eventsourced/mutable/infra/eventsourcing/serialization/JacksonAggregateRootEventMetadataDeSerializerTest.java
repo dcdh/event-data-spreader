@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 @QuarkusTest
@@ -82,18 +81,6 @@ public class JacksonAggregateRootEventMetadataDeSerializerTest {
 
         // Then
         assertEquals(new TestAggregateRootEventMetadata("damdamdeo"), deserialized);
-    }
-
-    @Test
-    public void should_return_null_instead_of_trowing_an_exception_when_deserializing_unknown_type() {
-        // Given
-
-        // When
-        final AggregateRootEventMetadata deserialized = jacksonAggregateRootEventMetadataDeSerializer.deserialize(mock(Secret.class),
-                "{\"@type\":\"UnknownAggregateRootEventMetadata\",\"executedBy\":\"damdamdeo\"}");
-
-        // Then
-        assertNull(deserialized);
     }
 
 }

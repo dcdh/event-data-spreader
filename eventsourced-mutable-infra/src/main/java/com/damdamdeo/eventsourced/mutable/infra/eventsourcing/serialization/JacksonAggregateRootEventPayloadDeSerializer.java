@@ -24,7 +24,6 @@ public class JacksonAggregateRootEventPayloadDeSerializer implements AggregateRo
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         OBJECT_MAPPER.addMixIn(AggregateRootEventPayload.class, JacksonAggregateRootEventPayload.class);
         jacksonAggregateRootEventPayloadMixInSubtypeDiscovery.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);

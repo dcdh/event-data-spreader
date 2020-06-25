@@ -8,7 +8,6 @@ import com.damdamdeo.eventsourced.encryption.api.SerializationException;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -26,7 +25,6 @@ public class JacksonAggregateRootEventPayloadConsumerDeserializer implements Agg
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         OBJECT_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         OBJECT_MAPPER.addMixIn(AggregateRootEventPayloadConsumer.class, JacksonAggregateRootEventPayloadConsumer.class);
         jacksonAggregateRootEventPayloadConsumerImplementationDiscoveryBean.registerJacksonMixInSubtype(OBJECT_MAPPER);
         this.encryption = Objects.requireNonNull(encryption);
