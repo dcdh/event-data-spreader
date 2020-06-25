@@ -1,7 +1,5 @@
-package com.damdamdeo.eventsourced.encryption.infra;
+package com.damdamdeo.eventsourced.encryption.infra.serialization;
 
-import com.damdamdeo.eventsourced.encryption.infra.serialization.JacksonEncryptionDeserializer;
-import com.damdamdeo.eventsourced.encryption.infra.serialization.JacksonEncryptionSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -11,14 +9,13 @@ public class Person {
 
     private String id;
 
-    @JsonSerialize(using = JacksonEncryptionSerializer.class)
-    @JsonDeserialize(using = JacksonEncryptionDeserializer.class)
+    @JsonSerialize(using = JacksonStringEncryptionSerializer.class)
+    @JsonDeserialize(using = JacksonStringEncryptionDeserializer.class)
     private String name;
 
     public Person() {}
 
-    public Person(final String id,
-                  final String name) {
+    public Person(final String id, final String name) {
         this.id = id;
         this.name = name;
     }

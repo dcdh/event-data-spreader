@@ -7,18 +7,19 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
-public class JacksonEncryptionSerializer extends JsonSerializer<String> {
+public class JacksonBigIntegerEncryptionSerializer extends JsonSerializer<BigInteger> {
 
     @Override
-    public void serialize(final String value,
+    public void serialize(final BigInteger value,
                           final JsonGenerator jsonGenerator,
                           final SerializerProvider serializerProvider) throws IOException {
           @SuppressWarnings("unchecked")
           final Encryption encryption = (Encryption) serializerProvider.getAttribute(Secret.ENCRYPTION_STRATEGY);
           @SuppressWarnings("unchecked")
           final Secret secret = (Secret) serializerProvider.getAttribute(Secret.SECRET_KEY);
-          jsonGenerator.writeString(secret.encrypt(value, encryption));
+          jsonGenerator.writeString(secret.encrypt(value.toString(), encryption));
     }
 
 }
