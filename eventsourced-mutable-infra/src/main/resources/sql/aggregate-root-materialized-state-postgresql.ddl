@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS AGGREGATE_ROOT_MATERIALIZED_STATE (
+CREATE TABLE IF NOT EXISTS public.AGGREGATE_ROOT_MATERIALIZED_STATE (
     aggregaterootid character varying(255) NOT NULL,
     aggregateroottype character varying(255) NOT NULL,
     serializedmaterializedstate jsonb,

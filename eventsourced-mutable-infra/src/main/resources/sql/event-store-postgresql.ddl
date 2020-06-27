@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS EVENT (
+CREATE TABLE IF NOT EXISTS public.EVENT (
     aggregaterootid character varying(255),
     aggregateroottype character varying(255),
     version bigint,

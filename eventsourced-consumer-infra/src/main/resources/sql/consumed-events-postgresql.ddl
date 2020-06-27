@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS CONSUMED_EVENT (
+CREATE TABLE IF NOT EXISTS public.CONSUMED_EVENT (
     aggregaterootid character varying(255) NOT NULL,
     aggregateroottype character varying(255) NOT NULL,
     version bigint,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS CONSUMED_EVENT (
     CONSTRAINT eventconsumed_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version)
 )!!
 
-CREATE TABLE IF NOT EXISTS CONSUMED_EVENT_CONSUMER (
+CREATE TABLE IF NOT EXISTS public.CONSUMED_EVENT_CONSUMER (
     consumerclassname text NOT NULL,
     aggregaterootid character varying(255) NOT NULL,
     aggregateroottype character varying(255) NOT NULL,

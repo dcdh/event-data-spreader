@@ -31,7 +31,7 @@ From the console under the project run this:
 
 ```bash
 docker pull debezium/postgres:11-alpine && \
-  docker pull debezium/connect:1.2.0.Beta2 && \
+  docker pull debezium/connect:1.2.0.Final && \
   docker pull confluentinc/cp-kafka:5.2.1 && \
   docker kill $(docker ps -aq); docker rm $(docker ps -aq); docker volume prune -f; \
   export TESTCONTAINERS_RYUK_DISABLED=true; \
@@ -44,7 +44,7 @@ docker pull debezium/postgres:11-alpine && \
 
 ```bash
 ssh damien@master.okd.local 'docker pull debezium/postgres:11-alpine' && \
-  ssh damien@master.okd.local 'docker pull debezium/connect:1.2.0.Beta2' && \
+  ssh damien@master.okd.local 'docker pull debezium/connect:1.2.0.Final' && \
   ssh damien@master.okd.local 'docker pull confluentinc/cp-kafka:5.2.1' && \
   ssh damien@master.okd.local 'docker pull adoptopenjdk/maven-openjdk8' && \
   ssh damien@master.okd.local 'docker pull docker:18.09.7-dind' && \
