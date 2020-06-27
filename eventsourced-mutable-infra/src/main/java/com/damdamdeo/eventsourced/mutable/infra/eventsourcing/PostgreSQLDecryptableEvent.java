@@ -2,9 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEvent;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.DecryptableEvent;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
@@ -17,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
 
@@ -31,28 +28,33 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
 
     private final String eventPayload;
 
+    private final String materializedState;
+
     public PostgreSQLDecryptableEvent(final ResultSet resultSet) throws SQLException {
         this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(resultSet);
         this.creationDate = resultSet.getObject("creationdate", LocalDateTime.class);
         this.eventType = resultSet.getString("eventtype");
         this.eventMetaData = resultSet.getString("eventmetadata");
         this.eventPayload = resultSet.getString("eventpayload");
+        this.materializedState = resultSet.getString("materializedstate");
     }
 
     private PostgreSQLDecryptableEvent(final EncryptedEventBuilder builder,
                                        final Secret secret,
                                        final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                       final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+                                       final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
+                                       final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
         this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(builder.aggregateRootEventId);
         this.eventType = builder.eventType;
         this.creationDate = builder.creationDate;
         this.eventPayload = aggregateRootEventPayloadDeSerializer.serialize(secret, builder.aggregateRootEventPayload);
         this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize(secret, builder.aggregateRootEventMetadata);
+        this.materializedState = aggregateRootMaterializedStateSerializer.serialize(secret, builder.aggregateRoot);
     }
 
     public PreparedStatement insertStatement(final Connection con, final GitCommitProvider gitCommitProvider) throws SQLException {
-        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventmetadata, eventpayload, gitcommitid) " +
-                "VALUES (?, ?, ?, ?, ?, to_json(?::json), to_json(?::json), ?)");
+        final PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventmetadata, eventpayload, materializedstate, gitcommitid) " +
+                "VALUES (?, ?, ?, ?, ?, to_json(?::json), to_json(?::json), to_json(?::json), ?)");
         preparedStatement.setString(1, postgreSQLEventId.aggregateRootId().aggregateRootId());
         preparedStatement.setString(2, postgreSQLEventId.aggregateRootId().aggregateRootType());
         preparedStatement.setLong(3, postgreSQLEventId.version());
@@ -60,7 +62,8 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         preparedStatement.setString(5, eventType);
         preparedStatement.setString(6, eventMetaData);
         preparedStatement.setString(7, eventPayload);
-        preparedStatement.setString(8, gitCommitProvider.gitCommitId());
+        preparedStatement.setString(8, materializedState);
+        preparedStatement.setString(9, gitCommitProvider.gitCommitId());
         return preparedStatement;
     }
 
@@ -74,6 +77,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         private LocalDateTime creationDate;
         private AggregateRootEventPayload aggregateRootEventPayload;
         private AggregateRootEventMetadata aggregateRootEventMetadata;
+        private AggregateRoot aggregateRoot;
 
         public EncryptedEventBuilder withEventId(final AggregateRootEventId aggregateRootEventId) {
             this.aggregateRootEventId = aggregateRootEventId;
@@ -100,18 +104,28 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
             return this;
         }
 
+        public EncryptedEventBuilder withAggregateRoot(final AggregateRoot aggregateRoot) {
+            this.aggregateRoot = aggregateRoot;
+            return this;
+        }
+
         public PostgreSQLDecryptableEvent build(final Secret secret,
                                                 final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                                final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+                                                final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
+                                                final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
             Validate.notNull(aggregateRootEventId);
             Validate.notNull(eventType);
             Validate.notNull(creationDate);
             Validate.notNull(aggregateRootEventPayload);
             Validate.notNull(aggregateRootEventMetadata);
+            Validate.notNull(aggregateRoot);
+            Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootId().equals(aggregateRoot.aggregateRootId().aggregateRootId()));
+            Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootType().equals(aggregateRoot.aggregateRootId().aggregateRootType()));
             Validate.notNull(secret);
             Validate.notNull(aggregateRootEventPayloadDeSerializer);
             Validate.notNull(aggregateRootEventMetadataDeSerializer);
-            return new PostgreSQLDecryptableEvent(this, secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer);
+            Validate.notNull(aggregateRootMaterializedStateSerializer);
+            return new PostgreSQLDecryptableEvent(this, secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStateSerializer);
         }
 
     }
@@ -161,12 +175,13 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(eventMetaData, that.eventMetaData) &&
-                Objects.equals(eventPayload, that.eventPayload);
+                Objects.equals(eventPayload, that.eventPayload) &&
+                Objects.equals(materializedState, that.materializedState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(postgreSQLEventId, creationDate, eventType, eventMetaData, eventPayload);
+        return Objects.hash(postgreSQLEventId, creationDate, eventType, eventMetaData, eventPayload, materializedState);
     }
 
     @Override
@@ -177,6 +192,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
                 ", eventType='" + eventType + '\'' +
                 ", eventMetaData='" + eventMetaData + '\'' +
                 ", eventPayload='" + eventPayload + '\'' +
+                ", materializedState='" + materializedState + '\'' +
                 '}';
     }
 }

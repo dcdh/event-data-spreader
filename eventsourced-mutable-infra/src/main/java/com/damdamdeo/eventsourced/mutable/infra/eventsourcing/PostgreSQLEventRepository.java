@@ -1,6 +1,5 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
@@ -16,7 +15,6 @@ import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 // TODO fait trop de chose
 // Je devrais uniquement stocker un event et non appliquer la serialization et la deserialization
@@ -64,42 +62,23 @@ public class PostgreSQLEventRepository implements EventRepository {
 
     @Transactional
     @Override
-    public void save(final List<AggregateRootEvent> aggregateRootEvents, final Secret secret) {
-        Validate.validState(aggregateRootEvents.size() > 0);
-        final AggregateRootId aggregateRootId = aggregateRootEvents.get(0).aggregateRootId();
-        Validate.validState(aggregateRootEvents.stream().allMatch(event -> aggregateRootId.equals(event.aggregateRootId())));
-        final List<PostgreSQLDecryptableEvent> eventsToSave = aggregateRootEvents.stream()
-                .map(event -> PostgreSQLDecryptableEvent.newEncryptedEventBuilder()
-                        .withEventId(event.eventId())
-                        .withEventType(event.eventType())
-                        .withCreationDate(event.creationDate())
-                        .withEventPayload(event.eventPayload())
-                        .withEventMetaData(event.eventMetaData())
-                        .build(secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer))
-                .collect(Collectors.toList());
-        try (final Connection connection = mutableDataSource.getConnection()) {
-            for (final PostgreSQLDecryptableEvent postgreSQLDecryptableEvent : eventsToSave) {
-                try (final PreparedStatement preparedStatement = postgreSQLDecryptableEvent.insertStatement(connection, gitCommitProvider)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Transactional
-    @Override
-    public void saveMaterializedState(final AggregateRoot aggregateRoot, final Secret secret) {
-        final String materializedState = aggregateRootMaterializedStateSerializer.serialize(secret, aggregateRoot);
-        final AggregateRootId aggregateRootId = aggregateRoot.aggregateRootId();
+    public void save(final AggregateRootEvent aggregateRootEvent, final AggregateRoot aggregateRoot, final Secret secret) {
+        Validate.notNull(aggregateRootEvent);
+        Validate.notNull(aggregateRoot);
+        Validate.notNull(secret);
+        Validate.validState(aggregateRootEvent.aggregateRootId().aggregateRootId().equals(aggregateRoot.aggregateRootId().aggregateRootId()));
+        Validate.validState(aggregateRootEvent.aggregateRootId().aggregateRootType().equals(aggregateRoot.aggregateRootId().aggregateRootType()));
+        Validate.validState(aggregateRootEvent.version().equals(aggregateRoot.version()));
+        final PostgreSQLDecryptableEvent eventToSave = PostgreSQLDecryptableEvent.newEncryptedEventBuilder()
+                .withEventId(aggregateRootEvent.eventId())
+                .withEventType(aggregateRootEvent.eventType())
+                .withCreationDate(aggregateRootEvent.creationDate())
+                .withEventPayload(aggregateRootEvent.eventPayload())
+                .withEventMetaData(aggregateRootEvent.eventMetaData())
+                .withAggregateRoot(aggregateRoot)
+                .build(secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStateSerializer);
         try (final Connection connection = mutableDataSource.getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement("UPDATE EVENT SET materializedstate = to_json(?::json) "
-                     +"WHERE aggregaterootid = ? AND aggregateroottype = ? AND version = ?")) {
-            preparedStatement.setString(1, materializedState);
-            preparedStatement.setString(2, aggregateRootId.aggregateRootId());
-            preparedStatement.setString(3, aggregateRootId.aggregateRootType());
-            preparedStatement.setLong(4, aggregateRoot.version());
+             final PreparedStatement preparedStatement = eventToSave.insertStatement(connection, gitCommitProvider)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);

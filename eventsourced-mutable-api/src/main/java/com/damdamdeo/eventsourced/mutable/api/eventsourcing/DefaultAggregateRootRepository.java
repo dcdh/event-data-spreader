@@ -41,11 +41,13 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     public <T extends AggregateRoot> T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
         final Secret secret = getSecret(aggregateRoot, encryption);
-        eventRepository.save(aggregateRoot.unsavedEvents(), secret);
+        final AggregateRoot lastSavedAggregateRootState = load(aggregateRoot.aggregateRootId().aggregateRootId(), aggregateRoot.getClass());
         aggregateRoot.unsavedEvents().stream()
                 .forEach(event -> {
-                    final AggregateRoot aggregateRootToMaterialize = load(aggregateRoot.aggregateRootId().aggregateRootId(), aggregateRoot.getClass(), event.version());
-                    eventRepository.saveMaterializedState(aggregateRootToMaterialize, secret);
+                    // for each event I apply it again from the lastSavedAggregateRootState to get the expected materialized state
+                    lastSavedAggregateRootState.apply(event.eventPayload(), event.eventMetaData());
+                    lastSavedAggregateRootState.deleteUnsavedEvents();// ensure that the new event created from a known event will be removed
+                    eventRepository.save(event, lastSavedAggregateRootState, secret);
                 });
         aggregateRoot.deleteUnsavedEvents();
         final String serializedAggregateRoot = aggregateRootMaterializedStateSerializer.serialize(new UnsupportedSecret(), aggregateRoot);

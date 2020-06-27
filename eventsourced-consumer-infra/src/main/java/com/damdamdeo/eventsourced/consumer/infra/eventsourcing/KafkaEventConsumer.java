@@ -107,13 +107,20 @@ public class KafkaEventConsumer {
                         LOGGER.info(String.format("Event '%s' already consumed", aggregateRootEventId));
                     }
                 } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                    LOGGER.warn(String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
+                    LOGGER.error(String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
                             unableToDecodeDebeziumEventMessageException.topic(),
                             unableToDecodeDebeziumEventMessageException.partition(),
                             unableToDecodeDebeziumEventMessageException.offset(),
                             unableToDecodeDebeziumEventMessageException.getMessage()));
                     processedSuccessfully = false;
                     waitSomeTime();
+                } catch (final UnsupportedDebeziumOperationException unsupportedDebeziumOperationException) {
+                    LOGGER.warn(String.format("Unsupported Debezium operation to decode in topic '%s' in partition '%d' in offset '%d' get key '%s' and payload '%s'. Will not try.",
+                            unsupportedDebeziumOperationException.topic(),
+                            unsupportedDebeziumOperationException.partition(),
+                            unsupportedDebeziumOperationException.offset(),
+                            unsupportedDebeziumOperationException.key(),
+                            unsupportedDebeziumOperationException.payload()));
                 } catch (final Exception exception) {
                     LOGGER.error("Message processing failure. Will try once again.", exception);
                     processedSuccessfully = false;

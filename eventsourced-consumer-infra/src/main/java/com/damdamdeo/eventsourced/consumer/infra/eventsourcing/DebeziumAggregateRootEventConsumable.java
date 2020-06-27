@@ -46,7 +46,7 @@ public final class DebeziumAggregateRootEventConsumable {
     }
 
     public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record)
-            throws UnableToDecodeDebeziumEventMessageException {
+            throws UnableToDecodeDebeziumEventMessageException, UnsupportedDebeziumOperationException {
         if (record.getKey() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaInfrastructureMetadata(record),
                     "'Message Key' is missing");
@@ -62,6 +62,9 @@ public final class DebeziumAggregateRootEventConsumable {
         if (record.getPayload().getString(OPERATION) == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaInfrastructureMetadata(record),
                     "'op' is missing");
+        }
+        if (!record.getPayload().getString(OPERATION).equals("c")) {
+            throw new UnsupportedDebeziumOperationException(record);
         }
         final JsonObject after = Objects.requireNonNull(record.getPayload().getJsonObject(AFTER));
         this.aggregateRootEventId = new DebeziumAggregateRootEventId(after);
