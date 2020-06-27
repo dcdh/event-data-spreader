@@ -19,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.transaction.Transactional;
@@ -29,7 +29,7 @@ import javax.transaction.UserTransaction;
 @ApplicationScoped
 public class KafkaEventConsumer {
 
-    private final static Logger LOGGER = Logger.getLogger(KafkaEventConsumer.class.getName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
     private final SecretStore secretStore;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
@@ -71,7 +71,7 @@ public class KafkaEventConsumer {
     @Incoming("event-in")
     @Transactional(Transactional.TxType.NEVER)
     public CompletionStage<Void> onMessage(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
-        LOGGER.log(Level.INFO, String.format("Receiving record '%s'", record.getKey().toString()));
+        LOGGER.info(String.format("Receiving record '%s'", record.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
             boolean processedSuccessfully = true;
             do {
@@ -104,10 +104,10 @@ public class KafkaEventConsumer {
                         }
                         kafkaEventConsumedRepository.markEventAsConsumed(aggregateRootEventId, createdAtProvider.createdAt(), new ConsumerRecordKafkaInfrastructureMetadata(record));
                     } else {
-                        LOGGER.log(Level.INFO, String.format("Event '%s' already consumed", aggregateRootEventId));
+                        LOGGER.info(String.format("Event '%s' already consumed", aggregateRootEventId));
                     }
                 } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                    LOGGER.log(Level.SEVERE, String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
+                    LOGGER.warn(String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
                             unableToDecodeDebeziumEventMessageException.topic(),
                             unableToDecodeDebeziumEventMessageException.partition(),
                             unableToDecodeDebeziumEventMessageException.offset(),
@@ -115,7 +115,7 @@ public class KafkaEventConsumer {
                     processedSuccessfully = false;
                     waitSomeTime();
                 } catch (final Exception exception) {
-                    LOGGER.log(Level.SEVERE, "Message processing failure. Will try once again.", exception);
+                    LOGGER.error("Message processing failure. Will try once again.", exception);
                     processedSuccessfully = false;
                     waitSomeTime();
                 }
