@@ -1,14 +1,19 @@
 package com.damdamdeo.eventsourced.mutable.infra.resources;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import io.debezium.testing.testcontainers.DebeziumContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.util.Collections;
 import java.util.Map;
 
 public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestResourceLifecycleManager {
+
+    private final Logger logger = LoggerFactory.getLogger(DebeziumQuarkusTestResourceLifecycleManager.class);
 
     private Network network;
 
@@ -20,6 +25,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
 
     @Override
     public Map<String, String> start() {
+        final Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(logger);
         network = Network.newNetwork();
         postgresMutableContainer = new OkdPostgreSQLContainer<>()
                 .withDatabaseName("mutable")
@@ -28,6 +34,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
                 .withNetwork(network)
                 .withNetworkAliases("mutable");
         postgresMutableContainer.start();
+        postgresMutableContainer.followOutput(logConsumer);
         System.setProperty("quarkus.datasource.jdbc.url", postgresMutableContainer.getJdbcUrl());
         System.setProperty("quarkus.datasource.username", postgresMutableContainer.getUsername());
         System.setProperty("quarkus.datasource.password", postgresMutableContainer.getPassword());
@@ -41,11 +48,13 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         kafkaContainer = new KafkaContainer("5.2.1")
                 .withNetwork(network);
         kafkaContainer.start();
+        kafkaContainer.followOutput(logConsumer);
         debeziumContainer = new DebeziumContainer("debezium/connect:1.2.0.Beta2")
                 .withNetwork(network)
                 .withKafka(kafkaContainer)
                 .dependsOn(kafkaContainer);
         debeziumContainer.start();
+        debeziumContainer.followOutput(logConsumer);
         System.setProperty("mp.messaging.incoming.event-in.bootstrap.servers", kafkaContainer.getBootstrapServers());
         System.setProperty("kafka-connector-api/mp-rest/url",
                 String.format("http://%s:%d", "localhost", debeziumContainer.getMappedPort(8083)));
