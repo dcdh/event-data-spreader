@@ -21,13 +21,12 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
     @Override
     public Map<String, String> start() {
         network = Network.newNetwork();
-        final String networkAliases = "mutable";
         postgresMutableContainer = new OkdPostgreSQLContainer<>()
                 .withDatabaseName("mutable")
                 .withUsername("postgresuser")
                 .withPassword("postgrespassword")
                 .withNetwork(network)
-                .withNetworkAliases(networkAliases);
+                .withNetworkAliases("mutable");
         postgresMutableContainer.start();
         System.setProperty("quarkus.datasource.jdbc.url", postgresMutableContainer.getJdbcUrl());
         System.setProperty("quarkus.datasource.username", postgresMutableContainer.getUsername());
