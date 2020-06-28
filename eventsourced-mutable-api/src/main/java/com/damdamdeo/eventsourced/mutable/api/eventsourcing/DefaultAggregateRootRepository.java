@@ -41,12 +41,13 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     public <T extends AggregateRoot> T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
         final Secret secret = getSecret(aggregateRoot, encryption);
-        final AggregateRoot lastSavedAggregateRootState = load(aggregateRoot.aggregateRootId().aggregateRootId(), aggregateRoot.getClass());
-        aggregateRoot.unsavedEvents().stream()
+        final AggregateRoot lastSavedAggregateRootState = createAndLoad(aggregateRoot.aggregateRootId().aggregateRootId(), aggregateRoot.getClass(), secret);
+        aggregateRoot.unsavedEvents()
+                .stream()
                 .forEach(event -> {
                     // for each event I apply it again from the lastSavedAggregateRootState to get the expected materialized state
                     lastSavedAggregateRootState.apply(event.eventPayload(), event.eventMetaData());
-                    lastSavedAggregateRootState.deleteUnsavedEvents();// ensure that the new event created from a known event will be removed
+                    lastSavedAggregateRootState.deleteUnsavedEvents();// ensure that the new event created from a known event will be removed before serialization
                     eventRepository.save(event, lastSavedAggregateRootState, secret);
                 });
         aggregateRoot.deleteUnsavedEvents();
@@ -54,6 +55,16 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         final DefaultAggregateRootMaterializedState defaultAggregateRootMaterializedState = new DefaultAggregateRootMaterializedState(aggregateRoot, serializedAggregateRoot);
         aggregateRootMaterializedStateRepository.persist(defaultAggregateRootMaterializedState);
         return aggregateRoot;
+    }
+
+    <T extends AggregateRoot> T createAndLoad(final String aggregateRootId, final Class<T> clazz, final Secret secret) {
+        Objects.requireNonNull(aggregateRootId);
+        Objects.requireNonNull(clazz);
+        final T instance = createNewInstance(clazz);
+        final String aggregateRootType = instance.getClass().getSimpleName();
+        final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, secret);
+        instance.loadFromHistory(aggregateRootEvents);
+        return instance;
     }
 
     @Override
