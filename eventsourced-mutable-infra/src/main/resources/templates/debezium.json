@@ -11,6 +11,7 @@
     "database.dbname": "{databaseDbname}",
     "database.server.name": "{databaseServerName}",
     "table.whitelist": "public.event",
+    "snapshot.mode": "always",
     "transforms": "route",
     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
     "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",

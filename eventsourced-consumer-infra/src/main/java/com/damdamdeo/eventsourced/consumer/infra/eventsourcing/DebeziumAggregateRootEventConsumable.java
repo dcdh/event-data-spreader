@@ -13,6 +13,9 @@ import java.util.*;
 
 public final class DebeziumAggregateRootEventConsumable {
 
+    private static final String CREATE_OPERATION = "c";
+    private static final String READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START = "r";
+
     private static final String AFTER = "after";
     private static final String OPERATION = "op";;
 
@@ -63,7 +66,8 @@ public final class DebeziumAggregateRootEventConsumable {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaInfrastructureMetadata(record),
                     "'op' is missing");
         }
-        if (!record.getPayload().getString(OPERATION).equals("c")) {
+        if (!Arrays.asList(CREATE_OPERATION,
+                READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START).contains(record.getPayload().getString(OPERATION))) {
             throw new UnsupportedDebeziumOperationException(record);
         }
         final JsonObject after = Objects.requireNonNull(record.getPayload().getJsonObject(AFTER));
