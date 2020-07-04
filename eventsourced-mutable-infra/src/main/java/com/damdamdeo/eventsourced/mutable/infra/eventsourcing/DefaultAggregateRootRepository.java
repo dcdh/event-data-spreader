@@ -1,4 +1,4 @@
-package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
+package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -9,8 +9,8 @@ import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.UnsupportedSecret;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 
-// TODO c'est de l'infra
 @ApplicationScoped
 public class DefaultAggregateRootRepository implements AggregateRootRepository {
 
@@ -24,16 +24,20 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
 
     private final Encryption encryption;
 
+    private final AggregateRootInstanceCreator aggregateRootInstanceCreator;
+
     public DefaultAggregateRootRepository(final EventRepository eventRepository,
                                           final AggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository,
                                           final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer,
                                           final SecretStore secretStore,
-                                          final Encryption encryption) {
+                                          final Encryption encryption,
+                                          final AggregateRootInstanceCreator aggregateRootInstanceCreator) {
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.aggregateRootMaterializedStateRepository = Objects.requireNonNull(aggregateRootMaterializedStateRepository);
         this.aggregateRootMaterializedStateSerializer = Objects.requireNonNull(aggregateRootMaterializedStateSerializer);
         this.secretStore = Objects.requireNonNull(secretStore);
         this.encryption = Objects.requireNonNull(encryption);
+        this.aggregateRootInstanceCreator = Objects.requireNonNull(aggregateRootInstanceCreator);
     }
 
     @Override
@@ -60,7 +64,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     <T extends AggregateRoot> T createAndLoad(final String aggregateRootId, final Class<T> clazz, final Secret secret) {
         Objects.requireNonNull(aggregateRootId);
         Objects.requireNonNull(clazz);
-        final T instance = createNewInstance(clazz);
+        final T instance = aggregateRootInstanceCreator.createNewInstance(clazz);
         final String aggregateRootType = instance.getClass().getSimpleName();
         final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, secret);
         instance.loadFromHistory(aggregateRootEvents);
@@ -72,7 +76,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     public <T extends AggregateRoot> T load(final String aggregateRootId, final Class<T> clazz) throws UnknownAggregateRootException {
         Objects.requireNonNull(aggregateRootId);
         Objects.requireNonNull(clazz);
-        final T instance = createNewInstance(clazz);
+        final T instance = aggregateRootInstanceCreator.createNewInstance(clazz);
         final String aggregateRootType = instance.getClass().getSimpleName();
         final Secret secret = secretStore.read(aggregateRootType, aggregateRootId);
         final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, secret);
@@ -87,7 +91,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     public <T extends AggregateRoot> T load(final String aggregateRootId, final Class<T> clazz, final Long version) throws UnknownAggregateRootException {
         Objects.requireNonNull(aggregateRootId);
         Objects.requireNonNull(clazz);
-        final T instance = createNewInstance(clazz);
+        final T instance = aggregateRootInstanceCreator.createNewInstance(clazz);
         final String aggregateRootType = instance.getClass().getSimpleName();
         final Secret secret = secretStore.read(aggregateRootType, aggregateRootId);
         final List<AggregateRootEvent> aggregateRootEvents = eventRepository.loadOrderByVersionASC(aggregateRootId, aggregateRootType, secret, version);
@@ -96,14 +100,6 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         }
         instance.loadFromHistory(aggregateRootEvents);
         return instance;
-    }
-
-    <T extends AggregateRoot> T createNewInstance(final Class<T> clazz) {
-        try {
-            return clazz.newInstance();
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Secret getSecret(final AggregateRoot aggregateRoot,

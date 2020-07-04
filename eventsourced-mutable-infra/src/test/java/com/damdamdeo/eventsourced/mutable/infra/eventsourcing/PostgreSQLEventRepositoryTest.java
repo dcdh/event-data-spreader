@@ -160,7 +160,7 @@ public class PostgreSQLEventRepositoryTest {
                                                        final int expectedRecordCount) {
         final List<ConsumerRecord<String, String>> allRecords = new ArrayList<>();
         Awaitility.await()
-                .atMost(Durations.FIVE_SECONDS)
+                .atMost(Durations.TEN_SECONDS)
                 .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() -> {
             consumer.poll(java.time.Duration.ofMillis(50))
                     .iterator()

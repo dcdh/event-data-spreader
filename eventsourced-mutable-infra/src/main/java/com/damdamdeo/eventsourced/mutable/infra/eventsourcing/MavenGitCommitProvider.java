@@ -1,4 +1,6 @@
-package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
+package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
+
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.Json;
@@ -7,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-// TODO infra
 @ApplicationScoped
 public class MavenGitCommitProvider implements GitCommitProvider {
 
