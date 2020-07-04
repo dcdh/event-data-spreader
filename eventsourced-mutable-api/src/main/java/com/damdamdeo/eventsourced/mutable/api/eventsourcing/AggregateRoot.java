@@ -28,7 +28,10 @@ public abstract class AggregateRoot implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public final void apply(final AggregateRootEventPayload aggregateRootEventPayload, final AggregateRootEventMetadata aggregateRootEventMetaData) {
+    public final void apply(final String eventType,
+                            final AggregateRootEventPayload aggregateRootEventPayload,
+                            final AggregateRootEventMetadata aggregateRootEventMetaData) {
+        Validate.notNull(eventType, "eventType can't be null");
         Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(aggregateRootEventPayload.aggregateRootId().aggregateRootId()),
                 "Aggregate root id and event aggregate root id mismatch");
         Validate.validState(this.aggregateRootType == null ? true : this.aggregateRootType.equals(aggregateRootEventPayload.aggregateRootId().aggregateRootType()),
@@ -39,7 +42,7 @@ public abstract class AggregateRoot implements Serializable {
         this.aggregateRootType = aggregateRootEventPayload.aggregateRootId().aggregateRootType();
         final AggregateRootEvent aggregateRootEventToApply = new AggregateRootEvent(
                 new DefaultAggregateRootEventId(aggregateRootEventPayload.aggregateRootId(), this.version),
-                aggregateRootEventPayload.eventPayloadName(),
+                eventType,
                 LocalDateTime.now(),
                 aggregateRootEventPayload,
                 aggregateRootEventMetaData);

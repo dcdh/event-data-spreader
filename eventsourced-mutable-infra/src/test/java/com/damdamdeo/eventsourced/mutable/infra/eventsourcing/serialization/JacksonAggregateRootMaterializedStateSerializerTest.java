@@ -38,7 +38,7 @@ public class JacksonAggregateRootMaterializedStateSerializerTest {
         private String dummy;
 
         public void applyCreated() {
-            this.apply(new TestAggregateRootEventCreatedPayload(), Mockito.mock(AggregateRootEventMetadata.class));
+            this.apply("eventCreated", new TestAggregateRootEventCreatedPayload(), Mockito.mock(AggregateRootEventMetadata.class));
         }
 
         @Override

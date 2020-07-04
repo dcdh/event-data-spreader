@@ -137,6 +137,7 @@ public class DefaultAggregateRootRepositoryTest {
 
         final AggregateRoot mockAggregateRoot = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
         final AggregateRootEvent mockAggregateRootEvent = mock(AggregateRootEvent.class, RETURNS_DEEP_STUBS);
+        doReturn("eventType").when(mockAggregateRootEvent).eventType();
         final List<AggregateRootEvent> aggregateRootEvents = singletonList(mockAggregateRootEvent);
         doReturn(aggregateRootEvents).when(mockAggregateRoot).unsavedEvents();
         when(mockAggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
@@ -148,8 +149,9 @@ public class DefaultAggregateRootRepositoryTest {
         defaultAggregateRootRepository.save(mockAggregateRoot);
 
         // Then
-        verify(loadedAggregateRootForMaterializedState, times(1)).apply(mockAggregateRootEvent.eventPayload(), mockAggregateRootEvent.eventMetaData());
+        verify(loadedAggregateRootForMaterializedState, times(1)).apply("eventType", mockAggregateRootEvent.eventPayload(), mockAggregateRootEvent.eventMetaData());
         verify(loadedAggregateRootForMaterializedState, times(1)).deleteUnsavedEvents();
+        verify(mockAggregateRootEvent, times(1)).eventType();
         verify(eventRepository, times(1)).save(mockAggregateRootEvent, loadedAggregateRootForMaterializedState, mockSecret);
 
         verify(secretStore, atLeastOnce()).read("aggregateRootType", "aggregateRootId");

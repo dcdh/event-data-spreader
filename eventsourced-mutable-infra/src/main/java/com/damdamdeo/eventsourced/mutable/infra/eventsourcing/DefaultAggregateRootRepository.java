@@ -50,7 +50,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                 .stream()
                 .forEach(event -> {
                     // for each event I apply it again from the lastSavedAggregateRootState to get the expected materialized state
-                    lastSavedAggregateRootState.apply(event.eventPayload(), event.eventMetaData());
+                    lastSavedAggregateRootState.apply(event.eventType(), event.eventPayload(), event.eventMetaData());
                     lastSavedAggregateRootState.deleteUnsavedEvents();// ensure that the new event created from a known event will be removed before serialization
                     eventRepository.save(event, lastSavedAggregateRootState, secret);
                 });
