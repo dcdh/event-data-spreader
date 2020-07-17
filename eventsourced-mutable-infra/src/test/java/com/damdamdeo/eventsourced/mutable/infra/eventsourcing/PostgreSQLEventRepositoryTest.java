@@ -11,15 +11,8 @@ import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import javax.inject.Inject;
 import java.sql.Connection;
@@ -28,7 +21,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.*;
-import com.jayway.jsonpath.JsonPath;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,87 +83,7 @@ public class PostgreSQLEventRepositoryTest {
         });
     }
 
-    // https://github.com/debezium/debezium-examples/blob/master/testcontainers/src/test/java/io/debezium/examples/testcontainers/DebeziumContainerTest.java
     @Test
-    @Order(1)
-    public void should_debezium_published_saved_event_in_kafka() {
-        // Given
-        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
-        final Secret secret = mock(Secret.class);
-        final LocalDateTime creationDate = LocalDateTime.now();
-
-        final AggregateRootEventId aggregateRootEventId = mock(AggregateRootEventId.class, RETURNS_DEEP_STUBS);
-        when(aggregateRootEventId.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
-        when(aggregateRootEventId.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(aggregateRootEventId.version()).thenReturn(0l);
-        final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class);
-        final AggregateRootEventMetadata aggregateRootEventMetadata = mock(AggregateRootEventMetadata.class);
-
-        final AggregateRootEvent aggregateRootEvent = new AggregateRootEvent(
-                aggregateRootEventId,
-                "eventType",
-                creationDate,
-                aggregateRootEventPayload,
-                aggregateRootEventMetadata);
-        final AggregateRoot aggregateRoot = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
-        when(aggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
-        when(aggregateRoot.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(aggregateRoot.version()).thenReturn(0l);
-
-        // When
-        eventRepository.save(aggregateRootEvent, aggregateRoot, secret);
-
-        // Then
-        final KafkaConsumer<String, String> consumer = getConsumer(bootstrapServers);
-
-        consumer.subscribe(asList("event"));
-        final List<ConsumerRecord<String, String>> changeEvents = drain(consumer, 1);
-        final ConsumerRecord<String, String> changeEvent = changeEvents.get(0);
-
-        assertEquals("aggregateRootId", JsonPath.<String> read(changeEvent.key(), "$.aggregaterootid"));
-        assertEquals("aggregateRootType", JsonPath.<String> read(changeEvent.key(), "$.aggregateroottype"));
-        assertEquals(0, JsonPath.<Integer> read(changeEvent.key(), "$.version"));
-
-        assertNull(JsonPath.<String> read(changeEvent.value(), "$.before"));
-        assertEquals("c", JsonPath.<String> read(changeEvent.value(), "$.op"), changeEvent.toString());
-        assertEquals("aggregateRootId", JsonPath.<String> read(changeEvent.value(), "$.after.aggregaterootid"));
-        assertEquals("aggregateRootType", JsonPath.<String> read(changeEvent.value(), "$.after.aggregateroottype"));
-        assertEquals(0, JsonPath.<Integer> read(changeEvent.value(), "$.after.version"));
-        assertNotNull(JsonPath.<Long> read(changeEvent.value(), "$.after.creationdate"));
-
-        assertEquals("eventType", JsonPath.<String> read(changeEvent.value(), "$.after.eventtype"));
-        assertEquals("{\"meta\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.eventmetadata"));
-        assertEquals("{\"payload\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.eventpayload"));
-        assertEquals("{\"materializedState\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.materializedstate"));
-        assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", JsonPath.<String> read(changeEvent.value(), "$.after.gitcommitid"));
-    }
-
-    private KafkaConsumer<String, String> getConsumer(final String bootstrapServers) {
-        return new KafkaConsumer<>(
-                ImmutableMap.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
-                        ConsumerConfig.GROUP_ID_CONFIG, "tc-" + UUID.randomUUID(),
-                        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"),
-                new StringDeserializer(),
-                new StringDeserializer());
-    }
-
-    private List<ConsumerRecord<String, String>> drain(final KafkaConsumer<String, String> consumer,
-                                                       final int expectedRecordCount) {
-        final List<ConsumerRecord<String, String>> allRecords = new ArrayList<>();
-        Awaitility.await()
-                .atMost(Durations.TEN_SECONDS)
-                .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() -> {
-            consumer.poll(java.time.Duration.ofMillis(50))
-                    .iterator()
-                    .forEachRemaining(allRecords::add);
-            return allRecords.size() == expectedRecordCount;
-        });
-        return allRecords;
-    }
-
-    @Test
-    @Order(2)
     public void should_save_event() throws SQLException {
         // Given
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
@@ -229,7 +141,6 @@ public class PostgreSQLEventRepositoryTest {
     }
 
     @Test
-    @Order(3)
     public void should_use_same_key_for_aggregate_with_multiple_events() throws SQLException {
         // Given
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
@@ -287,7 +198,6 @@ public class PostgreSQLEventRepositoryTest {
     }
 
     @Test
-    @Order(4)
     public void should_load_events_ordered_by_version_asc() {
         // Given
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
@@ -332,7 +242,6 @@ public class PostgreSQLEventRepositoryTest {
     }
 
     @Test
-    @Order(5)
     public void should_load_events_ordered_by_version_asc_with_expected_versions() {
         // Given
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
