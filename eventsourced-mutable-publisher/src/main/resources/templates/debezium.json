@@ -1,5 +1,5 @@
 {
-  "name": "event-sourced-connector",
+  "name": "{name}",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": "1",

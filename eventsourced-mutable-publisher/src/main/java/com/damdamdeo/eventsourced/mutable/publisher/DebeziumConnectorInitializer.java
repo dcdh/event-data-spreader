@@ -1,14 +1,17 @@
-package com.damdamdeo.eventsourced.mutable.infra;
+package com.damdamdeo.eventsourced.mutable.publisher;
 
 import io.quarkus.runtime.Startup;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+
 import io.quarkus.qute.Template;
 import io.quarkus.qute.api.ResourcePath;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -48,6 +51,7 @@ public class DebeziumConnectorInitializer {
     @PostConstruct
     public void onInit() {
         final String connectorConfiguration = this.debeziumTemplate.data("databaseHostname", mutableHostname)
+                .data("name", EVENTSOURCED_CONNECTOR)
                 .data("databaseServerName", mutableHostname)
                 .data("databaseDbname", mutableDbname)
                 .data("databasePort", mutablePort)
@@ -59,6 +63,11 @@ public class DebeziumConnectorInitializer {
         if (!connectors.contains(EVENTSOURCED_CONNECTOR)) {
             kafkaConnectorApi.registerConnector(connectorConfiguration);
         }
+        final RetryPolicy<KafkaConnectorStatus> retryPolicy = new RetryPolicy<KafkaConnectorStatus>()
+                .handleResultIf(kafkaConnectorStatus -> !kafkaConnectorStatus.isRunning())
+                .withDelay(Duration.ofSeconds(1))
+                .withMaxRetries(100);
+        Failsafe.with(retryPolicy).run(() -> kafkaConnectorApi.connectorStatus(EVENTSOURCED_CONNECTOR));
     }
 
 }

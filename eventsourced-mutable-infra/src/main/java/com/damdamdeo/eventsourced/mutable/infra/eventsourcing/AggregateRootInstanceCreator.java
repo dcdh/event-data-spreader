@@ -7,7 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class AggregateRootInstanceCreator {
 
-    <T extends AggregateRoot> T createNewInstance(final Class<T> clazz) {
+    public <T extends AggregateRoot> T createNewInstance(final Class<T> clazz) {
         try {
             return clazz.newInstance();
         } catch (final Exception e) {

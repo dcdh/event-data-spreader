@@ -1,11 +1,11 @@
-package com.damdamdeo.eventsourced.mutable.infra.resources;
+package com.damdamdeo.eventsourced.mutable.publisher.resources;
 
+import io.debezium.testing.testcontainers.DebeziumContainer;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
-import io.debezium.testing.testcontainers.DebeziumContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import java.util.Collections;
@@ -48,7 +48,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         kafkaContainer = new KafkaContainer("5.2.1")
                 .withNetwork(network);
         kafkaContainer.start();
-        kafkaContainer.followOutput(logConsumer);
+//        kafkaContainer.followOutput(logConsumer);
         debeziumContainer = new DebeziumContainer("debezium/connect:1.2.0.Final")
                 .withNetwork(network)
                 .withKafka(kafkaContainer)

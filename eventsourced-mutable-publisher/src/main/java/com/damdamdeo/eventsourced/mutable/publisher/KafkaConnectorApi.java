@@ -1,6 +1,7 @@
-package com.damdamdeo.eventsourced.mutable.infra;
+package com.damdamdeo.eventsourced.mutable.publisher;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.*;
@@ -22,5 +23,10 @@ public interface KafkaConnectorApi {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     Void registerConnector(String connectorConfiguration);
+
+    @GET
+    @Path("/connectors/{connectorName}/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    KafkaConnectorStatus connectorStatus(@PathParam("connectorName") String connectorName);
 
 }

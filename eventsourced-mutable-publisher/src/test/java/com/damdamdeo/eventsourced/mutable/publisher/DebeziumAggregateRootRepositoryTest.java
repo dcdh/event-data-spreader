@@ -1,4 +1,6 @@
-package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
+package com.damdamdeo.eventsourced.mutable.publisher;
+
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
@@ -6,6 +8,8 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.DefaultAggregateRootRepository;
 import com.jayway.jsonpath.JsonPath;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -59,26 +63,31 @@ public class DebeziumAggregateRootRepositoryTest {
     SecretStore secretStore;
 
     @InjectMock
+    Encryption encryption;
+
+    @InjectMock
     GitCommitProvider gitCommitProvider;
 
     @BeforeEach
     public void setupInjectedServicesMocks() {
+        doReturn("secret").when(encryption).generateNewSecret();
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadDeSerializer).serialize(any(), any());
         doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize(any(), any());
         doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStateSerializer).serialize(any(), any());
     }
 
+    // https://github.com/debezium/debezium-examples/blob/master/testcontainers/src/test/java/io/debezium/examples/testcontainers/DebeziumContainerTest.java
     @Test
     public void should_store_and_publish_event_in_kafka() {
         // Given
         final Secret mockSecret = mock(Secret.class);
-        doReturn(mockSecret).when(secretStore).read(any(), any());
+        doReturn(mockSecret).when(secretStore).store(any(), any(), any());
 
         final AggregateRoot loadedAggregateRootForMaterializedState = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
         when(loadedAggregateRootForMaterializedState.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(loadedAggregateRootForMaterializedState.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(loadedAggregateRootForMaterializedState.version()).thenReturn(1l);
+        when(loadedAggregateRootForMaterializedState.version()).thenReturn(0l);
         doReturn(loadedAggregateRootForMaterializedState).when(aggregateRootInstanceCreator).createNewInstance(any());
 
         final AggregateRoot mockAggregateRoot = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
@@ -86,10 +95,10 @@ public class DebeziumAggregateRootRepositoryTest {
         final List<AggregateRootEvent> aggregateRootEvents = singletonList(mockAggregateRootEvent);
         when(mockAggregateRootEvent.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(mockAggregateRootEvent.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(mockAggregateRootEvent.version()).thenReturn(1l);
+        when(mockAggregateRootEvent.version()).thenReturn(0l);
         when(mockAggregateRootEvent.eventId().aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(mockAggregateRootEvent.eventId().aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(mockAggregateRootEvent.eventId().version()).thenReturn(1l);
+        when(mockAggregateRootEvent.eventId().version()).thenReturn(0l);
         doReturn("eventType").when(mockAggregateRootEvent).eventType();
         doReturn(LocalDateTime.now()).when(mockAggregateRootEvent).creationDate();
         doReturn(mock(AggregateRootEventPayload.class)).when(mockAggregateRootEvent).eventPayload();
@@ -98,7 +107,7 @@ public class DebeziumAggregateRootRepositoryTest {
         doReturn(aggregateRootEvents).when(mockAggregateRoot).unsavedEvents();
         when(mockAggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(mockAggregateRoot.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
-        when(mockAggregateRoot.version()).thenReturn(1l);
+        when(mockAggregateRoot.version()).thenReturn(0l);
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);

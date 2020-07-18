@@ -11,7 +11,6 @@ import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 
 import javax.inject.Inject;
@@ -49,9 +48,6 @@ public class PostgreSQLEventRepositoryTest {
 
     @InjectMock
     GitCommitProvider gitCommitProvider;
-
-    @ConfigProperty(name = "mp.messaging.incoming.event-in.bootstrap.servers")
-    String bootstrapServers;
 
     @BeforeEach
     @AfterEach
