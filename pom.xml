@@ -27,6 +27,7 @@
         <module>eventsourced-mutable-api</module>
         <module>eventsourced-mutable-infra</module>
         <module>eventsourced-mutable-publisher</module>
+        <module>event-data-spreader-bom</module>
     </modules>
 
     <dependencyManagement>
