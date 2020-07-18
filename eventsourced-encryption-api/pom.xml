@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.damdamdeo</groupId>
             <artifactId>eventsourced-model-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
