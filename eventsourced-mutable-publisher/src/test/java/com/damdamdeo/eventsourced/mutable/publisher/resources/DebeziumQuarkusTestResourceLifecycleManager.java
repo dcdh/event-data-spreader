@@ -41,9 +41,6 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         System.setProperty("quarkus.datasource.mutable.jdbc.url", postgresMutableContainer.getJdbcUrl());
         System.setProperty("quarkus.datasource.mutable.username", postgresMutableContainer.getUsername());
         System.setProperty("quarkus.datasource.mutable.password", postgresMutableContainer.getPassword());
-        System.setProperty("quarkus.datasource.consumed-events.jdbc.url", postgresMutableContainer.getJdbcUrl());
-        System.setProperty("quarkus.datasource.consumed-events.username", postgresMutableContainer.getUsername());
-        System.setProperty("quarkus.datasource.consumed-events.password", postgresMutableContainer.getPassword());
         // confluentinc/cp-kafka:5.2.1
         kafkaContainer = new KafkaContainer("5.2.1")
                 .withNetwork(network);
@@ -74,9 +71,6 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         System.clearProperty("quarkus.datasource.mutable.jdbc.url");
         System.clearProperty("quarkus.datasource.mutable.username");
         System.clearProperty("quarkus.datasource.mutable.password");
-        System.clearProperty("quarkus.datasource.consumed-events.jdbc.url");
-        System.clearProperty("quarkus.datasource.consumed-events.username");
-        System.clearProperty("quarkus.datasource.consumed-events.password");
         System.clearProperty("kafka-connector-api/mp-rest/url");
         System.clearProperty("connector.mutable.database.hostname");
         System.clearProperty("connector.mutable.database.username");
