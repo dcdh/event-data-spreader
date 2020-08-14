@@ -1,12 +1,11 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
 import org.apache.commons.lang3.Validate;
 
 import java.sql.Connection;
@@ -40,16 +39,18 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     }
 
     private PostgreSQLDecryptableEvent(final EncryptedEventBuilder builder,
-                                       final Secret secret,
-                                       final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                                       final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer,
                                        final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                       final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
+                                       final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
+                                       final Secret secret) {
         this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(builder.aggregateRootEventId);
         this.eventType = builder.eventType;
         this.creationDate = builder.creationDate;
-        this.eventPayload = aggregateRootEventPayloadDeSerializer.serialize(secret, builder.aggregateRootEventPayload);
-        this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize(secret, builder.aggregateRootEventMetadata);
-        this.materializedState = aggregateRootMaterializedStateSerializer.serialize(secret, builder.aggregateRoot);
+        this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize();
+        this.eventPayload = aggregateRootEventPayloadsDeSerializer.serialize(builder.aggregateRootEventId.aggregateRootId().aggregateRootType(),
+                builder.eventType,
+                builder.aggregateRootEventPayload);
+        this.materializedState = aggregateRootMaterializedStatesSerializer.serialize(builder.aggregateRoot, secret, true);
     }
 
     public PreparedStatement insertStatement(final Connection con, final GitCommitProvider gitCommitProvider) throws SQLException {
@@ -76,7 +77,6 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         private String eventType;
         private LocalDateTime creationDate;
         private AggregateRootEventPayload aggregateRootEventPayload;
-        private AggregateRootEventMetadata aggregateRootEventMetadata;
         private AggregateRoot aggregateRoot;
 
         public EncryptedEventBuilder withEventId(final AggregateRootEventId aggregateRootEventId) {
@@ -99,33 +99,26 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
             return this;
         }
 
-        public EncryptedEventBuilder withEventMetaData(final AggregateRootEventMetadata aggregateRootEventMetadata) {
-            this.aggregateRootEventMetadata = aggregateRootEventMetadata;
-            return this;
-        }
-
         public EncryptedEventBuilder withAggregateRoot(final AggregateRoot aggregateRoot) {
             this.aggregateRoot = aggregateRoot;
             return this;
         }
 
-        public PostgreSQLDecryptableEvent build(final Secret secret,
-                                                final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+        public PostgreSQLDecryptableEvent build(final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer,
                                                 final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                                final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer) {
+                                                final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
+                                                final Secret secret) {
             Validate.notNull(aggregateRootEventId);
             Validate.notNull(eventType);
             Validate.notNull(creationDate);
             Validate.notNull(aggregateRootEventPayload);
-            Validate.notNull(aggregateRootEventMetadata);
             Validate.notNull(aggregateRoot);
             Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootId().equals(aggregateRoot.aggregateRootId().aggregateRootId()));
             Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootType().equals(aggregateRoot.aggregateRootId().aggregateRootType()));
-            Validate.notNull(secret);
-            Validate.notNull(aggregateRootEventPayloadDeSerializer);
-            Validate.notNull(aggregateRootEventMetadataDeSerializer);
-            Validate.notNull(aggregateRootMaterializedStateSerializer);
-            return new PostgreSQLDecryptableEvent(this, secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStateSerializer);
+            Validate.notNull(aggregateRootEventPayloadsDeSerializer);
+            Validate.notNull(aggregateRootMaterializedStatesSerializer);
+            return new PostgreSQLDecryptableEvent(this, aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer,
+                    aggregateRootMaterializedStatesSerializer, secret);
         }
 
     }
@@ -146,24 +139,14 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     }
 
     @Override
-    public AggregateRootEventPayload eventPayload(final Secret secret,
-                                                  final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer) {
-        return aggregateRootEventPayloadDeSerializer.deserialize(secret, eventPayload);
+    public AggregateRootEventPayload eventPayload(final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer)
+            throws UnsupportedAggregateRootEventPayload {
+        return aggregateRootEventPayloadsDeSerializer.deserialize(postgreSQLEventId.aggregateRootType(), eventType, eventPayload);
     }
 
-    @Override
-    public AggregateRootEventMetadata eventMetaData(final Secret secret,
-                                                    final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
-        return aggregateRootEventMetadataDeSerializer.deserialize(secret, eventMetaData);
-    }
-
-    public AggregateRootEvent toEvent(final Secret secret,
-                                      final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                                      final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
-        Validate.notNull(secret);
-        Validate.notNull(aggregateRootEventPayloadDeSerializer);
-        Validate.notNull(aggregateRootEventMetadataDeSerializer);
-        return new AggregateRootEvent(this, secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer);
+    public AggregateRootEvent toEvent(final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer) {
+        Validate.notNull(aggregateRootEventPayloadsDeSerializer);
+        return new AggregateRootEvent(this, aggregateRootEventPayloadsDeSerializer);
     }
 
     @Override

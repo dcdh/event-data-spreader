@@ -1,9 +1,0 @@
-package com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.spi;
-
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootMaterializedStateConsumer;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.serialization.JacksonAggregateRootMaterializedStateConsumer;
-
-public interface JacksonAggregateRootMaterializedStateConsumerMixInSubtypeDiscovery
-        extends JacksonMixInSubtypeDiscovery<AggregateRootMaterializedStateConsumer, JacksonAggregateRootMaterializedStateConsumer> {
-
-}

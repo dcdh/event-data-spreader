@@ -1,62 +1,48 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.DefaultAggregateRootEventId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
 import org.apache.commons.lang3.Validate;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AggregateRoot implements Serializable {
+public abstract class AggregateRoot {
     private final transient List<AggregateRootEvent> unsavedAggregateRootEvents = new LinkedList<>();
     private String aggregateRootId;
     private Long version = -1l;
     private String aggregateRootType;
 
-    public AggregateRoot() {}
-
-    public AggregateRoot(final String aggregateRootId,
-                         final String aggregateRootType,
-                         final Long version) {
+    public AggregateRoot(final String aggregateRootId) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
-        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
-        this.version = Objects.requireNonNull(version);
+        this.aggregateRootType = this.getClass().getSimpleName();
     }
 
     @SuppressWarnings("unchecked")
     public final void apply(final String eventType,
-                            final AggregateRootEventPayload aggregateRootEventPayload,
-                            final AggregateRootEventMetadata aggregateRootEventMetaData) {
+                            final AggregateRootEventPayload aggregateRootEventPayload) {
         Validate.notNull(eventType, "eventType can't be null");
-        Validate.validState(this.aggregateRootId == null ? true : this.aggregateRootId.equals(aggregateRootEventPayload.aggregateRootId().aggregateRootId()),
-                "Aggregate root id and event aggregate root id mismatch");
-        Validate.validState(this.aggregateRootType == null ? true : this.aggregateRootType.equals(aggregateRootEventPayload.aggregateRootId().aggregateRootType()),
-                "Aggregate root type and event aggregate root type mismatch");
+        Validate.notNull(aggregateRootEventPayload, "aggregateRootEventPayload can't be null");
         aggregateRootEventPayload.apply(this);
         this.version++;
-        this.aggregateRootId = aggregateRootEventPayload.aggregateRootId().aggregateRootId();
-        this.aggregateRootType = aggregateRootEventPayload.aggregateRootId().aggregateRootType();
         final AggregateRootEvent aggregateRootEventToApply = new AggregateRootEvent(
-                new DefaultAggregateRootEventId(aggregateRootEventPayload.aggregateRootId(), this.version),
+                new DefaultAggregateRootEventId(aggregateRootId(), this.version),
                 eventType,
                 LocalDateTime.now(),
-                aggregateRootEventPayload,
-                aggregateRootEventMetaData);
+                aggregateRootEventPayload);
         this.unsavedAggregateRootEvents.add(aggregateRootEventToApply);
     }
 
     public final void loadFromHistory(final List<AggregateRootEvent> aggregateRootEvents) {
-        Validate.validState(this.aggregateRootId == null, "Aggregate Root already loaded from history");
+        Validate.validState(Long.valueOf(-1l).equals(this.version), "Aggregate Root already loaded from history");
         Validate.validState(aggregateRootEvents.stream()
                 .map(AggregateRootEvent::aggregateRootId)
                 .distinct().count() <= 1, "Aggregate Root ids events mismatch");
+        Validate.validState(aggregateRootEvents.stream().allMatch(aggregateRootEvent -> aggregateRootId.equals(aggregateRootEvent.aggregateRootId().aggregateRootId())),
+                "Aggregate root id and event aggregate root id mismatch");
+        Validate.validState(aggregateRootEvents.stream().allMatch(aggregateRootEvent -> aggregateRootType.equals(aggregateRootEvent.aggregateRootId().aggregateRootType())),
+                "Aggregate root type and event aggregate root type mismatch");
         aggregateRootEvents.forEach(event -> {
-            this.aggregateRootId = event.aggregateRootId().aggregateRootId();
-            this.aggregateRootType = event.aggregateRootId().aggregateRootType();
             event.eventPayload().apply(this);
             this.version = event.version();
         });
@@ -72,22 +58,31 @@ public abstract class AggregateRoot implements Serializable {
         unsavedAggregateRootEvents.clear();
     }
 
-    public Long version() {
+    public final Long version() {
         return version;
     }
 
-    public AggregateRootId aggregateRootId() {
-        return new AggregateRootId() {
-            @Override
-            public String aggregateRootId() {
-                return aggregateRootId;
-            }
-
-            @Override
-            public String aggregateRootType() {
-                return aggregateRootType;
-            }
-        };
+    public final AggregateRootId aggregateRootId() {
+        return new ApiAggregateRootId(aggregateRootId, aggregateRootType);
     }
 
+    public final String aggregateRootType() {
+        return aggregateRootType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AggregateRoot)) return false;
+        AggregateRoot that = (AggregateRoot) o;
+        return Objects.equals(unsavedAggregateRootEvents, that.unsavedAggregateRootEvents) &&
+                Objects.equals(aggregateRootId, that.aggregateRootId) &&
+                Objects.equals(version, that.version) &&
+                Objects.equals(aggregateRootType, that.aggregateRootType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(unsavedAggregateRootEvents, aggregateRootId, version, aggregateRootType);
+    }
 }

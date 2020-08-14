@@ -4,7 +4,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 
 import java.time.LocalDateTime;
 
-public interface AggregateRootEventConsumable {
+public interface AggregateRootEventConsumable<INFRA> {
 
     AggregateRootEventId eventId();
 
@@ -12,10 +12,10 @@ public interface AggregateRootEventConsumable {
 
     LocalDateTime creationDate();
 
-    AggregateRootEventPayloadConsumer eventPayload();
+    INFRA eventPayload();
 
-    AggregateRootEventMetadataConsumer eventMetaData();
+    INFRA eventMetaData();
 
-    AggregateRootMaterializedStateConsumer materializedState();
+    INFRA materializedState();
 
 }

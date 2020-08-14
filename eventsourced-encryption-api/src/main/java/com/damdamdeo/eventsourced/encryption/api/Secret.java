@@ -1,14 +1,15 @@
 package com.damdamdeo.eventsourced.encryption.api;
 
-public interface Secret {
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 
-    String SECRET_KEY = "Secret";
-    String ENCRYPTION_STRATEGY = "encryptionStrategy";
+public interface Secret {
 
     String secret();
 
-    String encrypt(String strToEncrypt, Encryption encryption);
+    String encrypt(AggregateRootId aggregateRootId, String strToEncrypt, Encryption encryption)
+            throws UnableToEncryptMissingSecretException;
 
-    String decrypt(String strToDecrypt, Encryption encryption);
+    String decrypt(AggregateRootId aggregateRootId, String strToDecrypt, Encryption encryption)
+            throws UnableToDecryptMissingSecretException;
 
 }

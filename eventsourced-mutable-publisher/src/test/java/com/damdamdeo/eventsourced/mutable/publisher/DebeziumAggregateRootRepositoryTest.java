@@ -1,18 +1,19 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.DefaultAggregateRootRepository;
 import com.jayway.jsonpath.JsonPath;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.restassured.RestAssured;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -51,30 +52,52 @@ public class DebeziumAggregateRootRepositoryTest {
     String bootstrapServers;
 
     @InjectMock
-    AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
+    AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer;
 
     @InjectMock
     AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
 
     @InjectMock
-    AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
+    AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer;
 
     @InjectMock
     SecretStore secretStore;
 
     @InjectMock
+    @AESEncryptionQualifier
     Encryption encryption;
 
     @InjectMock
     GitCommitProvider gitCommitProvider;
 
+    @ConfigProperty(name = "kafka-connector-api/mp-rest/url")
+    String kafkaConnectorRemoteApi;
+
     @BeforeEach
     public void setupInjectedServicesMocks() {
         doReturn("secret").when(encryption).generateNewSecret();
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
-        doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadDeSerializer).serialize(any(), any());
-        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize(any(), any());
-        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStateSerializer).serialize(any(), any());
+        doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
+        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
+        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+    }
+
+    @BeforeEach
+    public void waitDebeziumConnectorIsReady() {
+        // Wait to avoid to have a read operation instead of create one because the connector should be ready after the writing
+        Awaitility.await()
+                .atMost(Durations.FIVE_SECONDS)
+                .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() ->
+                RestAssured.given()
+                        .accept("application/json")
+                        .contentType("application/json")
+                        .when()
+                        .get(String.format("%s/connectors/%s/status", kafkaConnectorRemoteApi, "event-sourced-connector"))
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .jsonPath().getString("connector.state").equals("RUNNING")
+        );
     }
 
     // https://github.com/debezium/debezium-examples/blob/master/testcontainers/src/test/java/io/debezium/examples/testcontainers/DebeziumContainerTest.java
@@ -82,13 +105,13 @@ public class DebeziumAggregateRootRepositoryTest {
     public void should_store_and_publish_event_in_kafka() {
         // Given
         final Secret mockSecret = mock(Secret.class);
-        doReturn(mockSecret).when(secretStore).store(any(), any(), any());
+        doReturn(mockSecret).when(secretStore).store(any(), any());
 
         final AggregateRoot loadedAggregateRootForMaterializedState = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
         when(loadedAggregateRootForMaterializedState.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(loadedAggregateRootForMaterializedState.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
         when(loadedAggregateRootForMaterializedState.version()).thenReturn(0l);
-        doReturn(loadedAggregateRootForMaterializedState).when(aggregateRootInstanceCreator).createNewInstance(any());
+        doReturn(loadedAggregateRootForMaterializedState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
 
         final AggregateRoot mockAggregateRoot = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
         final AggregateRootEvent mockAggregateRootEvent = mock(AggregateRootEvent.class, RETURNS_DEEP_STUBS);
@@ -102,7 +125,6 @@ public class DebeziumAggregateRootRepositoryTest {
         doReturn("eventType").when(mockAggregateRootEvent).eventType();
         doReturn(LocalDateTime.now()).when(mockAggregateRootEvent).creationDate();
         doReturn(mock(AggregateRootEventPayload.class)).when(mockAggregateRootEvent).eventPayload();
-        doReturn(mock(AggregateRootEventMetadata.class)).when(mockAggregateRootEvent).eventMetaData();
 
         doReturn(aggregateRootEvents).when(mockAggregateRoot).unsavedEvents();
         when(mockAggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");

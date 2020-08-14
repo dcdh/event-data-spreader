@@ -3,6 +3,7 @@ package com.damdamdeo.eventsourced.encryption.infra;
 import com.damdamdeo.eventsourced.encryption.api.MissingSecret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.cache.CacheInvalidate;
@@ -52,26 +53,30 @@ public class PostgreSQLSecretStore implements SecretStore {
     @Override
     @CacheInvalidate(cacheName = "secret-cache")
     @CacheResult(cacheName = "secret-cache")
-    public Secret store(@CacheKey final String aggregateRootType,
-                        @CacheKey final String aggregateRootId,
+    public Secret store(@CacheKey final AggregateRootId aggregateRootId,
                         final String secret) {
         final String storeSecretStatement = String.format("INSERT INTO SECRET_STORE (aggregateroottype, aggregaterootid, secret) VALUES ('%s', '%s', '%s')",
-                aggregateRootType, aggregateRootId, secret);
+                aggregateRootId.aggregateRootType(),
+                aggregateRootId.aggregateRootId(),
+                secret);
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement()) {
             stmt.executeUpdate(storeSecretStatement);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return new JdbcPresentAggregateRootSecret(aggregateRootType, aggregateRootId, secret)
+        return new JdbcPresentAggregateRootSecret(aggregateRootId.aggregateRootType(),
+                aggregateRootId.aggregateRootId(),
+                secret)
                 .aggregateRootSecret();
     }
 
     @Override
     @CacheResult(cacheName = "secret-cache")
-    public Secret read(@CacheKey final String aggregateRootType, @CacheKey final String aggregateRootId) {
+    public Secret read(@CacheKey final AggregateRootId aggregateRootId) {
         final String getSecretStatement = String.format("SELECT aggregateroottype, aggregaterootid, secret FROM SECRET_STORE WHERE aggregateroottype = '%s' AND aggregaterootid = '%s'",
-                aggregateRootType, aggregateRootId);
+                aggregateRootId.aggregateRootType(),
+                aggregateRootId.aggregateRootId());
         try (final Connection con = secretStoreDataSource.getConnection();
              final Statement stmt = con.createStatement();
              final ResultSet resultSet = stmt.executeQuery(getSecretStatement)) {

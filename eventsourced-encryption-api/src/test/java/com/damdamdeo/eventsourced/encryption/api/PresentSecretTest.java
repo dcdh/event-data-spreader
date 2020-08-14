@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.encryption.api;
 
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ public class PresentSecretTest {
         doReturn("encrypted").when(mockEncryption).encrypt("String to encrypt", "mon secret");
 
         // When
-        final String encrypted = presentSecret.encrypt("String to encrypt", mockEncryption);
+        final String encrypted = presentSecret.encrypt(mock(AggregateRootId.class), "String to encrypt", mockEncryption);
 
         // Then
         assertEquals("encrypted", encrypted);
@@ -49,7 +50,7 @@ public class PresentSecretTest {
         doReturn("decrypted").when(mockEncryption).decrypt("String to decrypt", "mon secret");
 
         // When
-        final String decrypted = presentSecret.decrypt("String to decrypt", mockEncryption);
+        final String decrypted = presentSecret.decrypt(mock(AggregateRootId.class), "String to decrypt", mockEncryption);
 
         // Then
         assertEquals("decrypted", decrypted);

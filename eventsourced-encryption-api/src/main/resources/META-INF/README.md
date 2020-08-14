@@ -1,0 +1,1 @@
+Need to add this beans.xml to make Quarkus take into account defined qualifiers (AESEncryptionQualifier and NullEncryptionQualifier)

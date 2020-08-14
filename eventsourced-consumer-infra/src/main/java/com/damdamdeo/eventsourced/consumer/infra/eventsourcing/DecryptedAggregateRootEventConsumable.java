@@ -1,53 +1,59 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
+import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumable;
+import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.Objects;
 
-public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable {
+public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable<JsonNode> {
 
-    private final AggregateRootEventId aggregateRootEventId;
+    private final AggregateRootEventId eventId;
+
     private final String eventType;
-    private final LocalDateTime creationDate;
-    private final AggregateRootEventPayloadConsumer aggregateRootEventPayloadConsumer;
-    private final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer;
-    private final AggregateRootMaterializedStateConsumer aggregateRootMaterializedStateConsumer;
 
-    public DecryptedAggregateRootEventConsumable(final AggregateRootEventId aggregateRootEventId,
+    private final LocalDateTime creationDate;
+
+    private final JsonNode eventPayload;
+
+    private final JsonNode eventMetaData;
+
+    private final JsonNode materializedState;
+
+    public DecryptedAggregateRootEventConsumable(final AggregateRootEventId eventId,
                                                  final String eventType,
                                                  final LocalDateTime creationDate,
-                                                 final AggregateRootEventPayloadConsumer aggregateRootEventPayloadConsumer,
-                                                 final AggregateRootEventMetadataConsumer aggregateRootEventMetaDataConsumer,
-                                                 final AggregateRootMaterializedStateConsumer aggregateRootMaterializedStateConsumer) {
-        this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
+                                                 final JsonNode eventPayload,
+                                                 final JsonNode eventMetaData,
+                                                 final JsonNode materializedState) {
+        this.eventId = Objects.requireNonNull(eventId);
         this.eventType = Objects.requireNonNull(eventType);
         this.creationDate = Objects.requireNonNull(creationDate);
-        this.aggregateRootEventPayloadConsumer = Objects.requireNonNull(aggregateRootEventPayloadConsumer);
-        this.aggregateRootEventMetaDataConsumer = Objects.requireNonNull(aggregateRootEventMetaDataConsumer);
-        this.aggregateRootMaterializedStateConsumer = Objects.requireNonNull(aggregateRootMaterializedStateConsumer);
+        this.eventPayload = Objects.requireNonNull(eventPayload);
+        this.eventMetaData = Objects.requireNonNull(eventMetaData);
+        this.materializedState = Objects.requireNonNull(materializedState);
     }
 
-    public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent,
-                                                 final Secret secret,
-                                                 final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
-                                                 final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
-                                                 final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
+    public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable,
+                                                 final CryptService<JsonNode> jsonCryptoService,
+                                                 final Encryption encryption) {
         this(
-                decryptableAggregateRootEvent.eventId(),
-                decryptableAggregateRootEvent.eventType(),
-                decryptableAggregateRootEvent.creationDate(),
-                decryptableAggregateRootEvent.eventPayload(secret, aggregateRootEventPayloadConsumerDeserializer),
-                decryptableAggregateRootEvent.eventMetaData(secret, aggregateRootEventMetadataConsumerDeSerializer),
-                decryptableAggregateRootEvent.materializedState(secret, aggregateRootMaterializedStateConsumerDeserializer)
+                debeziumAggregateRootEventConsumable.eventId(),
+                debeziumAggregateRootEventConsumable.eventType(),
+                debeziumAggregateRootEventConsumable.creationDate(),
+                recursiveDecrypt(debeziumAggregateRootEventConsumable.eventPayload(), jsonCryptoService, encryption),
+                recursiveDecrypt(debeziumAggregateRootEventConsumable.eventMetaData(), jsonCryptoService, encryption),
+                recursiveDecrypt(debeziumAggregateRootEventConsumable.materializedState(), jsonCryptoService, encryption)
         );
     }
 
     @Override
     public AggregateRootEventId eventId() {
-        return aggregateRootEventId;
+        return eventId;
     }
 
     @Override
@@ -61,18 +67,36 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     }
 
     @Override
-    public AggregateRootEventPayloadConsumer eventPayload() {
-        return aggregateRootEventPayloadConsumer;
+    public JsonNode eventPayload() {
+        return eventPayload;
     }
 
     @Override
-    public AggregateRootEventMetadataConsumer eventMetaData() {
-        return aggregateRootEventMetaDataConsumer;
+    public JsonNode eventMetaData() {
+        return eventMetaData;
     }
 
     @Override
-    public AggregateRootMaterializedStateConsumer materializedState() {
-        return aggregateRootMaterializedStateConsumer;
+    public JsonNode materializedState() {
+        return materializedState;
+    }
+
+    // I should avoid use of recursion in java to avoid StackOverflowError
+    // However this exception should not be thrown as json should not be so huge.
+    private static JsonNode recursiveDecrypt(final JsonNode jsonNode,
+                                             final CryptService<JsonNode> jsonCryptoService,
+                                             final Encryption encryption) {
+        if (jsonNode.isObject()) {
+            final Iterator<String> fieldsNameIterator = jsonNode.fieldNames();
+            while (fieldsNameIterator.hasNext()) {
+                final String fieldName = fieldsNameIterator.next();
+                jsonCryptoService.decrypt(jsonNode, fieldName, encryption);
+                recursiveDecrypt(jsonNode.get(fieldName), jsonCryptoService, encryption);
+            }
+        } else {
+            // do nothing
+        }
+        return jsonNode;
     }
 
     @Override
@@ -80,28 +104,25 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DecryptedAggregateRootEventConsumable that = (DecryptedAggregateRootEventConsumable) o;
-        return Objects.equals(aggregateRootEventId, that.aggregateRootEventId) &&
+        return Objects.equals(eventId, that.eventId) &&
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(creationDate, that.creationDate) &&
-                Objects.equals(aggregateRootEventPayloadConsumer, that.aggregateRootEventPayloadConsumer) &&
-                Objects.equals(aggregateRootEventMetaDataConsumer, that.aggregateRootEventMetaDataConsumer) &&
-                Objects.equals(aggregateRootMaterializedStateConsumer, that.aggregateRootMaterializedStateConsumer);
+                Objects.equals(eventPayload, that.eventPayload) &&
+                Objects.equals(eventMetaData, that.eventMetaData) &&
+                Objects.equals(materializedState, that.materializedState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventPayloadConsumer, aggregateRootEventMetaDataConsumer, aggregateRootMaterializedStateConsumer);
+        return Objects.hash(eventId, eventType, creationDate, eventPayload, eventMetaData, materializedState);
     }
 
     @Override
     public String toString() {
         return "DecryptedAggregateRootEventConsumable{" +
-                "aggregateRootEventId=" + aggregateRootEventId +
+                "eventId=" + eventId +
                 ", eventType='" + eventType + '\'' +
                 ", creationDate=" + creationDate +
-                ", aggregateRootEventPayloadConsumer=" + aggregateRootEventPayloadConsumer +
-                ", aggregateRootEventMetaDataConsumer=" + aggregateRootEventMetaDataConsumer +
-                ", aggregateRootMaterializedStateConsumer=" + aggregateRootMaterializedStateConsumer +
                 '}';
     }
 }

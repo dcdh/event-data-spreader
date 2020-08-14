@@ -1,9 +1,12 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.damdamdeo.eventsourced.encryption.api.SecretStore;
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.Startup;
@@ -26,20 +29,23 @@ public class PostgreSQLEventRepository implements EventRepository {
     private static final String POSTGRESQL_DDL_FILE = "/sql/event-store-postgresql.ddl";
 
     final AgroalDataSource mutableDataSource;
-    final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer;
+    final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer;
     final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
-    final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer;
+    final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer;
+    final SecretStore secretStore;
     final GitCommitProvider gitCommitProvider;
 
     public PostgreSQLEventRepository(@DataSource("mutable") final AgroalDataSource mutableDataSource,
-                                     final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
+                                     final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer,
                                      final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                     final AggregateRootMaterializedStateSerializer aggregateRootMaterializedStateSerializer,
+                                     final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
+                                     final SecretStore secretStore,
                                      final GitCommitProvider gitCommitProvider) {
         this.mutableDataSource = Objects.requireNonNull(mutableDataSource);
-        this.aggregateRootEventPayloadDeSerializer = Objects.requireNonNull(aggregateRootEventPayloadDeSerializer);
+        this.aggregateRootEventPayloadsDeSerializer = Objects.requireNonNull(aggregateRootEventPayloadsDeSerializer);
         this.aggregateRootEventMetadataDeSerializer = Objects.requireNonNull(aggregateRootEventMetadataDeSerializer);
-        this.aggregateRootMaterializedStateSerializer = Objects.requireNonNull(aggregateRootMaterializedStateSerializer);
+        this.aggregateRootMaterializedStatesSerializer = Objects.requireNonNull(aggregateRootMaterializedStatesSerializer);
+        this.secretStore = Objects.requireNonNull(secretStore);
         this.gitCommitProvider = Objects.requireNonNull(gitCommitProvider);
     }
 
@@ -62,21 +68,21 @@ public class PostgreSQLEventRepository implements EventRepository {
 
     @Transactional
     @Override
-    public void save(final AggregateRootEvent aggregateRootEvent, final AggregateRoot aggregateRoot, final Secret secret) {
+    public void save(final AggregateRootEvent aggregateRootEvent, final AggregateRoot aggregateRoot) {
         Validate.notNull(aggregateRootEvent);
         Validate.notNull(aggregateRoot);
-        Validate.notNull(secret);
         Validate.validState(aggregateRootEvent.aggregateRootId().aggregateRootId().equals(aggregateRoot.aggregateRootId().aggregateRootId()));
         Validate.validState(aggregateRootEvent.aggregateRootId().aggregateRootType().equals(aggregateRoot.aggregateRootId().aggregateRootType()));
         Validate.validState(aggregateRootEvent.version().equals(aggregateRoot.version()));
+        final Secret secret = secretStore.read(aggregateRootEvent.aggregateRootId());
         final PostgreSQLDecryptableEvent eventToSave = PostgreSQLDecryptableEvent.newEncryptedEventBuilder()
                 .withEventId(aggregateRootEvent.eventId())
                 .withEventType(aggregateRootEvent.eventType())
                 .withCreationDate(aggregateRootEvent.creationDate())
                 .withEventPayload(aggregateRootEvent.eventPayload())
-                .withEventMetaData(aggregateRootEvent.eventMetaData())
+//                .withEventMetaData(aggregateRootEvent.eventMetaData()) // TODO recuperer les metadatas !
                 .withAggregateRoot(aggregateRoot)
-                .build(secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStateSerializer);
+                .build(aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStatesSerializer, secret);
         try (final Connection connection = mutableDataSource.getConnection();
              final PreparedStatement preparedStatement = eventToSave.insertStatement(connection, gitCommitProvider)) {
             preparedStatement.executeUpdate();
@@ -87,16 +93,16 @@ public class PostgreSQLEventRepository implements EventRepository {
 
     @Transactional
     @Override
-    public List<AggregateRootEvent> loadOrderByVersionASC(final String aggregateRootId, final String aggregateRootType, final Secret secret) {
+    public List<AggregateRootEvent> loadOrderByVersionASC(final AggregateRootId aggregateRootId) {
         try (final Connection connection = mutableDataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ? ORDER BY e.version ASC")) {
-            stmt.setString(1, aggregateRootId);
-            stmt.setString(2, aggregateRootType);
+            stmt.setString(1, aggregateRootId.aggregateRootId());
+            stmt.setString(2, aggregateRootId.aggregateRootType());
             final List<AggregateRootEvent> aggregateRootEvents = new ArrayList<>();
             // TODO I should get the number of event to initialize list size. However, a lot of copies will be made in memory on large result set.
             try (final ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
-                    aggregateRootEvents.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer));
+                    aggregateRootEvents.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(aggregateRootEventPayloadsDeSerializer));
                 }
             }
             return aggregateRootEvents;
@@ -106,16 +112,16 @@ public class PostgreSQLEventRepository implements EventRepository {
     }
 
     @Override
-    public List<AggregateRootEvent> loadOrderByVersionASC(final String aggregateRootId, final String aggregateRootType, final Secret secret, final Long version) {
+    public List<AggregateRootEvent> loadOrderByVersionASC(final AggregateRootId aggregateRootId, final Long version) {
         try (final Connection connection = mutableDataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement("SELECT * FROM EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ? AND e.version <= ? ORDER BY e.version ASC")) {
-            stmt.setString(1, aggregateRootId);
-            stmt.setString(2, aggregateRootType);
+            stmt.setString(1, aggregateRootId.aggregateRootId());
+            stmt.setString(2, aggregateRootId.aggregateRootType());
             stmt.setLong(3, version);
             final List<AggregateRootEvent> aggregateRootEvents = new ArrayList<>(version.intValue());
             try (final ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
-                    aggregateRootEvents.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(secret, aggregateRootEventPayloadDeSerializer, aggregateRootEventMetadataDeSerializer));
+                    aggregateRootEvents.add(new PostgreSQLDecryptableEvent(resultSet).toEvent(aggregateRootEventPayloadsDeSerializer));
                 }
             }
             return aggregateRootEvents;

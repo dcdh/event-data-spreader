@@ -1,5 +1,7 @@
 package com.damdamdeo.eventsourced.encryption.infra;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AESEncryptionTest {
 
     @Inject
-    AESEncryption aesEncryption;
+    @AESEncryptionQualifier
+    Encryption aesEncryption;
 
     @Test
     public void should_generate_a_32_alpha_secret() {

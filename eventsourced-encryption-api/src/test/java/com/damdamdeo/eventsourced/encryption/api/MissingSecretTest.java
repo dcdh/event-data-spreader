@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.encryption.api;
 
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
@@ -30,25 +31,26 @@ public class MissingSecretTest {
         // Given
         final Secret missingSecret = new MissingSecret();
         final Encryption mockEncryption = mock(Encryption.class);
+        final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When && Then
-        final UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-                () -> missingSecret.encrypt("String to encrypt", mockEncryption));
-        assertEquals("Could not encrypt. Secret is missing", exception.getMessage());
+        final UnableToEncryptMissingSecretException exception = assertThrows(UnableToEncryptMissingSecretException.class,
+                () -> missingSecret.encrypt(aggregateRootId, "String to encrypt", mockEncryption));
+        assertEquals(aggregateRootId, exception.aggregateRootId());
         verifyNoMoreInteractions(mockEncryption);
     }
 
     @Test
-    public void should_return_anonymized_value_when_decrypting() {
+    public void should_throw_exception_when_decrypting() {
         // Given
         final Secret missingSecret = new MissingSecret();
         final Encryption mockEncryption = mock(Encryption.class);
+        final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
-        // When
-        final String decrypted = missingSecret.decrypt("String to decrypt", mockEncryption);
-
-        // Then
-        assertEquals("*****", decrypted);
+        // When && Then
+        final UnableToDecryptMissingSecretException exception = assertThrows(UnableToDecryptMissingSecretException.class,
+                () -> missingSecret.decrypt(aggregateRootId, "String to decrypt", mockEncryption));
+        assertEquals(aggregateRootId, exception.aggregateRootId());
         verifyNoMoreInteractions(mockEncryption);
     }
 }

@@ -1,10 +1,12 @@
 package com.damdamdeo.eventsourced.consumer.infra;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+@AESEncryptionQualifier
 public class UnsupportedEncryption implements Encryption {
 
     @Override

@@ -2,11 +2,7 @@ package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadata;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
 import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
@@ -17,34 +13,26 @@ public final class AggregateRootEvent {
     private final AggregateRootEventId aggregateRootEventId;
     private final String eventType;
     private final LocalDateTime creationDate;
-    private final AggregateRootEventMetadata aggregateRootEventMetaData;
     private final AggregateRootEventPayload aggregateRootEventPayload;
 
     public AggregateRootEvent(final AggregateRootEventId aggregateRootEventId,
                               final String eventType,
                               final LocalDateTime creationDate,
-                              final AggregateRootEventPayload aggregateRootEventPayload,
-                              final AggregateRootEventMetadata aggregateRootEventMetaData) {
+                              final AggregateRootEventPayload aggregateRootEventPayload) {
         this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
         this.eventType = Objects.requireNonNull(eventType);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
-        this.aggregateRootEventMetaData = Objects.requireNonNull(aggregateRootEventMetaData);
     }
 
     public AggregateRootEvent(final DecryptableEvent decryptableEvent,
-                              final Secret secret,
-                              final AggregateRootEventPayloadDeSerializer aggregateRootEventPayloadDeSerializer,
-                              final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer) {
+                              final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer) {
         Validate.notNull(decryptableEvent);
-        Validate.notNull(secret);
-        Validate.notNull(aggregateRootEventPayloadDeSerializer);
-        Validate.notNull(aggregateRootEventMetadataDeSerializer);
+        Validate.notNull(aggregateRootEventPayloadsDeSerializer);
         this.aggregateRootEventId = decryptableEvent.eventId();
         this.eventType = decryptableEvent.eventType();
         this.creationDate = decryptableEvent.creationDate();
-        this.aggregateRootEventPayload = decryptableEvent.eventPayload(secret, aggregateRootEventPayloadDeSerializer);
-        this.aggregateRootEventMetaData = decryptableEvent.eventMetaData(secret, aggregateRootEventMetadataDeSerializer);
+        this.aggregateRootEventPayload = decryptableEvent.eventPayload(aggregateRootEventPayloadsDeSerializer);
     }
 
     public AggregateRootEventId eventId() {
@@ -71,10 +59,6 @@ public final class AggregateRootEvent {
         return aggregateRootEventPayload;
     }
 
-    public AggregateRootEventMetadata eventMetaData() {
-        return aggregateRootEventMetaData;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,13 +67,12 @@ public final class AggregateRootEvent {
         return Objects.equals(aggregateRootEventId, that.aggregateRootEventId) &&
                 Objects.equals(eventType, that.eventType) &&
                 Objects.equals(creationDate, that.creationDate) &&
-                Objects.equals(aggregateRootEventMetaData, that.aggregateRootEventMetaData) &&
                 Objects.equals(aggregateRootEventPayload, that.aggregateRootEventPayload);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventMetaData, aggregateRootEventPayload);
+        return Objects.hash(aggregateRootEventId, eventType, creationDate, aggregateRootEventPayload);
     }
 
     @Override
@@ -98,8 +81,6 @@ public final class AggregateRootEvent {
                 "aggregateRootEventId=" + aggregateRootEventId +
                 ", eventType='" + eventType + '\'' +
                 ", creationDate=" + creationDate +
-                ", aggregateRootEventMetaData=" + aggregateRootEventMetaData +
-                ", aggregateRootEventPayload=" + aggregateRootEventPayload +
                 '}';
     }
 }

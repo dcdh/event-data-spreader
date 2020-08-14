@@ -1,9 +1,12 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.encryption.api.SecretStore;
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
+import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -31,30 +34,26 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
-    private final SecretStore secretStore;
+    private final ObjectMapper objectMapper;
+    private final CryptService<JsonNode> jsonCryptoService;
+    private final Encryption encryption;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
-    private final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer;
-    private final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer;
-    private final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer;
     private final UserTransaction transaction;
-    private final Instance<AggregateRootEventConsumer> eventConsumersBeans;
+    private final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans;
     private final String gitCommitId;
     private final Executor executor;
     private final CreatedAtProvider createdAtProvider;
 
-    public KafkaEventConsumer(final SecretStore secretStore,
+    public KafkaEventConsumer(final CryptService<JsonNode> jsonCryptoService,
+                              @AESEncryptionQualifier final Encryption encryption,
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
-                              final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer,
-                              final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer,
-                              final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer,
                               final UserTransaction transaction,
-                              @Any final Instance<AggregateRootEventConsumer> eventConsumersBeans,
+                              @Any final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans,
                               final CreatedAtProvider createdAtProvider) {
-        this.secretStore = Objects.requireNonNull(secretStore);
+        this.objectMapper = new ObjectMapper();
+        this.jsonCryptoService = Objects.requireNonNull(jsonCryptoService);
+        this.encryption = Objects.requireNonNull(encryption);
         this.kafkaEventConsumedRepository = Objects.requireNonNull(kafkaEventConsumedRepository);
-        this.aggregateRootEventPayloadConsumerDeserializer = Objects.requireNonNull(aggregateRootEventPayloadConsumerDeserializer);
-        this.aggregateRootEventMetadataConsumerDeSerializer = Objects.requireNonNull(aggregateRootEventMetadataConsumerDeSerializer);
-        this.aggregateRootMaterializedStateConsumerDeserializer = Objects.requireNonNull(aggregateRootMaterializedStateConsumerDeserializer);
         this.transaction = Objects.requireNonNull(transaction);
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
         this.executor = Executors.newSingleThreadExecutor();
@@ -76,20 +75,17 @@ public class KafkaEventConsumer {
             boolean processedSuccessfully = true;
             do {
                 try {
-                    final DebeziumAggregateRootEventConsumable decryptableAggregateRootEvent = new DebeziumAggregateRootEventConsumable(record);
-                    final String aggregateRootType = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootType();
-                    final String aggregateRootId = decryptableAggregateRootEvent.eventId().aggregateRootId().aggregateRootId();
-                    final Secret secret = secretStore.read(aggregateRootType, aggregateRootId);
-                    final AggregateRootEventId aggregateRootEventId = decryptableAggregateRootEvent.eventId();
+                    final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable = new DebeziumAggregateRootEventConsumable(record, objectMapper);
+                    final String aggregateRootType = debeziumAggregateRootEventConsumable.eventId().aggregateRootId().aggregateRootType();
+                    final AggregateRootEventId aggregateRootEventId = debeziumAggregateRootEventConsumable.eventId();
                     if (!kafkaEventConsumedRepository.hasFinishedConsumingEvent(aggregateRootEventId)) {
-                        final String eventType = decryptableAggregateRootEvent.eventType();
+                        final String eventType = debeziumAggregateRootEventConsumable.eventType();
                         final List<AggregateRootEventConsumer> consumersToProcessEvent = eventConsumersBeans.stream()
                                 .filter(eventConsumer -> aggregateRootType.equals(eventConsumer.aggregateRootType()))
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
-                            final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(decryptableAggregateRootEvent, secret,
-                                    aggregateRootEventMetadataConsumerDeSerializer, aggregateRootEventPayloadConsumerDeserializer, aggregateRootMaterializedStateConsumerDeserializer);
+                            final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(debeziumAggregateRootEventConsumable, jsonCryptoService, encryption);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional

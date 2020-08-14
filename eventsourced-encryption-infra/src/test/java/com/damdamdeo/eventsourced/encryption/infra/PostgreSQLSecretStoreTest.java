@@ -4,6 +4,7 @@ import com.damdamdeo.eventsourced.encryption.api.MissingSecret;
 import com.damdamdeo.eventsourced.encryption.api.PresentSecret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.cache.runtime.CacheRepository;
@@ -21,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 public class PostgreSQLSecretStoreTest {
@@ -65,19 +67,35 @@ public class PostgreSQLSecretStoreTest {
     public void should_store_and_retrieve_secret() {
         // Given
         final String secret = "Hello World";
+        final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
+        doReturn("aggregateRootType").when(aggregateRootId).aggregateRootType();
+        doReturn("aggregateRootId").when(aggregateRootId).aggregateRootId();
 
         // When
-        final Secret storedSecret = secretStore.store("aggregateRootType", "aggregateRootId", secret);
-        final Secret readSecret = secretStore.read("aggregateRootType", "aggregateRootId");
+        final Secret storedSecret = secretStore.store(aggregateRootId, secret);
+        final Secret readSecret = secretStore.read(aggregateRootId);
 
         // Then
         assertEquals(new PresentSecret("Hello World"), readSecret);
         assertEquals(storedSecret, readSecret);
+        verify(aggregateRootId, atLeastOnce()).aggregateRootType();
+        verify(aggregateRootId, atLeastOnce()).aggregateRootId();
     }
 
     @Test
     public void should_return_missing_secret_if_secret_does_not_exists() {
-        assertEquals(new MissingSecret(), secretStore.read("aggregateRootType", "aggregateRootId"));
+        // Given
+        final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
+        doReturn("aggregateRootType").when(aggregateRootId).aggregateRootType();
+        doReturn("aggregateRootId").when(aggregateRootId).aggregateRootId();
+
+        // When
+        final Secret secret = secretStore.read(aggregateRootId);
+
+        // Then
+        assertEquals(new MissingSecret(), secret);
+        verify(aggregateRootId, atLeastOnce()).aggregateRootType();
+        verify(aggregateRootId, atLeastOnce()).aggregateRootId();
     }
 
 }

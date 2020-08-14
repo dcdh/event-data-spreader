@@ -1,14 +1,19 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
-import com.damdamdeo.eventsourced.encryption.api.SecretStore;
+import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptService;
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
+import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,32 +28,28 @@ import java.time.Month;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
 public class KafkaEventConsumerTest {
 
-    @InjectMock
-    SecretStore mockedSecretStore;
-
     @InjectSpy
     KafkaAggregateRootEventConsumedRepository spiedKafkaEventConsumedRepository;
-
-    @InjectMock
-    AggregateRootEventPayloadConsumerDeserializer mockedAggregateRootEventPayloadConsumerDeserializer;
-
-    @InjectMock
-    AggregateRootEventMetadataConsumerDeserializer mockedAggregateRootEventMetadataConsumerDeSerializer;
-
-    @InjectMock
-    AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer;
 
     @InjectMock
     CreatedAtProvider mockedCreatedAtProvider;
 
     @Inject
     KafkaDebeziumProducer kafkaDebeziumProducer;
+
+    @InjectMock
+    UnsupportedCryptService jsonCryptoService;
+
+    @InjectMock
+    @AESEncryptionQualifier // cela me choque de devoir utiliser un qualifier mais bon ...
+    Encryption encryption;
 
     @InjectSpy
     AccountDebitedAggregateRootEventConsumer spiedAccountDebitedAggregateRootEventConsumer;
@@ -58,16 +59,9 @@ public class KafkaEventConsumerTest {
     AgroalDataSource consumedEventsDataSource;
 
     @BeforeEach
-    public void setupDeserializers() {
-        doReturn(mock(AggregateRootEventPayloadConsumer.class)).when(mockedAggregateRootEventPayloadConsumerDeserializer).deserialize(any(), any());
-        doReturn(mock(AggregateRootEventMetadataConsumer.class)).when(mockedAggregateRootEventMetadataConsumerDeSerializer).deserialize(any(), any());
-        doReturn(mock(AggregateRootMaterializedStateConsumer.class)).when(aggregateRootMaterializedStateConsumerDeserializer).deserialize(any(), any());
-    }
-
-    @BeforeEach
     public void setup() {
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
-        doReturn(null).when(mockedSecretStore).read("AccountAggregateRoot", "damdamdeo");
+        doNothing().when(jsonCryptoService).decrypt(any(), any(), any());
     }
 
     @BeforeEach
@@ -83,10 +77,21 @@ public class KafkaEventConsumerTest {
     }
 
     @ApplicationScoped
-    public static class AccountDebitedAggregateRootEventConsumer implements AggregateRootEventConsumer {
+    public static class AccountDebitedAggregateRootEventConsumer implements JsonNodeAggregateRootEventConsumer {
 
         @Override
-        public void consume(final AggregateRootEventConsumable aggregateRootEventConsumable) {
+        public void consume(final AggregateRootEventConsumable<JsonNode> aggregateRootEventConsumable) {
+            // If it fail, an exception will be thrown. In this case, the consumer will fail and retry again
+            assertEquals("damdamdeo", aggregateRootEventConsumable.eventMetaData().get("executedBy").asText());
+
+            assertEquals("damdamdeo", aggregateRootEventConsumable.eventPayload().get("owner").asText());
+            assertEquals("100.00", aggregateRootEventConsumable.eventPayload().get("price").asText());
+            assertEquals("900.00", aggregateRootEventConsumable.eventPayload().get("balance").asText());
+
+            assertEquals("damdamdeo", aggregateRootEventConsumable.materializedState().get("aggregateRootId").asText());
+            assertEquals(0L, aggregateRootEventConsumable.materializedState().get("version").asLong());
+            assertEquals("AccountAggregateRoot", aggregateRootEventConsumable.materializedState().get("aggregateRootType").asText());
+            assertEquals("900.00", aggregateRootEventConsumable.materializedState().get("balance").asText());
         }
 
         @Override
@@ -103,6 +108,7 @@ public class KafkaEventConsumerTest {
     @Test
     public void should_consume_event_when_event_has_not_been_consumed() throws Exception {
         // Given
+        final ObjectMapper objectMapper = new ObjectMapper();
 
         // When
         kafkaDebeziumProducer.produce("eventsourcing/AccountDebited.json");
@@ -110,20 +116,18 @@ public class KafkaEventConsumerTest {
 
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
-        final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(
+        final AggregateRootEventConsumable aggregateRootEventConsumer = new DecryptedAggregateRootEventConsumable(
                 new DebeziumAggregateRootEventConsumable(
                         new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
                         LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
                         "AccountDebited",
-                        "{\"@type\": \"UserEventMetadata\", \"executedBy\": \"damdamdeo\"}",
-                        "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}",
-                        "{\"@type\": \"AccountAggregateRoot\", \"aggregateRootId\": \"damdamdeo\", \"version\": 1, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}"
+                        objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
+                        objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
+                        objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
                 ),
-                mock(Secret.class),
-                mockedAggregateRootEventMetadataConsumerDeSerializer,
-                mockedAggregateRootEventPayloadConsumerDeserializer,
-                aggregateRootMaterializedStateConsumerDeserializer);
-        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumable);
+                jsonCryptoService,
+                encryption);
+        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }
 

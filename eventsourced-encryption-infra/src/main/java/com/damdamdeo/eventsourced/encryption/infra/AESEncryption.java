@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.encryption.infra;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.EncryptionException;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -11,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.Base64;
 
 @ApplicationScoped
+@AESEncryptionQualifier
 public class AESEncryption implements Encryption {
 
     public static final int SECRET_LENGTH = 32;

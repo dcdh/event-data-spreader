@@ -13,9 +13,9 @@
       "version": 0,
       "creationdate": 1569174260987000,
       "eventtype": "AccountDebited",
-      "eventmetadata": "{\"@type\": \"UserEventMetadata\", \"executedBy\": \"damdamdeo\"}",
-      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"@type\": \"AccountAggregateAccountDebitedEventPayload\", \"balance\": \"900.00\"}",
-      "materializedstate": "{\"@type\": \"AccountAggregateRoot\", \"aggregateRootId\": \"damdamdeo\", \"version\":1, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}"
+      "eventmetadata": "{\"executedBy\": \"damdamdeo\"}",
+      "eventpayload": "{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}",
+      "materializedstate": "{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}"
     },
     "source": {
       "version": "0.10.0.Beta2",

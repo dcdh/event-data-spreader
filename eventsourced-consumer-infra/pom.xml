@@ -22,6 +22,11 @@
             <artifactId>eventsourced-encryption-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.damdamdeo</groupId>-->
+<!--            <artifactId>eventsourced-encryption-infra</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-agroal</artifactId>

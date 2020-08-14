@@ -23,6 +23,10 @@ public final class PostgreSQLAggregateRootEventId implements AggregateRootEventI
         this.version = Objects.requireNonNull(aggregateRootEventId.version());
     }
 
+    public String aggregateRootType() {
+        return aggregateRootId.aggregateRootType();
+    }
+
     @Override
     public AggregateRootId aggregateRootId() {
         return aggregateRootId;

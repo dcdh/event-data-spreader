@@ -2,7 +2,9 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.vertx.core.json.JsonObject;
 
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-public final class DebeziumAggregateRootEventConsumable {
+public final class DebeziumAggregateRootEventConsumable implements AggregateRootEventConsumable<JsonNode> {
 
     private static final String CREATE_OPERATION = "c";
     private static final String READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START = "r";
@@ -30,16 +32,16 @@ public final class DebeziumAggregateRootEventConsumable {
     private final LocalDateTime creationDate;
 
     private final String eventType;
-    private final String eventMetaData;
-    private final String eventPayload;
-    private final String materializedState;
+    private final JsonNode eventMetaData;
+    private final JsonNode eventPayload;
+    private final JsonNode materializedState;
 
     public DebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventId aggregateRootEventId,
                                                 final LocalDateTime creationDate,
                                                 final String eventType,
-                                                final String eventMetaData,
-                                                final String eventPayload,
-                                                final String materializedState) {
+                                                final JsonNode eventMetaData,
+                                                final JsonNode eventPayload,
+                                                final JsonNode materializedState) {
         this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
         this.creationDate = Objects.requireNonNull(creationDate);
         this.eventType = Objects.requireNonNull(eventType);
@@ -48,8 +50,8 @@ public final class DebeziumAggregateRootEventConsumable {
         this.materializedState = Objects.requireNonNull(materializedState);
     }
 
-    public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record)
-            throws UnableToDecodeDebeziumEventMessageException, UnsupportedDebeziumOperationException {
+    public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record, final ObjectMapper objectMapper)
+            throws UnableToDecodeDebeziumEventMessageException, UnsupportedDebeziumOperationException, JsonProcessingException {
         if (record.getKey() == null) {
             throw new UnableToDecodeDebeziumEventMessageException(new ConsumerRecordKafkaInfrastructureMetadata(record),
                     "'Message Key' is missing");
@@ -75,36 +77,39 @@ public final class DebeziumAggregateRootEventConsumable {
         final Instant instant = Instant.ofEpochMilli(Objects.requireNonNull(after.getLong(EVENT_CREATION_DATE)) / 1000);
         this.creationDate = instant.atZone(ZoneOffset.UTC).toLocalDateTime();
         this.eventType = Objects.requireNonNull(after.getString(EVENT_EVENT_TYPE));
-        this.eventMetaData = Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA));
-        this.eventPayload = Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD));
-        this.materializedState = Objects.requireNonNull(after.getString(MATERIALIZED_STATE));
+        this.eventMetaData = objectMapper.readTree(Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA)));
+        this.eventPayload = objectMapper.readTree(Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD)));
+        this.materializedState = objectMapper.readTree(Objects.requireNonNull(after.getString(MATERIALIZED_STATE)));
     }
 
+    @Override
     public AggregateRootEventId eventId() {
         return aggregateRootEventId;
     }
 
+    @Override
     public LocalDateTime creationDate() {
         return creationDate;
     }
 
+    @Override
     public String eventType() {
         return eventType;
     }
 
-    public AggregateRootEventMetadataConsumer eventMetaData(final Secret secret,
-                                                            final AggregateRootEventMetadataConsumerDeserializer aggregateRootEventMetadataConsumerDeSerializer) {
-        return aggregateRootEventMetadataConsumerDeSerializer.deserialize(secret, eventMetaData);
+    @Override
+    public JsonNode eventMetaData() {
+        return eventMetaData;
     }
 
-    public AggregateRootEventPayloadConsumer eventPayload(final Secret secret,
-                                                          final AggregateRootEventPayloadConsumerDeserializer aggregateRootEventPayloadConsumerDeserializer) {
-        return aggregateRootEventPayloadConsumerDeserializer.deserialize(secret, eventPayload);
+    @Override
+    public JsonNode eventPayload() {
+        return eventPayload;
     }
 
-    public AggregateRootMaterializedStateConsumer materializedState(final Secret secret,
-                                                                    final AggregateRootMaterializedStateConsumerDeserializer aggregateRootMaterializedStateConsumerDeserializer) {
-        return aggregateRootMaterializedStateConsumerDeserializer.deserialize(secret, materializedState);
+    @Override
+    public JsonNode materializedState() {
+        return materializedState;
     }
 
     @Override

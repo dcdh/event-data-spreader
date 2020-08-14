@@ -1,10 +1,11 @@
 package com.damdamdeo.eventsourced.encryption.api;
 
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
+
 public interface SecretStore {
 
-    Secret store(String aggregateRootType, String aggregateRootId, String secret);
+    Secret store(AggregateRootId aggregateRootId, String secret);
 
-    Secret read(String aggregateRootType, String aggregateRootId);
+    Secret read(AggregateRootId aggregateRootId);
 
-    // TODO method void anonymize(String aggregateRootType, String aggregateRootId)
 }

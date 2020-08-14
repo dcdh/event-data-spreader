@@ -1,8 +1,8 @@
 package com.damdamdeo.eventsourced.encryption.api;
 
-public final class MissingSecret implements Secret {
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 
-    private static final String ANONYMIZED_VALUE = "*****";
+public final class MissingSecret implements Secret {
 
     @Override
     public String secret() {
@@ -10,13 +10,17 @@ public final class MissingSecret implements Secret {
     }
 
     @Override
-    public String encrypt(final String strToEncrypt, final Encryption encryption) {
-        throw new UnsupportedOperationException("Could not encrypt. Secret is missing");
+    public String encrypt(final AggregateRootId aggregateRootId,
+                          final String strToEncrypt,
+                          final Encryption encryption) throws UnableToEncryptMissingSecretException {
+        throw new UnableToEncryptMissingSecretException(aggregateRootId);
     }
 
     @Override
-    public String decrypt(final String strToDecrypt, final Encryption encryption) {
-        return ANONYMIZED_VALUE;
+    public String decrypt(final AggregateRootId aggregateRootId,
+                          final String strToDecrypt,
+                          final Encryption encryption) throws UnableToDecryptMissingSecretException {
+        throw new UnableToDecryptMissingSecretException(aggregateRootId);
     }
 
     @Override
