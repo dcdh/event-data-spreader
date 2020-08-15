@@ -1,6 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.metadata.MetadataEnhancerContextHolder;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -17,12 +18,16 @@ public class AggregateRootEventMetadataDeSerializerTest {
     @Test
     public void should_return_empty_object_when_serialize() {
         // Given
+        MetadataEnhancerContextHolder.put("user.anonymous", false);
+        MetadataEnhancerContextHolder.put("user.name", "damdamdeo");
 
         // When
         final String serialized = aggregateRootEventMetadataDeSerializer.serialize();
 
         // Then
-        assertEquals("{}", serialized);
+        assertEquals("{\"user.anonymous\":false,\"user.name\":\"damdamdeo\"}", serialized);
+
+        MetadataEnhancerContextHolder.cleanupThread();
     }
 
 }
