@@ -1,4 +1,4 @@
-package com.damdamdeo.eventsourced.consumer.infra;
+package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.encryption.api.CryptService;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;

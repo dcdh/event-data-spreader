@@ -1,22 +1,21 @@
 package com.damdamdeo.eventsourced.encryption.infra.jackson;
 
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
-import com.damdamdeo.eventsourced.encryption.api.SecretStore;
-import com.damdamdeo.eventsourced.encryption.api.UnableToDecryptMissingSecretException;
-import com.damdamdeo.eventsourced.encryption.api.NullEncryptionQualifier;
+import com.damdamdeo.eventsourced.encryption.api.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.inject.Inject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -477,4 +476,50 @@ public class JsonCryptoDecryptServiceTest {
         verify(secretStore, times(1)).read(any());
     }
 
+    @Test
+    public void should_decrypt_recursively() throws Exception {
+        // Given
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final String givenJsonEncrypted = new Scanner(this.getClass().getResourceAsStream("/jsonEncrypted.json"), "UTF-8")
+                .useDelimiter("\\A").next();
+        final JsonNode jsonNode = objectMapper.readTree(givenJsonEncrypted);
+
+        // define CarAggregateRoot Car01 decrypt behavior
+        final Secret carAggregateRootCar01Secret = mock(Secret.class, RETURNS_DEEP_STUBS);
+        doReturn("Damien").when(carAggregateRootCar01Secret).decrypt(eq(new JacksonAggregateRootId("CarAggregateRoot", "Car01")),
+                eq("ownerAsEncryptedValue"),
+                any());
+        doReturn(carAggregateRootCar01Secret).when(secretStore).read(new JacksonAggregateRootId("CarAggregateRoot", "Car01"));
+
+        // define DriverAggregateRoot Driver01 decrypt behavior
+        final Secret driverAggregateRootDriver01Secret = mock(Secret.class, RETURNS_DEEP_STUBS);
+        doReturn("Damien").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+                eq("driver[0]NameAsEncryptedValue"),
+                any());
+        doReturn("37").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+                eq("driver[0]AgeAsEncryptedValue"),
+                any());
+        doReturn("2000").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+                eq("driver[0]LicenseYearOfLicenceAsEncryptedValue"),
+                any());
+        doReturn("C").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+                eq("driver[0]LicenseCategoryAsEncryptedValue"),
+                any());
+        doReturn(driverAggregateRootDriver01Secret).when(secretStore).read(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01"));
+
+        // When
+        jsonCryptoService.recursiveDecrypt(jsonNode, encryption);
+
+        // Then
+        final String expectedJsonDecrypted = new Scanner(this.getClass().getResourceAsStream("/jsonDecrypted.json"), "UTF-8")
+                .useDelimiter("\\A").next();
+        System.out.println(jsonNode);
+        JSONAssert.assertEquals(expectedJsonDecrypted, jsonNode.toString(), false);
+
+        verify(carAggregateRootCar01Secret, times(1)).decrypt(any(), any(), any());
+        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("CarAggregateRoot", "Car01"));
+
+        verify(driverAggregateRootDriver01Secret, times(4)).decrypt(any(), any(), any());
+        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01"));
+    }
 }

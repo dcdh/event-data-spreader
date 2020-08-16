@@ -1,0 +1,17 @@
+{
+  "model": "Shelby GT500",
+  "horsepower": 760,
+  "productionYear": 2020,
+  "dateOfPurchase": 1597585591,
+  "owner": "Damien",
+  "drivers": [
+    {
+      "name": "Damien",
+      "age": 37,
+      "license": {
+        "yearOfLicence": 2000,
+        "category": "C"
+      }
+    }
+  ]
+}

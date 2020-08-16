@@ -3,7 +3,6 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptService;
 import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.CryptService;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +12,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -116,17 +114,15 @@ public class KafkaEventConsumerTest {
 
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
-        final AggregateRootEventConsumable aggregateRootEventConsumer = new DecryptedAggregateRootEventConsumable(
-                new DebeziumAggregateRootEventConsumable(
+        final AggregateRootEventConsumable aggregateRootEventConsumer = DecryptedAggregateRootEventConsumable.newBuilder()
+                .withDebeziumAggregateRootEventConsumable(new DebeziumAggregateRootEventConsumable(
                         new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
                         LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
                         "AccountDebited",
                         objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
                         objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
                         objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
-                ),
-                jsonCryptoService,
-                encryption);
+                )).build(jsonCryptoService, encryption);
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }

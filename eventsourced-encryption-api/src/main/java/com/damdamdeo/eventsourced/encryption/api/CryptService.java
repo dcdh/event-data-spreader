@@ -4,13 +4,15 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 
 public interface CryptService<INFRA> {
 
-    void encrypt(final AggregateRootId aggregateRootId,
-                 final INFRA parentNode,
-                 final String fieldName,
-                 final Encryption encryption) throws UnableToEncryptMissingSecretException;
+    void encrypt(AggregateRootId aggregateRootId,
+                 INFRA parentNode,
+                 String fieldName,
+                 Encryption encryption) throws UnableToEncryptMissingSecretException;
 
-    void decrypt(final INFRA parentNode,
-                 final String fieldName,
-                 final Encryption encryption);
+    void decrypt(INFRA parentNode,
+                 String fieldName,
+                 Encryption encryption);
+
+    void recursiveDecrypt(INFRA source, Encryption encryption);
 
 }

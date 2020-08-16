@@ -1,5 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
+import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
@@ -16,22 +20,30 @@ import java.util.Objects;
 public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateRootEventPayloadsDeSerializer {
 
     final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
+    final CryptService<JsonNode> jsonCryptoService;
+    final Encryption encryption;
     final ObjectMapper objectMapper;
 
-    public JacksonAggregateRootEventPayloadsDeSerializer(@Any final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans) {
+    public JacksonAggregateRootEventPayloadsDeSerializer(@Any final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
+                                                         final CryptService<JsonNode> jsonCryptoService,
+                                                         @AESEncryptionQualifier final Encryption encryption) {
         this.jacksonAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootEventPayloadDeSerializerBeans);
         this.objectMapper = new ObjectMapper();
+        this.jsonCryptoService = jsonCryptoService;
+        this.encryption = encryption;
     }
 
     @Override
-    public String serialize(final String aggregateRootType,
+    public String serialize(final AggregateRootId aggregateRootId,
                             final String eventType,
                             final AggregateRootEventPayload aggregateRootEventPayload) throws UnsupportedAggregateRootEventPayload {
+        final String aggregateRootType = aggregateRootId.aggregateRootType();
         return jacksonAggregateRootEventPayloadDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .filter(bean -> eventType.equals(bean.eventType()))
                 .findFirst()
-                .map(jacksonAggregateRootEventPayloadDeSerializerBean -> jacksonAggregateRootEventPayloadDeSerializerBean.encode(aggregateRootEventPayload, this.objectMapper))
+                .map(jacksonAggregateRootEventPayloadDeSerializerBean ->
+                        jacksonAggregateRootEventPayloadDeSerializerBean.encode(aggregateRootId, aggregateRootEventPayload, this.objectMapper))
                 .map(jsonNode -> {
                     try {
                         return objectMapper.writeValueAsString(jsonNode);
@@ -53,6 +65,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateR
                 .map(jacksonAggregateRootEventPayloadDeSerializerBean -> {
                     try {
                         final JsonNode json = objectMapper.readTree(eventPayload);
+                        this.jsonCryptoService.recursiveDecrypt(json, encryption);
                         return jacksonAggregateRootEventPayloadDeSerializerBean.decode(json);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);

@@ -47,7 +47,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         this.eventType = builder.eventType;
         this.creationDate = builder.creationDate;
         this.eventMetaData = aggregateRootEventMetadataDeSerializer.serialize();
-        this.eventPayload = aggregateRootEventPayloadsDeSerializer.serialize(builder.aggregateRootEventId.aggregateRootId().aggregateRootType(),
+        this.eventPayload = aggregateRootEventPayloadsDeSerializer.serialize(builder.aggregateRootEventId.aggregateRootId(),
                 builder.eventType,
                 builder.aggregateRootEventPayload);
         this.materializedState = aggregateRootMaterializedStatesSerializer.serialize(builder.aggregateRoot, secret, true);

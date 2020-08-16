@@ -10,6 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -217,6 +218,26 @@ public class JsonCryptoService implements CryptService<JsonNode> {
                             }
                         }).map(value -> ((ObjectNode) parentNode).set(fieldName, objectMapper.convertValue(value, JsonNode.class)));
             }
+        }
+    }
+
+    @Override
+    public void recursiveDecrypt(final JsonNode jsonNode, final Encryption encryption) {
+        if (jsonNode.isObject()) {
+            final Iterator<String> fieldsNameIterator = jsonNode.fieldNames();
+            while (fieldsNameIterator.hasNext()) {
+                final String fieldName = fieldsNameIterator.next();
+                decrypt(jsonNode, fieldName, encryption);
+                recursiveDecrypt(jsonNode.get(fieldName), encryption);
+            }
+        } else if (jsonNode.isArray()) {
+            final Iterator<JsonNode> jsonNodeIterator = jsonNode.elements();
+            while (jsonNodeIterator.hasNext()) {
+                final JsonNode childJsonNode = jsonNodeIterator.next();
+                recursiveDecrypt(childJsonNode, encryption);
+            }
+        } else {
+            // do nothing
         }
     }
 

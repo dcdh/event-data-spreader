@@ -7,7 +7,6 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.Objects;
 
 public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable<JsonNode> {
@@ -24,31 +23,13 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
 
     private final JsonNode materializedState;
 
-    public DecryptedAggregateRootEventConsumable(final AggregateRootEventId eventId,
-                                                 final String eventType,
-                                                 final LocalDateTime creationDate,
-                                                 final JsonNode eventPayload,
-                                                 final JsonNode eventMetaData,
-                                                 final JsonNode materializedState) {
-        this.eventId = Objects.requireNonNull(eventId);
-        this.eventType = Objects.requireNonNull(eventType);
-        this.creationDate = Objects.requireNonNull(creationDate);
-        this.eventPayload = Objects.requireNonNull(eventPayload);
-        this.eventMetaData = Objects.requireNonNull(eventMetaData);
-        this.materializedState = Objects.requireNonNull(materializedState);
-    }
-
-    public DecryptedAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable,
-                                                 final CryptService<JsonNode> jsonCryptoService,
-                                                 final Encryption encryption) {
-        this(
-                debeziumAggregateRootEventConsumable.eventId(),
-                debeziumAggregateRootEventConsumable.eventType(),
-                debeziumAggregateRootEventConsumable.creationDate(),
-                recursiveDecrypt(debeziumAggregateRootEventConsumable.eventPayload(), jsonCryptoService, encryption),
-                recursiveDecrypt(debeziumAggregateRootEventConsumable.eventMetaData(), jsonCryptoService, encryption),
-                recursiveDecrypt(debeziumAggregateRootEventConsumable.materializedState(), jsonCryptoService, encryption)
-        );
+    private DecryptedAggregateRootEventConsumable(final Builder builder) {
+        this.eventId = Objects.requireNonNull(builder.eventId);
+        this.eventType = Objects.requireNonNull(builder.eventType);
+        this.creationDate = Objects.requireNonNull(builder.creationDate);
+        this.eventPayload = Objects.requireNonNull(builder.eventPayload);
+        this.eventMetaData = Objects.requireNonNull(builder.eventMetaData);
+        this.materializedState = Objects.requireNonNull(builder.materializedState);
     }
 
     @Override
@@ -81,22 +62,39 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
         return materializedState;
     }
 
-    // I should avoid use of recursion in java to avoid StackOverflowError
-    // However this exception should not be thrown as json should not be so huge.
-    private static JsonNode recursiveDecrypt(final JsonNode jsonNode,
-                                             final CryptService<JsonNode> jsonCryptoService,
-                                             final Encryption encryption) {
-        if (jsonNode.isObject()) {
-            final Iterator<String> fieldsNameIterator = jsonNode.fieldNames();
-            while (fieldsNameIterator.hasNext()) {
-                final String fieldName = fieldsNameIterator.next();
-                jsonCryptoService.decrypt(jsonNode, fieldName, encryption);
-                recursiveDecrypt(jsonNode.get(fieldName), jsonCryptoService, encryption);
-            }
-        } else {
-            // do nothing
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private AggregateRootEventId eventId;
+        private String eventType;
+        private LocalDateTime creationDate;
+        private JsonNode eventPayload;
+        private JsonNode eventMetaData;
+        private JsonNode materializedState;
+
+        private Builder() {}
+
+        public Builder withDebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable) {
+            this.eventId = debeziumAggregateRootEventConsumable.eventId();
+            this.eventType = debeziumAggregateRootEventConsumable.eventType();
+            this.creationDate = debeziumAggregateRootEventConsumable.creationDate();
+            this.eventPayload = debeziumAggregateRootEventConsumable.eventPayload();
+            this.eventMetaData = debeziumAggregateRootEventConsumable.eventMetaData();
+            this.materializedState = debeziumAggregateRootEventConsumable.materializedState();
+            return this;
         }
-        return jsonNode;
+
+        public DecryptedAggregateRootEventConsumable build(final CryptService<JsonNode> jsonCryptoService,
+                                                           final Encryption encryption) {
+            jsonCryptoService.recursiveDecrypt(this.eventPayload, encryption);
+            jsonCryptoService.recursiveDecrypt(this.eventMetaData, encryption);
+            jsonCryptoService.recursiveDecrypt(this.materializedState, encryption);
+            return new DecryptedAggregateRootEventConsumable(this);
+        }
+
     }
 
     @Override

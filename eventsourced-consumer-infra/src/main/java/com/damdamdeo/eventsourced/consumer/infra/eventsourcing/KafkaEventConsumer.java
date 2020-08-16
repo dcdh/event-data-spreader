@@ -85,7 +85,9 @@ public class KafkaEventConsumer {
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
-                            final AggregateRootEventConsumable aggregateRootEventConsumable = new DecryptedAggregateRootEventConsumable(debeziumAggregateRootEventConsumable, jsonCryptoService, encryption);
+                            final AggregateRootEventConsumable aggregateRootEventConsumable = DecryptedAggregateRootEventConsumable.newBuilder()
+                                    .withDebeziumAggregateRootEventConsumable(debeziumAggregateRootEventConsumable)
+                                    .build(jsonCryptoService, encryption);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional
