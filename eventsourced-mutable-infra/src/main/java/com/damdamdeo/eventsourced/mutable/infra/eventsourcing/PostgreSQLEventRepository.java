@@ -80,7 +80,6 @@ public class PostgreSQLEventRepository implements EventRepository {
                 .withEventType(aggregateRootEvent.eventType())
                 .withCreationDate(aggregateRootEvent.creationDate())
                 .withEventPayload(aggregateRootEvent.eventPayload())
-//                .withEventMetaData(aggregateRootEvent.eventMetaData()) // TODO recuperer les metadatas !
                 .withAggregateRoot(aggregateRoot)
                 .build(aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStatesSerializer, secret);
         try (final Connection connection = mutableDataSource.getConnection();
