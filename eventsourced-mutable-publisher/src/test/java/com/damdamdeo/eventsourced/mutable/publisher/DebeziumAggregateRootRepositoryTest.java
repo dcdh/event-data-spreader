@@ -79,7 +79,7 @@ public class DebeziumAggregateRootRepositoryTest {
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
         doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
-        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), any());
     }
 
     @BeforeEach

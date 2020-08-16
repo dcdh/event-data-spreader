@@ -1,5 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
+import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,6 +10,6 @@ public interface JacksonAggregateRootMaterializedStateSerializer {
 
     String aggregateRootType();
 
-    JsonNode encode(AggregateRoot aggregateRoot, Secret secret, boolean shouldEncrypt, ObjectMapper objectMapper);
+    JsonNode encode(AggregateRoot aggregateRoot, Secret secret, Encryption encryption, ObjectMapper objectMapper);
 
 }

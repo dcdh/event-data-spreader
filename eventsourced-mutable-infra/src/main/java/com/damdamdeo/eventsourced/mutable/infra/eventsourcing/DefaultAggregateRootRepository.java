@@ -5,10 +5,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
-import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
-import com.damdamdeo.eventsourced.encryption.api.Secret;
-import com.damdamdeo.eventsourced.encryption.api.SecretStore;
+import com.damdamdeo.eventsourced.encryption.api.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
@@ -24,7 +21,9 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
 
     private final SecretStore secretStore;
 
-    private final Encryption encryption;
+    private final Encryption aesEncryption;
+
+    private final Encryption nullEncryption;
 
     private final AggregateRootInstanceCreator aggregateRootInstanceCreator;
 
@@ -32,13 +31,15 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                                           final AggregateRootMaterializedStateRepository aggregateRootMaterializedStateRepository,
                                           final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
                                           final SecretStore secretStore,
-                                          @AESEncryptionQualifier final Encryption encryption,
+                                          @AESEncryptionQualifier final Encryption aesEncryption,
+                                          @NullEncryptionQualifier final Encryption nullEncryption,
                                           final AggregateRootInstanceCreator aggregateRootInstanceCreator) {
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.aggregateRootMaterializedStateRepository = Objects.requireNonNull(aggregateRootMaterializedStateRepository);
         this.aggregateRootMaterializedStatesSerializer = Objects.requireNonNull(aggregateRootMaterializedStatesSerializer);
         this.secretStore = Objects.requireNonNull(secretStore);
-        this.encryption = Objects.requireNonNull(encryption);
+        this.aesEncryption = Objects.requireNonNull(aesEncryption);
+        this.nullEncryption = Objects.requireNonNull(nullEncryption);
         this.aggregateRootInstanceCreator = Objects.requireNonNull(aggregateRootInstanceCreator);
     }
 
@@ -46,7 +47,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     @Transactional
     public <T extends AggregateRoot> T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
-        final Secret secret = getSecret(aggregateRoot, encryption);
+        final Secret secret = getSecret(aggregateRoot, aesEncryption);
         final AggregateRoot lastSavedAggregateRootState = createAndLoad(aggregateRoot.aggregateRootId(), aggregateRoot.getClass());
         aggregateRoot.unsavedEvents()
                 .stream()
@@ -57,7 +58,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                     eventRepository.save(event, lastSavedAggregateRootState);
                 });
         aggregateRoot.deleteUnsavedEvents();
-        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, secret, false);
+        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, secret, nullEncryption);
         final DefaultAggregateRootMaterializedState defaultAggregateRootMaterializedState = new DefaultAggregateRootMaterializedState(aggregateRoot, serializedAggregateRoot);
         aggregateRootMaterializedStateRepository.persist(defaultAggregateRootMaterializedState);
         return aggregateRoot;

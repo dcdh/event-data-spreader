@@ -67,7 +67,7 @@ public class PostgreSQLEventRepositoryTest {
     public void setupInjectedServicesMocks() {
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
         doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
-        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), any());
         doReturn(mock(Secret.class)).when(secretStore).read(any());
     }
 
