@@ -6,7 +6,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedCryptService;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedCryptoService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -105,7 +105,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
      JacksonAggregateRootEventPayloadsDeSerializer jacksonAggregateRootEventPayloadsDeSerializer;
 
      @InjectMock
-     UnsupportedCryptService jsonCryptoService;
+     UnsupportedCryptoService jsonCryptoService;
 
      @InjectMock
      @AESEncryptionQualifier

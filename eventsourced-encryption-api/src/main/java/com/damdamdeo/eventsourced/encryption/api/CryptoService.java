@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.encryption.api;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 
-public interface CryptService<INFRA> {
+public interface CryptoService<INFRA> {
 
     void encrypt(AggregateRootId aggregateRootId,
                  INFRA parentNode,

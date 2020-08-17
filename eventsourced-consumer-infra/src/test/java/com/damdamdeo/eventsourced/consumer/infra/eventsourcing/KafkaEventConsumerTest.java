@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptService;
+import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptoService;
 import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,7 +43,7 @@ public class KafkaEventConsumerTest {
     KafkaDebeziumProducer kafkaDebeziumProducer;
 
     @InjectMock
-    UnsupportedCryptService jsonCryptoService;
+    UnsupportedCryptoService jsonCryptoService;
 
     @InjectMock
     @AESEncryptionQualifier // cela me choque de devoir utiliser un qualifier mais bon ...

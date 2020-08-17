@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,7 +35,7 @@ public class KafkaEventConsumer {
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
     private final ObjectMapper objectMapper;
-    private final CryptService<JsonNode> jsonCryptoService;
+    private final CryptoService<JsonNode> jsonCryptoService;
     private final Encryption encryption;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final UserTransaction transaction;
@@ -44,7 +44,7 @@ public class KafkaEventConsumer {
     private final Executor executor;
     private final CreatedAtProvider createdAtProvider;
 
-    public KafkaEventConsumer(final CryptService<JsonNode> jsonCryptoService,
+    public KafkaEventConsumer(final CryptoService<JsonNode> jsonCryptoService,
                               @AESEncryptionQualifier final Encryption encryption,
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
                               final UserTransaction transaction,

@@ -17,7 +17,7 @@ import java.util.Optional;
 // It is not possible to call the parent of ObjectNode or JsonNode
 // https://github.com/FasterXML/jackson-databind/issues/2250
 @ApplicationScoped
-public class JsonCryptoService implements CryptService<JsonNode> {
+public class JsonCryptoService implements CryptoService<JsonNode> {
 
     private static final String STRING = "string";
     private static final String INTEGER = "integer";

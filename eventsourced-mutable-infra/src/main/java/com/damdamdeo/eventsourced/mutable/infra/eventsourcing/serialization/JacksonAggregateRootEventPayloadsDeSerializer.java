@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.CryptService;
+import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
@@ -20,12 +20,12 @@ import java.util.Objects;
 public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateRootEventPayloadsDeSerializer {
 
     final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
-    final CryptService<JsonNode> jsonCryptoService;
+    final CryptoService<JsonNode> jsonCryptoService;
     final Encryption encryption;
     final ObjectMapper objectMapper;
 
     public JacksonAggregateRootEventPayloadsDeSerializer(@Any final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
-                                                         final CryptService<JsonNode> jsonCryptoService,
+                                                         final CryptoService<JsonNode> jsonCryptoService,
                                                          @AESEncryptionQualifier final Encryption encryption) {
         this.jacksonAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootEventPayloadDeSerializerBeans);
         this.objectMapper = new ObjectMapper();
