@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -23,7 +24,6 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
@@ -154,29 +154,29 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
           assertEquals(new UnsupportedAggregateRootEventPayload("aggregateRootType", "unknownEventType"), unsupportedAggregateRootEventPayload);
      }
 
-//     FIXME The verify is failing, but why ???
-//     @Test
-//     public void should_recursively_decrypt_aggregate_root_event_payload_when_deserialize_aggregate_root_event() throws Exception {
-//          // Given
-//          doNothing().when(jsonCryptoService).recursiveDecrypt(any(), any());
-//
-//          // When
-//          jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
-//                  "aggregateRootType",
-//                  "eventType",
-//                  "{\"test\":\"test\"}"
-//          );
-//
-//          // Then
-//          final ArgumentCaptor<ObjectNode> sourceCaptor = ArgumentCaptor.forClass(ObjectNode.class);
-//          verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture(), eq(encryption));
-//          JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), false);
-//     }
+//     FIXME The verify is failing, because we've got two different instances between the one injected in this
+//        test and the one in the jacksonAggregateRootEventPayloadsDeSerializer implementation
+     @Test
+     @Disabled
+     public void should_recursively_decrypt_aggregate_root_event_payload_when_deserialize_aggregate_root_event() throws Exception {
+          // Given
+
+          // When
+          jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
+                  "aggregateRootType",
+                  "eventType",
+                  "{\"test\":\"test\"}"
+          );
+
+          // Then
+          final ArgumentCaptor<ObjectNode> sourceCaptor = ArgumentCaptor.forClass(ObjectNode.class);
+          verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture(), eq(encryption));
+          JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), false);
+     }
 
      @Test
      public void should_deserialize_aggregate_root_event() {
           // Given
-          doNothing().when(jsonCryptoService).recursiveDecrypt(any(), any());
 
           // When
           final AggregateRootEventPayload deserialized = jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
