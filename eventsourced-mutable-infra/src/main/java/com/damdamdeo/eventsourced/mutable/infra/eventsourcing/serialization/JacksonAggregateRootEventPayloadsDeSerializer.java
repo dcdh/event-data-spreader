@@ -1,8 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
@@ -21,16 +19,13 @@ public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateR
 
     final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
     final CryptoService<JsonNode> jsonCryptoService;
-    final Encryption encryption;
     final ObjectMapper objectMapper;
 
     public JacksonAggregateRootEventPayloadsDeSerializer(@Any final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
-                                                         final CryptoService<JsonNode> jsonCryptoService,
-                                                         @AESEncryptionQualifier final Encryption encryption) {
+                                                         final CryptoService<JsonNode> jsonCryptoService) {
         this.jacksonAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootEventPayloadDeSerializerBeans);
         this.objectMapper = new ObjectMapper();
         this.jsonCryptoService = jsonCryptoService;
-        this.encryption = encryption;
     }
 
     @Override
@@ -65,7 +60,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateR
                 .map(jacksonAggregateRootEventPayloadDeSerializerBean -> {
                     try {
                         final JsonNode json = objectMapper.readTree(eventPayload);
-                        this.jsonCryptoService.recursiveDecrypt(json, encryption);
+                        this.jsonCryptoService.recursiveDecrypt(json);
                         return jacksonAggregateRootEventPayloadDeSerializerBean.decode(json);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);

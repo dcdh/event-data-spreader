@@ -7,12 +7,10 @@ public interface CryptoService<INFRA> {
     void encrypt(AggregateRootId aggregateRootId,
                  INFRA parentNode,
                  String fieldName,
-                 Encryption encryption) throws UnableToEncryptMissingSecretException;
+                 boolean shouldEncrypt) throws UnableToEncryptMissingSecretException;
 
-    void decrypt(INFRA parentNode,
-                 String fieldName,
-                 Encryption encryption);
+    void decrypt(INFRA parentNode, String fieldName);
 
-    void recursiveDecrypt(INFRA source, Encryption encryption);
+    void recursiveDecrypt(INFRA source);
 
 }

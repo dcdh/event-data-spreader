@@ -31,10 +31,13 @@ public class JsonCryptoService implements CryptoService<JsonNode> {
     public static final String TYPE = "type";
 
     private final SecretStore secretStore;
+    private final Encryption encryption;
     private final ObjectMapper objectMapper;
 
-    public JsonCryptoService(final SecretStore secretStore) {
+    public JsonCryptoService(final SecretStore secretStore,
+                             @AESEncryptionQualifier final Encryption encryption) {
         this.secretStore = Objects.requireNonNull(secretStore);
+        this.encryption = Objects.requireNonNull(encryption);
         this.objectMapper = new ObjectMapper();
     }
 
@@ -176,13 +179,13 @@ public class JsonCryptoService implements CryptoService<JsonNode> {
                     .orElseThrow(() -> new IllegalStateException());
         }
     }
-// AESEncryption or NoEncryption !
+
     @Override
     public void encrypt(final AggregateRootId aggregateRootId,
                         final JsonNode parentNode,
                         final String fieldName,
-                        final Encryption encryption) throws UnableToEncryptMissingSecretException {
-        if (parentNode.isObject()) {
+                        final boolean shouldEncrypt) throws UnableToEncryptMissingSecretException {
+        if (parentNode.isObject() && shouldEncrypt) {
             final JsonNode targetJsonNode = parentNode.get(fieldName);
             final Type type = Type.guessFromObjectNode(targetJsonNode);
             Optional.of(secretStore.read(aggregateRootId))
@@ -201,8 +204,7 @@ public class JsonCryptoService implements CryptoService<JsonNode> {
 
     @Override
     public void decrypt(final JsonNode parentNode,
-                        final String fieldName,
-                        final Encryption encryption) {
+                        final String fieldName) {
         if (parentNode.isObject()) {
             final JsonNode targetJsonNode = parentNode.get(fieldName);
             if (targetJsonNode.isObject() && targetJsonNode.has(ENCRYPTED)) {
@@ -222,19 +224,19 @@ public class JsonCryptoService implements CryptoService<JsonNode> {
     }
 
     @Override
-    public void recursiveDecrypt(final JsonNode jsonNode, final Encryption encryption) {
+    public void recursiveDecrypt(final JsonNode jsonNode) {
         if (jsonNode.isObject()) {
             final Iterator<String> fieldsNameIterator = jsonNode.fieldNames();
             while (fieldsNameIterator.hasNext()) {
                 final String fieldName = fieldsNameIterator.next();
-                decrypt(jsonNode, fieldName, encryption);
-                recursiveDecrypt(jsonNode.get(fieldName), encryption);
+                decrypt(jsonNode, fieldName);
+                recursiveDecrypt(jsonNode.get(fieldName));
             }
         } else if (jsonNode.isArray()) {
             final Iterator<JsonNode> jsonNodeIterator = jsonNode.elements();
             while (jsonNodeIterator.hasNext()) {
                 final JsonNode childJsonNode = jsonNodeIterator.next();
-                recursiveDecrypt(childJsonNode, encryption);
+                recursiveDecrypt(childJsonNode);
             }
         } else {
             // do nothing

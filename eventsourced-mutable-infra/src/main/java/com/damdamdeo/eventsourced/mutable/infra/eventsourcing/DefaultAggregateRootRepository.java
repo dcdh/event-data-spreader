@@ -23,8 +23,6 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
 
     private final Encryption aesEncryption;
 
-    private final Encryption nullEncryption;
-
     private final AggregateRootInstanceCreator aggregateRootInstanceCreator;
 
     public DefaultAggregateRootRepository(final EventRepository eventRepository,
@@ -32,14 +30,12 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                                           final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
                                           final SecretStore secretStore,
                                           @AESEncryptionQualifier final Encryption aesEncryption,
-                                          @NullEncryptionQualifier final Encryption nullEncryption,
                                           final AggregateRootInstanceCreator aggregateRootInstanceCreator) {
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.aggregateRootMaterializedStateRepository = Objects.requireNonNull(aggregateRootMaterializedStateRepository);
         this.aggregateRootMaterializedStatesSerializer = Objects.requireNonNull(aggregateRootMaterializedStatesSerializer);
         this.secretStore = Objects.requireNonNull(secretStore);
         this.aesEncryption = Objects.requireNonNull(aesEncryption);
-        this.nullEncryption = Objects.requireNonNull(nullEncryption);
         this.aggregateRootInstanceCreator = Objects.requireNonNull(aggregateRootInstanceCreator);
     }
 
@@ -58,7 +54,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                     eventRepository.save(event, lastSavedAggregateRootState);
                 });
         aggregateRoot.deleteUnsavedEvents();
-        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, secret, nullEncryption);
+        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, secret, false);
         final DefaultAggregateRootMaterializedState defaultAggregateRootMaterializedState = new DefaultAggregateRootMaterializedState(aggregateRoot, serializedAggregateRoot);
         aggregateRootMaterializedStateRepository.persist(defaultAggregateRootMaterializedState);
         return aggregateRoot;

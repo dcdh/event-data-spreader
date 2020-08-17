@@ -1,7 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.UnableToEncryptMissingSecretException;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,20 +14,17 @@ public class UnsupportedCryptoService implements CryptoService<JsonNode> {
     public void encrypt(final AggregateRootId aggregateRootId,
                         final JsonNode parentNode,
                         final String fieldName,
-                        final Encryption encryption) throws UnableToEncryptMissingSecretException {
+                        final boolean shouldEncrypt) throws UnableToEncryptMissingSecretException {
         throw new UnsupportedOperationException("Must be mocked !");
     }
 
     @Override
-    public void decrypt(final JsonNode parentNode,
-                        final String fieldName,
-                        final Encryption encryption) {
+    public void decrypt(final JsonNode parentNode, final String fieldName) {
         throw new UnsupportedOperationException("Must be mocked !");
     }
 
     @Override
-    public void recursiveDecrypt(final JsonNode source, final Encryption encryption) {
+    public void recursiveDecrypt(final JsonNode source) {
         throw new UnsupportedOperationException("Must be mocked !");
     }
-
 }

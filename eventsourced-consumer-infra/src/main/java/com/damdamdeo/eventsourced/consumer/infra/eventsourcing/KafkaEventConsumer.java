@@ -1,9 +1,7 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +34,6 @@ public class KafkaEventConsumer {
 
     private final ObjectMapper objectMapper;
     private final CryptoService<JsonNode> jsonCryptoService;
-    private final Encryption encryption;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final UserTransaction transaction;
     private final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans;
@@ -45,14 +42,12 @@ public class KafkaEventConsumer {
     private final CreatedAtProvider createdAtProvider;
 
     public KafkaEventConsumer(final CryptoService<JsonNode> jsonCryptoService,
-                              @AESEncryptionQualifier final Encryption encryption,
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
                               final UserTransaction transaction,
                               @Any final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans,
                               final CreatedAtProvider createdAtProvider) {
         this.objectMapper = new ObjectMapper();
         this.jsonCryptoService = Objects.requireNonNull(jsonCryptoService);
-        this.encryption = Objects.requireNonNull(encryption);
         this.kafkaEventConsumedRepository = Objects.requireNonNull(kafkaEventConsumedRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
@@ -87,7 +82,7 @@ public class KafkaEventConsumer {
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
                             final AggregateRootEventConsumable aggregateRootEventConsumable = DecryptedAggregateRootEventConsumable.newBuilder()
                                     .withDebeziumAggregateRootEventConsumable(debeziumAggregateRootEventConsumable)
-                                    .build(jsonCryptoService, encryption);
+                                    .build(jsonCryptoService);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional

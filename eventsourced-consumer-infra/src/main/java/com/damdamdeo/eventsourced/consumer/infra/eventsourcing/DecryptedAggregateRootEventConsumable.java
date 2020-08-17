@@ -2,7 +2,6 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumable;
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -87,11 +86,10 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
             return this;
         }
 
-        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonNode> jsonCryptoService,
-                                                           final Encryption encryption) {
-            jsonCryptoService.recursiveDecrypt(this.eventPayload, encryption);
-            jsonCryptoService.recursiveDecrypt(this.eventMetaData, encryption);
-            jsonCryptoService.recursiveDecrypt(this.materializedState, encryption);
+        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonNode> jsonCryptoService) {
+            jsonCryptoService.recursiveDecrypt(this.eventPayload);
+            jsonCryptoService.recursiveDecrypt(this.eventMetaData);
+            jsonCryptoService.recursiveDecrypt(this.materializedState);
             return new DecryptedAggregateRootEventConsumable(this);
         }
 

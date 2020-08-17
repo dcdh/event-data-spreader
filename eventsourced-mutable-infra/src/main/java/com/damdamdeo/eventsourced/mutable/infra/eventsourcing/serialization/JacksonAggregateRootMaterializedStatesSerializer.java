@@ -1,6 +1,5 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
@@ -25,12 +24,12 @@ public class JacksonAggregateRootMaterializedStatesSerializer implements Aggrega
     }
 
     @Override
-    public String serialize(final AggregateRoot aggregateRoot, final Secret secret, final Encryption encryption) {
+    public String serialize(final AggregateRoot aggregateRoot, final Secret secret, final boolean shouldEncrypt) {
         final String aggregateRootType = aggregateRoot.aggregateRootType();
         return jacksonAggregateRootMaterializedStateSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .findFirst()
-                .map(jacksonAggregateRootMaterializedStateSerializerBean -> jacksonAggregateRootMaterializedStateSerializerBean.encode(aggregateRoot, secret, encryption, this.objectMapper))
+                .map(jacksonAggregateRootMaterializedStateSerializerBean -> jacksonAggregateRootMaterializedStateSerializerBean.encode(aggregateRoot, secret, shouldEncrypt, this.objectMapper))
                 .map(jsonNode -> {
                     try {
                         return objectMapper.writeValueAsString(jsonNode);

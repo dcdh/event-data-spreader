@@ -32,7 +32,6 @@ public class PostgreSQLEventRepository implements EventRepository {
     final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
     final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer;
     final SecretStore secretStore;
-    final Encryption encryption;
     final GitCommitProvider gitCommitProvider;
 
     public PostgreSQLEventRepository(@DataSource("mutable") final AgroalDataSource mutableDataSource,
@@ -40,14 +39,12 @@ public class PostgreSQLEventRepository implements EventRepository {
                                      final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
                                      final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
                                      final SecretStore secretStore,
-                                     @AESEncryptionQualifier Encryption encryption,
                                      final GitCommitProvider gitCommitProvider) {
         this.mutableDataSource = Objects.requireNonNull(mutableDataSource);
         this.aggregateRootEventPayloadsDeSerializer = Objects.requireNonNull(aggregateRootEventPayloadsDeSerializer);
         this.aggregateRootEventMetadataDeSerializer = Objects.requireNonNull(aggregateRootEventMetadataDeSerializer);
         this.aggregateRootMaterializedStatesSerializer = Objects.requireNonNull(aggregateRootMaterializedStatesSerializer);
         this.secretStore = Objects.requireNonNull(secretStore);
-        this.encryption = Objects.requireNonNull(encryption);
         this.gitCommitProvider = Objects.requireNonNull(gitCommitProvider);
     }
 
@@ -83,7 +80,7 @@ public class PostgreSQLEventRepository implements EventRepository {
                 .withCreationDate(aggregateRootEvent.creationDate())
                 .withEventPayload(aggregateRootEvent.eventPayload())
                 .withAggregateRoot(aggregateRoot)
-                .build(aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStatesSerializer, secret, encryption);
+                .build(aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer, aggregateRootMaterializedStatesSerializer, secret, true);
         try (final Connection connection = mutableDataSource.getConnection();
              final PreparedStatement preparedStatement = eventToSave.insertStatement(connection, gitCommitProvider)) {
             preparedStatement.executeUpdate();

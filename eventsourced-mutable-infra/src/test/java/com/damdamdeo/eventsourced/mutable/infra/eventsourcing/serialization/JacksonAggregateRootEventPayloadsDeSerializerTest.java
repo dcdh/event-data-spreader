@@ -1,7 +1,5 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
@@ -107,10 +105,6 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
      @InjectMock
      UnsupportedCryptoService jsonCryptoService;
 
-     @InjectMock
-     @AESEncryptionQualifier
-     Encryption encryption;
-
      @Test
      public void should_serialize_aggregate_root_event() {
           // Given
@@ -170,7 +164,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
 
           // Then
           final ArgumentCaptor<ObjectNode> sourceCaptor = ArgumentCaptor.forClass(ObjectNode.class);
-          verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture(), eq(encryption));
+          verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture());
           JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), false);
      }
 

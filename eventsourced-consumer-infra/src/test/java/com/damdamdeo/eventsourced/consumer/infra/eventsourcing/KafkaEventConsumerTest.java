@@ -2,8 +2,6 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptoService;
-import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
-import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agroal.api.AgroalDataSource;
@@ -45,10 +43,6 @@ public class KafkaEventConsumerTest {
     @InjectMock
     UnsupportedCryptoService jsonCryptoService;
 
-    @InjectMock
-    @AESEncryptionQualifier // cela me choque de devoir utiliser un qualifier mais bon ...
-    Encryption encryption;
-
     @InjectSpy
     AccountDebitedAggregateRootEventConsumer spiedAccountDebitedAggregateRootEventConsumer;
 
@@ -59,7 +53,7 @@ public class KafkaEventConsumerTest {
     @BeforeEach
     public void setup() {
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
-        doNothing().when(jsonCryptoService).decrypt(any(), any(), any());
+        doNothing().when(jsonCryptoService).decrypt(any(), any());
     }
 
     @BeforeEach
@@ -122,7 +116,7 @@ public class KafkaEventConsumerTest {
                         objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
                         objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
                         objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
-                )).build(jsonCryptoService, encryption);
+                )).build(jsonCryptoService);
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }

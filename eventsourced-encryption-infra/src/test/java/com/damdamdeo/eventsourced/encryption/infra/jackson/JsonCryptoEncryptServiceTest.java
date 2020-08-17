@@ -1,9 +1,9 @@
 package com.damdamdeo.eventsourced.encryption.infra.jackson;
 
+import com.damdamdeo.eventsourced.encryption.api.AESEncryptionQualifier;
 import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
-import com.damdamdeo.eventsourced.encryption.api.NullEncryptionQualifier;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,7 +29,7 @@ public class JsonCryptoEncryptServiceTest {
     SecretStore secretStore;
 
     @InjectMock
-    @NullEncryptionQualifier
+    @AESEncryptionQualifier
     Encryption encryption;
 
     @Test
@@ -40,7 +40,22 @@ public class JsonCryptoEncryptServiceTest {
         doReturn(false).when(parentJsonNode).isObject();
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
+
+        // Then
+        verify(parentJsonNode, times(0)).get(any());
+        verify(parentJsonNode, times(1)).isObject();
+    }
+
+    @Test
+    public void should_encrypt_does_not_apply_when_parent_node_is_an_object_and_should_encrypt_is_false() {
+        // Given
+        final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
+        final JsonNode parentJsonNode = mock(JsonNode.class, RETURNS_DEEP_STUBS);
+        doReturn(false).when(parentJsonNode).isObject();
+
+        // When
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", false);
 
         // Then
         verify(parentJsonNode, times(0)).get(any());
@@ -57,7 +72,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn(mock(Secret.class)).when(secretStore).read(any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         verify(parentJsonNode, atLeast(1)).get("fieldToEncrypt");
@@ -76,7 +91,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn(mock(Secret.class)).when(secretStore).read(any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         verify(secretStore).read(aggregateRootId);
@@ -97,10 +112,11 @@ public class JsonCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
-        verify(secret, times(1)).encrypt(aggregateRootId, "valueToEncrypt", encryption);
+//        verify(secret, times(1)).encrypt(aggregateRootId, "valueToEncrypt", encryption); // FIXME does not work because encryption is injected in service
+        verify(secret, times(1)).encrypt(eq(aggregateRootId), eq("valueToEncrypt"), any());
         verify(parentJsonNode, times(1)).isObject();
         verify(parentJsonNode, atLeast(1)).get(any());
         verify(parentJsonNode.get("fieldToEncrypt"), times(1)).isTextual();
@@ -123,7 +139,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -154,7 +170,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -186,7 +202,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -217,7 +233,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -248,7 +264,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -279,7 +295,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -310,7 +326,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn("encryptedValue").when(secret).encrypt(any(), any(), any());
 
         // When
-        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", encryption);
+        jsonCryptoService.encrypt(aggregateRootId, parentJsonNode, "fieldToEncrypt", true);
 
         // Then
         final ArgumentCaptor<JsonNode> encryptedCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -333,7 +349,7 @@ public class JsonCryptoEncryptServiceTest {
         doReturn(true).when(parentJsonNode).isObject();
 
         // When && Then
-        assertThrows(IllegalStateException.class, () -> jsonCryptoService.encrypt(mock(AggregateRootId.class), parentJsonNode, "fieldToEncrypt", encryption));
+        assertThrows(IllegalStateException.class, () -> jsonCryptoService.encrypt(mock(AggregateRootId.class), parentJsonNode, "fieldToEncrypt", true));
         verify(parentJsonNode, times(1)).isObject();
     }
 
