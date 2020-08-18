@@ -515,7 +515,6 @@ public class JsonCryptoDecryptServiceTest {
         // Then
         final String expectedJsonDecrypted = new Scanner(this.getClass().getResourceAsStream("/jsonDecrypted.json"), "UTF-8")
                 .useDelimiter("\\A").next();
-        System.out.println(jsonNode);
         JSONAssert.assertEquals(expectedJsonDecrypted, jsonNode.toString(), false);
 
         verify(carAggregateRootCar01Secret, times(1)).decrypt(any(), any(), any());
