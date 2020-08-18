@@ -165,7 +165,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
           // Then
           final ArgumentCaptor<ObjectNode> sourceCaptor = ArgumentCaptor.forClass(ObjectNode.class);
           verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture());
-          JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), false);
+          JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), true);
      }
 
      @Test
