@@ -43,7 +43,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
     @Transactional
     public <T extends AggregateRoot> T save(final T aggregateRoot) {
         Objects.requireNonNull(aggregateRoot);
-        final Secret secret = getSecret(aggregateRoot, aesEncryption);
+        generateNewSecret(aggregateRoot, aesEncryption);
         final AggregateRoot lastSavedAggregateRootState = createAndLoad(aggregateRoot.aggregateRootId(), aggregateRoot.getClass());
         aggregateRoot.unsavedEvents()
                 .stream()
@@ -54,7 +54,7 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
                     eventRepository.save(event, lastSavedAggregateRootState);
                 });
         aggregateRoot.deleteUnsavedEvents();
-        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, secret, false);
+        final String serializedAggregateRoot = aggregateRootMaterializedStatesSerializer.serialize(aggregateRoot, false);
         final DefaultAggregateRootMaterializedState defaultAggregateRootMaterializedState = new DefaultAggregateRootMaterializedState(aggregateRoot, serializedAggregateRoot);
         aggregateRootMaterializedStateRepository.persist(defaultAggregateRootMaterializedState);
         return aggregateRoot;
@@ -97,13 +97,12 @@ public class DefaultAggregateRootRepository implements AggregateRootRepository {
         return instance;
     }
 
-    private Secret getSecret(final AggregateRoot aggregateRoot,
-                             final Encryption encryption) {
+    private void generateNewSecret(final AggregateRoot aggregateRoot,
+                                   final Encryption encryption) {
         if (Long.valueOf(0l).equals(aggregateRoot.version())) {
             final String newSecretToStore = encryption.generateNewSecret();
-            return secretStore.store(aggregateRoot.aggregateRootId(), newSecretToStore);
+            secretStore.store(aggregateRoot.aggregateRootId(), newSecretToStore);
         }
-        return secretStore.read(aggregateRoot.aggregateRootId());
     }
 
 }

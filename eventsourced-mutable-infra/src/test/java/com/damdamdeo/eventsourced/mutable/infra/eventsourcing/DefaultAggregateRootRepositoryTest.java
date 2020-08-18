@@ -57,7 +57,7 @@ public class DefaultAggregateRootRepositoryTest {
         when(mockAggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
@@ -65,7 +65,7 @@ public class DefaultAggregateRootRepositoryTest {
         // Then
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(mockAggregateRoot.getClass(), "aggregateRootId");
         verify(mockAggregateRoot.aggregateRootId(), times(1)).aggregateRootId();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
@@ -86,7 +86,7 @@ public class DefaultAggregateRootRepositoryTest {
         // Then
         verify(eventRepository, times(1)).loadOrderByVersionASC(mockAggregateRootId);
         verify(mockAggregateRoot, atLeast(1)).aggregateRootId();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -99,14 +99,14 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
 
         // Then
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(mockAggregateRoot, mockSecret, false);
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(mockAggregateRoot, false);
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -119,14 +119,14 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
 
         // Then
         verify(aggregateRootMaterializedStateRepository, times(1)).persist(new DefaultAggregateRootMaterializedState(mockAggregateRoot, "serializedAggregateRoot"));
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -140,7 +140,7 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn("newSecret").when(aesEncryption).generateNewSecret();
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
@@ -148,33 +148,10 @@ public class DefaultAggregateRootRepositoryTest {
         // Then
         verify(secretStore, times(1)).store(mockAggregateRoot.aggregateRootId(), "newSecret");
         verify(aesEncryption, times(1)).generateNewSecret();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(mockAggregateRoot.aggregateRootId(), atLeastOnce()).aggregateRootId();
         verify(mockAggregateRoot, atLeastOnce()).version();
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
-        verifyNoMoreInteractions(secretStore);
-    }
-
-    @Test
-    public void should_read_secret_when_saving_existing_aggregate_root() {
-        // Given
-        final AggregateRoot mockAggregateRoot = mock(AggregateRoot.class, RETURNS_DEEP_STUBS);
-        when(mockAggregateRoot.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
-        when(mockAggregateRoot.version()).thenReturn(1l);
-        final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
-        doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
-
-        // When
-        defaultAggregateRootRepository.save(mockAggregateRoot);
-
-        // Then
-        verify(secretStore, times(1)).read(mockAggregateRoot.aggregateRootId());
-        verify(aesEncryption, times(0)).generateNewSecret();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
-        verify(mockAggregateRoot.aggregateRootId(), atLeastOnce()).aggregateRootId();
-        verify(mockAggregateRoot, atLeastOnce()).version();
-        verify(aggregateRootInstanceCreator, times(1)).createNewInstance(any(), any());
         verifyNoMoreInteractions(secretStore);
     }
 
@@ -186,7 +163,7 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         final AggregateRootEvent mockAggregateRootEvent = mock(AggregateRootEvent.class);
         doReturn("eventType").when(mockAggregateRootEvent).eventType();
@@ -202,7 +179,7 @@ public class DefaultAggregateRootRepositoryTest {
         verify(mockLastSavedAggregateRootState, times(1)).apply("eventType", mockAggregateRootEventPayload);
         verify(mockAggregateRootEvent, times(1)).eventType();
         verify(mockAggregateRootEvent, times(1)).eventPayload();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -215,7 +192,7 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         final AggregateRootEvent mockAggregateRootEvent = mock(AggregateRootEvent.class);
         doReturn("eventType").when(mockAggregateRootEvent).eventType();
@@ -231,7 +208,7 @@ public class DefaultAggregateRootRepositoryTest {
         verify(mockLastSavedAggregateRootState, times(1)).deleteUnsavedEvents();
         verify(mockAggregateRootEvent, times(1)).eventType();
         verify(mockAggregateRootEvent, times(1)).eventPayload();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -244,7 +221,7 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         final AggregateRootEvent mockAggregateRootEvent = mock(AggregateRootEvent.class);
         doReturn("eventType").when(mockAggregateRootEvent).eventType();
@@ -260,7 +237,7 @@ public class DefaultAggregateRootRepositoryTest {
         verify(eventRepository, times(1)).save(mockAggregateRootEvent, mockLastSavedAggregateRootState);
         verify(mockAggregateRootEvent, times(1)).eventType();
         verify(mockAggregateRootEvent, times(1)).eventPayload();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }
@@ -273,14 +250,14 @@ public class DefaultAggregateRootRepositoryTest {
         doReturn(mockSecret).when(secretStore).store(any(), any());
         final AggregateRoot mockLastSavedAggregateRootState = mock(AggregateRoot.class);
         doReturn(mockLastSavedAggregateRootState).when(aggregateRootInstanceCreator).createNewInstance(any(), any());
-        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), any(), anyBoolean());
+        doReturn("serializedAggregateRoot").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
 
         // Then
         verify(mockAggregateRoot).deleteUnsavedEvents();
-        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), any(), anyBoolean());
+        verify(aggregateRootMaterializedStatesSerializer, times(1)).serialize(any(), anyBoolean());
         verify(secretStore).store(any(), any());
         verify(aggregateRootInstanceCreator, atLeastOnce()).createNewInstance(any(), any());
     }

@@ -1,6 +1,5 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,7 +27,7 @@ public class JacksonAggregateRootMaterializedStatesSerializerTest {
         }
 
         @Override
-        public JsonNode encode(final AggregateRoot aggregateRoot, final Secret secret, final boolean shouldEncrypt, final ObjectMapper objectMapper) {
+        public JsonNode encode(final AggregateRoot aggregateRoot, final boolean shouldEncrypt, final ObjectMapper objectMapper) {
             final ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put("test", "test");
             return objectNode;
@@ -47,7 +46,6 @@ public class JacksonAggregateRootMaterializedStatesSerializerTest {
         // When
         final String serialized = jacksonAggregateRootMaterializedStatesSerializer.serialize(
                 aggregateRoot,
-                mock(Secret.class),
                 false
         );
 
@@ -66,7 +64,6 @@ public class JacksonAggregateRootMaterializedStatesSerializerTest {
         final UnsupportedAggregateRoot unsupportedAggregateRoot = assertThrows(UnsupportedAggregateRoot.class,
                 () -> jacksonAggregateRootMaterializedStatesSerializer.serialize(
                         aggregateRoot,
-                        mock(Secret.class),
                         false
                 ));
         assertEquals(new UnsupportedAggregateRoot("unknownAggregateRootType"), unsupportedAggregateRoot);
