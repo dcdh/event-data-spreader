@@ -7,6 +7,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.security.Principal;
+import java.util.Optional;
 
 @Provider
 public class ConnectedUserMetadataEnhancer implements ContainerRequestFilter {
@@ -20,7 +22,10 @@ public class ConnectedUserMetadataEnhancer implements ContainerRequestFilter {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
         MetadataEnhancerContextHolder.put(USER_ANONYMOUS, securityIdentity.isAnonymous());
-        MetadataEnhancerContextHolder.put(USER_NAME, securityIdentity.getPrincipal().getName());
+        MetadataEnhancerContextHolder.put(USER_NAME, Optional.ofNullable(securityIdentity)
+                .map(SecurityIdentity::getPrincipal)
+                .map(Principal::getName)
+                .orElse(""));
     }
 
 }
