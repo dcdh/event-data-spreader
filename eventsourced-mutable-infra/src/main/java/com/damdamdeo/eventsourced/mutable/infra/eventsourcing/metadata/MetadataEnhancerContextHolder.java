@@ -2,6 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 // https://www.adam-bien.com/roller/abien/entry/how_to_pass_context_with
 public class MetadataEnhancerContextHolder {
@@ -18,7 +19,9 @@ public class MetadataEnhancerContextHolder {
     }
 
     public static Object get(final String key) {
-        return THREAD_WITH_CONTEXT.get().get(key);
+        return Optional.ofNullable(THREAD_WITH_CONTEXT.get())
+                .map(map -> map.get(key))
+                .orElse(null);
     }
 
     public static void cleanupThread(){
