@@ -36,20 +36,6 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
     private final JsonNode eventPayload;
     private final JsonNode materializedState;
 
-    public DebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventId aggregateRootEventId,
-                                                final LocalDateTime creationDate,
-                                                final String eventType,
-                                                final JsonNode eventMetaData,
-                                                final JsonNode eventPayload,
-                                                final JsonNode materializedState) {
-        this.aggregateRootEventId = Objects.requireNonNull(aggregateRootEventId);
-        this.creationDate = Objects.requireNonNull(creationDate);
-        this.eventType = Objects.requireNonNull(eventType);
-        this.eventMetaData = Objects.requireNonNull(eventMetaData);
-        this.eventPayload = Objects.requireNonNull(eventPayload);
-        this.materializedState = Objects.requireNonNull(materializedState);
-    }
-
     public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record, final ObjectMapper objectMapper)
             throws UnableToDecodeDebeziumEventMessageException, UnsupportedDebeziumOperationException, JsonProcessingException {
         if (record.getKey() == null) {
