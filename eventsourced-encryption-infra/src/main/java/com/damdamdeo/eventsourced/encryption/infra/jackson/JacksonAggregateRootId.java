@@ -11,14 +11,14 @@ public final class JacksonAggregateRootId implements AggregateRootId {
     private final String aggregateRootId;
 
     public JacksonAggregateRootId(final JsonNode jsonNodeEncrypted) {
-        this(jsonNodeEncrypted.get(JsonCryptoService.AGGREGATE_ROOT_TYPE).asText(),
-                jsonNodeEncrypted.get(JsonCryptoService.AGGREGATE_ROOT_ID).asText());
+        this(jsonNodeEncrypted.get(JsonCryptoService.AGGREGATE_ROOT_ID).asText(),
+                jsonNodeEncrypted.get(JsonCryptoService.AGGREGATE_ROOT_TYPE).asText());
     }
 
-    public JacksonAggregateRootId(final String aggregateRootType,
-                                  final String aggregateRootId) {
-        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
+    public JacksonAggregateRootId(final String aggregateRootId,
+                                  final String aggregateRootType) {
         this.aggregateRootId = Objects.requireNonNull(aggregateRootId);
+        this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
     }
 
     @Override

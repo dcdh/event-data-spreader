@@ -113,7 +113,7 @@ public class JsonCryptoDecryptServiceTest {
         jsonCryptoService.decrypt(jsonNode, "fieldToDecrypt");
 
         // Then
-        verify(secretStore, times(1)).read(new JacksonAggregateRootId("aggregateRootType", "aggregateRootId"));
+        verify(secretStore, times(1)).read(new JacksonAggregateRootId("aggregateRootId", "aggregateRootType"));
         verify(jsonNode, times(1)).isObject();
         verify(jsonNode.get("fieldToDecrypt"), times(1)).isObject();
         verify(jsonNode.get("fieldToDecrypt"), times(1)).has(any());
@@ -488,26 +488,26 @@ public class JsonCryptoDecryptServiceTest {
 
         // define CarAggregateRoot Car01 decrypt behavior
         final Secret carAggregateRootCar01Secret = mock(Secret.class, RETURNS_DEEP_STUBS);
-        doReturn("Damien").when(carAggregateRootCar01Secret).decrypt(eq(new JacksonAggregateRootId("CarAggregateRoot", "Car01")),
+        doReturn("Damien").when(carAggregateRootCar01Secret).decrypt(eq(new JacksonAggregateRootId("Car01", "CarAggregateRoot")),
                 eq("ownerAsEncryptedValue"),
                 any());
-        doReturn(carAggregateRootCar01Secret).when(secretStore).read(new JacksonAggregateRootId("CarAggregateRoot", "Car01"));
+        doReturn(carAggregateRootCar01Secret).when(secretStore).read(new JacksonAggregateRootId("Car01", "CarAggregateRoot"));
 
         // define DriverAggregateRoot Driver01 decrypt behavior
         final Secret driverAggregateRootDriver01Secret = mock(Secret.class, RETURNS_DEEP_STUBS);
-        doReturn("Damien").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+        doReturn("Damien").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot")),
                 eq("driver[0]NameAsEncryptedValue"),
                 any());
-        doReturn("37").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+        doReturn("37").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot")),
                 eq("driver[0]AgeAsEncryptedValue"),
                 any());
-        doReturn("2000").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+        doReturn("2000").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot")),
                 eq("driver[0]LicenseYearOfLicenceAsEncryptedValue"),
                 any());
-        doReturn("C").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01")),
+        doReturn("C").when(driverAggregateRootDriver01Secret).decrypt(eq(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot")),
                 eq("driver[0]LicenseCategoryAsEncryptedValue"),
                 any());
-        doReturn(driverAggregateRootDriver01Secret).when(secretStore).read(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01"));
+        doReturn(driverAggregateRootDriver01Secret).when(secretStore).read(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot"));
 
         // When
         jsonCryptoService.recursiveDecrypt(jsonNode);
@@ -518,9 +518,9 @@ public class JsonCryptoDecryptServiceTest {
         JSONAssert.assertEquals(expectedJsonDecrypted, jsonNode.toString(), true);
 
         verify(carAggregateRootCar01Secret, times(1)).decrypt(any(), any(), any());
-        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("CarAggregateRoot", "Car01"));
+        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("Car01", "CarAggregateRoot"));
 
         verify(driverAggregateRootDriver01Secret, times(4)).decrypt(any(), any(), any());
-        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("DriverAggregateRoot", "Driver01"));
+        verify(secretStore, atLeastOnce()).read(new JacksonAggregateRootId("Driver01", "DriverAggregateRoot"));
     }
 }
