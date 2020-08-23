@@ -108,15 +108,14 @@ public class KafkaEventConsumerTest {
 
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
-        final AggregateRootEventConsumable aggregateRootEventConsumer = DecryptedAggregateRootEventConsumable.newBuilder()
-                .withDebeziumAggregateRootEventConsumable(new DebeziumAggregateRootEventConsumable(
-                        new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
-                        LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
-                        "AccountDebited",
-                        objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
-                        objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
-                        objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
-                )).build(jsonCryptoService);
+        final AggregateRootEventConsumable aggregateRootEventConsumer = new DecryptedAggregateRootEventConsumable(
+                new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
+                "AccountDebited",
+                LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
+                objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
+                objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
+                objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
+        );
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }

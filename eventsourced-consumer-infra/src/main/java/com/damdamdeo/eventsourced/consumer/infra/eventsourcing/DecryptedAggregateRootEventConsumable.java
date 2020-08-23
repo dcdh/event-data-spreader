@@ -22,13 +22,29 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
 
     private final JsonNode materializedState;
 
+    public DecryptedAggregateRootEventConsumable(final AggregateRootEventId eventId,
+                                                 final String eventType,
+                                                 final LocalDateTime creationDate,
+                                                 final JsonNode eventPayload,
+                                                 final JsonNode eventMetaData,
+                                                 final JsonNode materializedState) {
+        this.eventId = Objects.requireNonNull(eventId);
+        this.eventType = Objects.requireNonNull(eventType);
+        this.creationDate = Objects.requireNonNull(creationDate);
+        this.eventPayload = Objects.requireNonNull(eventPayload);
+        this.eventMetaData = Objects.requireNonNull(eventMetaData);
+        this.materializedState = Objects.requireNonNull(materializedState);
+    }
+
     private DecryptedAggregateRootEventConsumable(final Builder builder) {
-        this.eventId = Objects.requireNonNull(builder.eventId);
-        this.eventType = Objects.requireNonNull(builder.eventType);
-        this.creationDate = Objects.requireNonNull(builder.creationDate);
-        this.eventPayload = Objects.requireNonNull(builder.eventPayload);
-        this.eventMetaData = Objects.requireNonNull(builder.eventMetaData);
-        this.materializedState = Objects.requireNonNull(builder.materializedState);
+        this(
+                builder.eventId,
+                builder.eventType,
+                builder.creationDate,
+                builder.eventPayload,
+                builder.eventMetaData,
+                builder.materializedState
+        );
     }
 
     @Override
