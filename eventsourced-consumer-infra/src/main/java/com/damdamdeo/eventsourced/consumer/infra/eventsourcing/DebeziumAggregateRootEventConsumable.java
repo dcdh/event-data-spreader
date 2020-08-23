@@ -32,8 +32,8 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
     private final LocalDateTime creationDate;
 
     private final String eventType;
-    private final JsonNode eventMetaData;
     private final JsonNode eventPayload;
+    private final JsonNode eventMetaData;
     private final JsonNode materializedState;
 
     public DebeziumAggregateRootEventConsumable(final IncomingKafkaRecord<JsonObject, JsonObject> record, final ObjectMapper objectMapper)
@@ -63,8 +63,8 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
         final Instant instant = Instant.ofEpochMilli(Objects.requireNonNull(after.getLong(EVENT_CREATION_DATE)) / 1000);
         this.creationDate = instant.atZone(ZoneOffset.UTC).toLocalDateTime();
         this.eventType = Objects.requireNonNull(after.getString(EVENT_EVENT_TYPE));
-        this.eventMetaData = objectMapper.readTree(Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA)));
         this.eventPayload = objectMapper.readTree(Objects.requireNonNull(after.getString(EVENT_EVENT_PAYLOAD)));
+        this.eventMetaData = objectMapper.readTree(Objects.requireNonNull(after.getString(EVENT_EVENT_METADATA)));
         this.materializedState = objectMapper.readTree(Objects.requireNonNull(after.getString(MATERIALIZED_STATE)));
     }
 
@@ -84,13 +84,13 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
     }
 
     @Override
-    public JsonNode eventMetaData() {
-        return eventMetaData;
+    public JsonNode eventPayload() {
+        return eventPayload;
     }
 
     @Override
-    public JsonNode eventPayload() {
-        return eventPayload;
+    public JsonNode eventMetaData() {
+        return eventMetaData;
     }
 
     @Override
@@ -106,14 +106,14 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
         return Objects.equals(aggregateRootEventId, that.aggregateRootEventId) &&
                 Objects.equals(creationDate, that.creationDate) &&
                 Objects.equals(eventType, that.eventType) &&
-                Objects.equals(eventMetaData, that.eventMetaData) &&
                 Objects.equals(eventPayload, that.eventPayload) &&
+                Objects.equals(eventMetaData, that.eventMetaData) &&
                 Objects.equals(materializedState, that.materializedState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateRootEventId, creationDate, eventType, eventMetaData, eventPayload, materializedState);
+        return Objects.hash(aggregateRootEventId, creationDate, eventType, eventPayload, eventMetaData, materializedState);
     }
 
     @Override
@@ -122,8 +122,8 @@ public final class DebeziumAggregateRootEventConsumable implements AggregateRoot
                 "aggregateRootEventId=" + aggregateRootEventId +
                 ", creationDate=" + creationDate +
                 ", eventType='" + eventType + '\'' +
-                ", eventMetaData='" + eventMetaData + '\'' +
                 ", eventPayload='" + eventPayload + '\'' +
+                ", eventMetaData='" + eventMetaData + '\'' +
                 ", materializedState='" + materializedState + '\'' +
                 '}';
     }
