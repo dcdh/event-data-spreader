@@ -34,7 +34,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializer implements Aggre
         return jacksonAggregateRootMaterializedStateDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .findFirst()
-                .map(jacksonAggregateRootMaterializedStateDeSerializerBean -> jacksonAggregateRootMaterializedStateDeSerializerBean.encode(aggregateRoot, shouldEncrypt, this.objectMapper))
+                .map(jacksonAggregateRootMaterializedStateDeSerializerBean -> jacksonAggregateRootMaterializedStateDeSerializerBean.serialize(aggregateRoot, shouldEncrypt, this.objectMapper))
                 .map(jsonNode -> {
                     try {
                         return objectMapper.writeValueAsString(jsonNode);
@@ -55,7 +55,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializer implements Aggre
                     try {
                         final JsonNode aggregateRoot = objectMapper.readTree(aggregateRootMaterializedState.serializedMaterializedState());
                         cryptoService.recursiveDecrypt(aggregateRoot);
-                        return jacksonAggregateRootMaterializedStateDeSerializerBean.decode(aggregateRootMaterializedState.aggregateRootId(), aggregateRoot, aggregateRootMaterializedState.version());
+                        return jacksonAggregateRootMaterializedStateDeSerializerBean.deserialize(aggregateRootMaterializedState.aggregateRootId(), aggregateRoot, aggregateRootMaterializedState.version());
                     } catch (final JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }

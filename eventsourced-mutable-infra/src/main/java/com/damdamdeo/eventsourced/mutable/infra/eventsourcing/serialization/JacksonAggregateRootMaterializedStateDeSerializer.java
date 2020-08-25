@@ -9,8 +9,8 @@ public interface JacksonAggregateRootMaterializedStateDeSerializer {
 
     String aggregateRootType();
 
-    JsonNode encode(AggregateRoot aggregateRoot, boolean shouldEncrypt, ObjectMapper objectMapper);
+    JsonNode serialize(AggregateRoot aggregateRoot, boolean shouldEncrypt, ObjectMapper objectMapper);
 
-    <T extends AggregateRoot> T decode(AggregateRootId aggregateRootId, JsonNode aggregateRoot, Long version);
+    <T extends AggregateRoot> T deserialize(AggregateRootId aggregateRootId, JsonNode aggregateRoot, Long version);
 
 }

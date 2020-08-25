@@ -75,14 +75,14 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
         }
 
         @Override
-        public JsonNode encode(final AggregateRoot aggregateRoot, final boolean shouldEncrypt, final ObjectMapper objectMapper) {
+        public JsonNode serialize(final AggregateRoot aggregateRoot, final boolean shouldEncrypt, final ObjectMapper objectMapper) {
             final ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put("test", "test");
             return objectNode;
         }
 
         @Override
-        public TestAggregateRoot decode(final AggregateRootId aggregateRootId, final JsonNode aggregateRoot, final Long version) {
+        public TestAggregateRoot deserialize(final AggregateRootId aggregateRootId, final JsonNode aggregateRoot, final Long version) {
             return TestAggregateRoot.newBuilder()
                     .withAggregateRootId(aggregateRootId)
                     .withVersion(version)
@@ -150,7 +150,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
 
         // Then
         assertEquals(TestAggregateRoot.newBuilder().withAggregateRootId("aggregateRootId").withVersion(0l).build(), testAggregateRoot);
-        verify(jacksonAggregateRootMaterializedStateDeSerializerTest, times(1)).decode(mockAggregateRootMaterializedState.aggregateRootId(),
+        verify(jacksonAggregateRootMaterializedStateDeSerializerTest, times(1)).deserialize(mockAggregateRootMaterializedState.aggregateRootId(),
                 objectMapper.createObjectNode(),
                 0L);
         verify(cryptoService, times(1)).recursiveDecrypt(any());
