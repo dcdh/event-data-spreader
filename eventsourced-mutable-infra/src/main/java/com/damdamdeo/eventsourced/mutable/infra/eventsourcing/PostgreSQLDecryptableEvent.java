@@ -4,7 +4,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import org.apache.commons.lang3.Validate;
 
 import java.sql.Connection;
@@ -40,7 +40,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
     private PostgreSQLDecryptableEvent(final EncryptedEventBuilder builder,
                                        final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer,
                                        final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                       final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
+                                       final AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer,
                                        final boolean shouldEncryptAggregateRootMaterializedStates) {
         this.postgreSQLEventId = new PostgreSQLAggregateRootEventId(builder.aggregateRootEventId);
         this.eventType = builder.eventType;
@@ -49,7 +49,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
         this.eventPayload = aggregateRootEventPayloadsDeSerializer.serialize(builder.aggregateRootEventId.aggregateRootId(),
                 builder.eventType,
                 builder.aggregateRootEventPayload);
-        this.materializedState = aggregateRootMaterializedStatesSerializer.serialize(builder.aggregateRoot, shouldEncryptAggregateRootMaterializedStates);
+        this.materializedState = aggregateRootMaterializedStatesDeSerializer.serialize(builder.aggregateRoot, shouldEncryptAggregateRootMaterializedStates);
     }
 
     public PreparedStatement insertStatement(final Connection con, final GitCommitProvider gitCommitProvider) throws SQLException {
@@ -105,7 +105,7 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
 
         public PostgreSQLDecryptableEvent build(final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer,
                                                 final AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer,
-                                                final AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer,
+                                                final AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer,
                                                 final boolean shouldEncryptAggregateRootMaterializedStates) {
             Validate.notNull(aggregateRootEventId);
             Validate.notNull(eventType);
@@ -115,9 +115,9 @@ public final class PostgreSQLDecryptableEvent implements DecryptableEvent {
             Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootId().equals(aggregateRoot.aggregateRootId().aggregateRootId()));
             Validate.validState(aggregateRootEventId.aggregateRootId().aggregateRootType().equals(aggregateRoot.aggregateRootId().aggregateRootType()));
             Validate.notNull(aggregateRootEventPayloadsDeSerializer);
-            Validate.notNull(aggregateRootMaterializedStatesSerializer);
+            Validate.notNull(aggregateRootMaterializedStatesDeSerializer);
             return new PostgreSQLDecryptableEvent(this, aggregateRootEventPayloadsDeSerializer, aggregateRootEventMetadataDeSerializer,
-                    aggregateRootMaterializedStatesSerializer, shouldEncryptAggregateRootMaterializedStates);
+                    aggregateRootMaterializedStatesDeSerializer, shouldEncryptAggregateRootMaterializedStates);
         }
 
     }

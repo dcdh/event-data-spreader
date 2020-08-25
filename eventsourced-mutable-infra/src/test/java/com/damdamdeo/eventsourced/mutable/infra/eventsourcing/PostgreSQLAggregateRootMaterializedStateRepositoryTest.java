@@ -1,7 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.ApiAggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnknownAggregateRootException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -18,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
@@ -108,4 +111,38 @@ public class PostgreSQLAggregateRootMaterializedStateRepositoryTest {
         }
         verify(gitCommitProvider, times(2)).gitCommitId();
     }
+
+    @Test
+    public void should_throw_UnknownAggregateRootException_when_finding_unknown_materialized_state() {
+        // Given
+
+        // When
+        final UnknownAggregateRootException unknownAggregateRootException = assertThrows(UnknownAggregateRootException.class,
+                () -> aggregateRootMaterializedStateRepository.find(new ApiAggregateRootId("unknownAggregateRootId", "aggregateRootType")));
+
+        // Then
+        assertEquals(new UnknownAggregateRootException(new ApiAggregateRootId("unknownAggregateRootId", "aggregateRootType")),
+                unknownAggregateRootException);
+    }
+
+    @Test
+    public void should_return_expected_materialized_state_when_finding_existent_materialized_state() {
+        // Given
+        doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
+
+        aggregateRootMaterializedStateRepository.persist(
+                new PostgreSQLAggregateRootMaterializedState(
+                        new PostgreSQLAggregateRootId("aggregateRootId", "aggregateRootType"), "{}", 0L));
+
+        // When
+        final AggregateRootMaterializedState aggregateRootMaterializedState = aggregateRootMaterializedStateRepository.find(
+                new ApiAggregateRootId("aggregateRootId", "aggregateRootType"));
+
+        // Then
+        assertEquals(new PostgreSQLAggregateRootMaterializedState(new PostgreSQLAggregateRootId("aggregateRootId", "aggregateRootType"),
+                        "{}", 0L),
+                aggregateRootMaterializedState);
+        verify(gitCommitProvider, atLeastOnce()).gitCommitId();
+    }
+
 }

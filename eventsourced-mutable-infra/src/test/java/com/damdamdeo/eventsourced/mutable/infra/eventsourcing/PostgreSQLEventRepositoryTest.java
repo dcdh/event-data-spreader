@@ -6,7 +6,7 @@ import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -44,7 +44,7 @@ public class PostgreSQLEventRepositoryTest {
     AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
 
     @InjectMock
-    AggregateRootMaterializedStatesSerializer aggregateRootMaterializedStatesSerializer;
+    AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer;
 
     @InjectMock
     GitCommitProvider gitCommitProvider;
@@ -67,7 +67,7 @@ public class PostgreSQLEventRepositoryTest {
     public void setupInjectedServicesMocks() {
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
         doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
-        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesSerializer).serialize(any(), anyBoolean());
+        doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesDeSerializer).serialize(any(), anyBoolean());
         doReturn(mock(Secret.class)).when(secretStore).read(any());
     }
 

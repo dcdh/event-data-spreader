@@ -1,6 +1,5 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 
 import javax.enterprise.context.ApplicationScoped;

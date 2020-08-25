@@ -1,8 +1,10 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
+import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateRepository;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnknownAggregateRootException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.Startup;
@@ -10,10 +12,7 @@ import io.quarkus.runtime.Startup;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -55,6 +54,22 @@ public class PostgreSQLAggregateRootMaterializedStateRepository implements Aggre
         try (final Connection connection = mutableDataSource.getConnection();
              final PreparedStatement preparedStatement = postgreSQLAggregateRootMaterializedState.upsertStatement(connection, gitCommitProvider)) {
             preparedStatement.executeUpdate();
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public AggregateRootMaterializedState find(AggregateRootId aggregateRootId) {
+        try (final Connection connection = mutableDataSource.getConnection();
+             final PreparedStatement preparedStatement = connection.prepareStatement("SELECT aggregaterootid, aggregateroottype, serializedmaterializedstate, version FROM AGGREGATE_ROOT_MATERIALIZED_STATE WHERE aggregaterootid = ? AND aggregateroottype = ?")) {
+            preparedStatement.setString(1, aggregateRootId.aggregateRootId());
+            preparedStatement.setString(2, aggregateRootId.aggregateRootType());
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return new PostgreSQLAggregateRootMaterializedState(resultSet);
+            }
+            throw new UnknownAggregateRootException(aggregateRootId);
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }

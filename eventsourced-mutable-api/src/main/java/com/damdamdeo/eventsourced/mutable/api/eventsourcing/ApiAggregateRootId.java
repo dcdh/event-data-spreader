@@ -15,6 +15,14 @@ public final class ApiAggregateRootId implements AggregateRootId {
         this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
     }
 
+    public ApiAggregateRootId(final AggregateRootId aggregateRootId) {
+        this(aggregateRootId.aggregateRootId(), aggregateRootId.aggregateRootType());
+    }
+
+    public ApiAggregateRootId(final String aggregateRootId, final Class clazz) {
+        this(aggregateRootId, clazz.getSimpleName());
+    }
+
     @Override
     public String aggregateRootId() {
         return aggregateRootId;

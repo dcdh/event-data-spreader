@@ -6,6 +6,7 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -41,6 +42,12 @@ public final class PostgreSQLAggregateRootMaterializedState implements Aggregate
         this(new PostgreSQLAggregateRootId(aggregateRootMaterializedState.aggregateRootId()),
                 aggregateRootMaterializedState.serializedMaterializedState(),
                 aggregateRootMaterializedState.version());
+    }
+
+    public PostgreSQLAggregateRootMaterializedState(final ResultSet resultSet) throws SQLException {
+        this(new PostgreSQLAggregateRootId(resultSet),
+                resultSet.getString("serializedmaterializedstate"),
+                resultSet.getLong("version"));
     }
 
     @Override

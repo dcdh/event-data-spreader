@@ -18,6 +18,12 @@ public abstract class AggregateRoot {
         this.aggregateRootType = this.getClass().getSimpleName();
     }
 
+    public AggregateRoot(final String aggregateRootId, Long version) {
+        this(aggregateRootId);
+        this.version = Objects.requireNonNull(version);
+        Validate.validState(version >= 0l);
+    }
+
     @SuppressWarnings("unchecked")
     public final void apply(final String eventType,
                             final AggregateRootEventPayload aggregateRootEventPayload) {
