@@ -4,6 +4,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,7 @@ public abstract class AggregateRoot {
         final AggregateRootEvent aggregateRootEventToApply = new AggregateRootEvent(
                 new DefaultAggregateRootEventId(aggregateRootId(), this.version),
                 eventType,
-                LocalDateTime.now(),
+                LocalDateTime.now(ZoneOffset.UTC),
                 aggregateRootEventPayload);
         this.unsavedAggregateRootEvents.add(aggregateRootEventToApply);
     }

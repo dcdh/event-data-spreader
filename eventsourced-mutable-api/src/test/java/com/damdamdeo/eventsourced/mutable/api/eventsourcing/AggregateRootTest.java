@@ -3,6 +3,8 @@ package com.damdamdeo.eventsourced.mutable.api.eventsourcing;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,6 +52,22 @@ public class AggregateRootTest {
         assertEquals(aggregateRootEventPayload, aggregateRoot.unsavedEvents().get(0).eventPayload());
         assertEquals(0l, aggregateRoot.version());
         assertEquals(1, aggregateRoot.unsavedEvents().size());
+    }
+
+    @Test
+    public void should_creation_date_defined_to_UTC() {
+        // Given
+        final LocalDateTime start = LocalDateTime.now(ZoneOffset.UTC);
+        final AggregateRoot aggregateRoot = new TestAggregateRoot();
+        final AggregateRootEventPayload aggregateRootEventPayload = mock(AggregateRootEventPayload.class);
+
+        // When
+        aggregateRoot.apply("eventType", aggregateRootEventPayload);
+        final LocalDateTime end = LocalDateTime.now(ZoneOffset.UTC);
+
+        // Then
+        final LocalDateTime creationDate = aggregateRoot.unsavedEvents().get(0).creationDate();
+        assertTrue(creationDate.compareTo(start) >= 0 && creationDate.compareTo(end) <= 0);
     }
 
     @Test
