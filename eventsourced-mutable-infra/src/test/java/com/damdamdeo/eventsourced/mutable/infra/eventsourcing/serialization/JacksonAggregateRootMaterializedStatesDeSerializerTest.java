@@ -41,6 +41,8 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
             private String aggregateRootId;
             private Long version;
 
+            private Builder() {}
+
             public Builder withAggregateRootId(final AggregateRootId aggregateRootId) {
                 this.aggregateRootId = aggregateRootId.aggregateRootId();
                 return this;
