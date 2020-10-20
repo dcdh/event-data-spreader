@@ -1,15 +1,19 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandHandler;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandLockingType;
+import com.hazelcast.core.HazelcastInstance;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.concurrent.Callable;
+import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @QuarkusTest
 public class CommandExecutorTest {
@@ -17,32 +21,99 @@ public class CommandExecutorTest {
     @Inject
     CommandExecutor commandExecutor;
 
-    @Test
-    public void should_execute_callable() throws Throwable {
-        // Given
-        final Callable<Void> callable = mock(Callable.class);
-        final Void givenVoidReturn = mock(Void.class);
-        doReturn(givenVoidReturn).when(callable).call();
+    @Inject
+    HazelcastInstance hazelcastClient;
 
-        // When
-        final Void response = commandExecutor.execute(callable);
+    @Inject
+    AggregateOnlyLockCommandHandler aggregateOnlyLockCommandHandler;
 
-        // Then
-        assertEquals(givenVoidReturn, response);
-        verify(callable, times(1)).call();
+    @Inject
+    GlobalLockCommandHandler globalLockCommandHandler;
+
+    public static class AggregateOnlyLockCommand implements Command {
+
+        @Override
+        public CommandLockingType commandLockingType() {
+            return CommandLockingType.AGGREGATE_ONLY;
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return "aggregateRootId";
+        }
+
     }
 
-    final static class MyException extends Exception {
+    @ApplicationScoped
+    public static class AggregateOnlyLockCommandHandler implements CommandHandler<AggregateRoot, AggregateOnlyLockCommand> {
 
+        private final HazelcastInstance hazelcastClient;
+
+        public AggregateOnlyLockCommandHandler(final HazelcastInstance hazelcastClient) {
+            this.hazelcastClient = Objects.requireNonNull(hazelcastClient);
+        }
+
+        @CommandExecutorBinding
+        @Override
+        public AggregateRoot execute(final AggregateOnlyLockCommand command) throws Throwable {
+            assertThat(hazelcastClient.getCPSubsystem().getLock("aggregateRootId").isLocked(), equalTo(true));
+            assertThat(hazelcastClient.getCPSubsystem().getLock("one-time-command-execution").isLocked(), equalTo(false));
+            return null;
+        }
+    }
+
+    public static class GlobalLockCommand implements Command {
+
+        @Override
+        public CommandLockingType commandLockingType() {
+            return CommandLockingType.GLOBAL;
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return "aggregateRootId";
+        }
+    }
+
+    @ApplicationScoped
+    public static class GlobalLockCommandHandler implements CommandHandler<AggregateRoot, GlobalLockCommand> {
+
+        private final HazelcastInstance hazelcastClient;
+
+        public GlobalLockCommandHandler(final HazelcastInstance hazelcastClient) {
+            this.hazelcastClient = Objects.requireNonNull(hazelcastClient);
+        }
+
+        @CommandExecutorBinding
+        @Override
+        public AggregateRoot execute(GlobalLockCommand command) throws Throwable {
+            assertThat(hazelcastClient.getCPSubsystem().getLock("aggregateRootId").isLocked(), equalTo(true));
+            assertThat(hazelcastClient.getCPSubsystem().getLock("one-time-command-execution").isLocked(), equalTo(true));
+            return null;
+        }
     }
 
     @Test
-    public void should_throw_my_exception_when_callable_thrown_my_exception() {
+    public void should_execute_apply_global_lock_and_aggregate_root_id_lock_on_global_lock_command_handler_and_next_unlock_all() throws Throwable {
         // Given
+
         // When && Then
-        assertThrows(MyException.class, () -> commandExecutor.execute(() -> {
-            throw new MyException();
-        }));
+        globalLockCommandHandler.execute(new GlobalLockCommand());
+        assertThat(hazelcastClient.getCPSubsystem().getLock("aggregateRootId").isLocked(), equalTo(false));
+        assertThat(hazelcastClient.getCPSubsystem().getLock("one-time-command-execution").isLocked(), equalTo(false));
     }
+
+    @Test
+    public void should_execute_apply_aggregate_root_id_lock_on_aggregate_root_lock_command_handler_and_next_unlock_all() throws Throwable {
+        // Given
+
+        // When && Then
+        aggregateOnlyLockCommandHandler.execute(new AggregateOnlyLockCommand());
+        assertThat(hazelcastClient.getCPSubsystem().getLock("aggregateRootId").isLocked(), equalTo(false));
+        assertThat(hazelcastClient.getCPSubsystem().getLock("one-time-command-execution").isLocked(), equalTo(false));
+    }
+
+    // TODO should unlock after an exception is thrown
+    // Je devrais passer par du @MockBean
 
 }

@@ -1,5 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandHandler;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandLockingType;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.Test;
@@ -18,14 +22,29 @@ public class CommandExecutorInterceptorTest {
     CommandExecutor commandExecutor;
 
     @Inject
-    CommandHandler commandHandler;
+    TestCommandHandler commandHandler;
+
+    public static class TestCommand implements Command {
+
+        @Override
+        public CommandLockingType commandLockingType() {
+            return null;
+        }
+
+        @Override
+        public String aggregateRootId() {
+            return null;
+        }
+    }
 
     @CommandExecutorBinding
     @ApplicationScoped
-    public static class CommandHandler {
+    public static class TestCommandHandler implements CommandHandler<AggregateRoot, TestCommand> {
 
-        public void execute() {}
-
+        @Override
+        public AggregateRoot execute(final TestCommand command) throws Throwable {
+            return null;
+        }
     }
 
     @Test
@@ -33,7 +52,7 @@ public class CommandExecutorInterceptorTest {
         // Given
 
         // When
-        commandHandler.execute();
+        commandHandler.execute(new TestCommand());
 
         // Then
         verify(commandExecutor, times(1)).execute(any());

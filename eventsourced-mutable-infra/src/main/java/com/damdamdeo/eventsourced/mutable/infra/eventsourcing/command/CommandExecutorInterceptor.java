@@ -1,5 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -17,7 +19,12 @@ public class CommandExecutorInterceptor {
 
     @AroundInvoke
     public Object execute(final InvocationContext context)  throws Throwable {
-        return this.commandExecutor.execute(() -> context.proceed());
+        if ("execute".equals(context.getMethod().getName())
+                && context.getParameters().length == 1
+                && Command.class.isAssignableFrom(context.getParameters()[0].getClass())) {
+            return this.commandExecutor.execute(context);
+        }
+        return context.proceed();
     }
 
 }
