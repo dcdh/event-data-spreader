@@ -19,7 +19,7 @@ public class AggregateRootInstanceCreatorTest {
     }
 
     @Inject
-    private AggregateRootInstanceCreator aggregateRootInstanceCreator;
+    AggregateRootInstanceCreator aggregateRootInstanceCreator;
 
     @Test
     public void should_create_instance() {
