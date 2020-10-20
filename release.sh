@@ -6,6 +6,5 @@ then
 fi
 mvn versions:set -DnewVersion=1.0-$(git rev-parse --short HEAD) -DprocessAllModules=true
 docker kill $(docker ps -aq); docker rm $(docker ps -aq); docker volume prune -f; docker network prune -f;
-export TESTCONTAINERS_RYUK_DISABLED=true;
 mvn clean test install
 mvn versions:revert
