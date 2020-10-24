@@ -11,7 +11,17 @@
       "license": {
         "yearOfLicence": 2000,
         "category": "C"
-      }
+      },
+      "drivingSkills": "S"
+    },
+    {
+      "name": "Roger",
+      "age": 30,
+      "license": {
+        "yearOfLicence": 1980,
+        "category": "B"
+      },
+      "drivingSkills": "B"
     }
   ]
 }

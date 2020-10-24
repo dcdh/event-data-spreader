@@ -14,29 +14,59 @@
       "name": {
         "encrypted": "driver[0]NameAsEncryptedValue",
         "aggregateRootType": "DriverAggregateRoot",
-        "aggregateRootId": "Driver01",
+        "aggregateRootId": "Driver00",
         "type": "string"
       },
       "age": {
         "encrypted": "driver[0]AgeAsEncryptedValue",
         "aggregateRootType": "DriverAggregateRoot",
-        "aggregateRootId": "Driver01",
+        "aggregateRootId": "Driver00",
         "type": "integer"
       },
       "license": {
         "yearOfLicence": {
           "encrypted": "driver[0]LicenseYearOfLicenceAsEncryptedValue",
           "aggregateRootType": "DriverAggregateRoot",
-          "aggregateRootId": "Driver01",
+          "aggregateRootId": "Driver00",
           "type": "integer"
         },
         "category": {
           "encrypted": "driver[0]LicenseCategoryAsEncryptedValue",
           "aggregateRootType": "DriverAggregateRoot",
+          "aggregateRootId": "Driver00",
+          "type": "string"
+        }
+      },
+      "drivingSkills": "S"
+    },
+    {
+      "name": {
+        "encrypted": "driver[1]NameAsEncryptedValue",
+        "aggregateRootType": "DriverAggregateRoot",
+        "aggregateRootId": "Driver01",
+        "type": "string"
+      },
+      "age": {
+        "encrypted": "driver[1]AgeAsEncryptedValue",
+        "aggregateRootType": "DriverAggregateRoot",
+        "aggregateRootId": "Driver01",
+        "type": "integer"
+      },
+      "license": {
+        "yearOfLicence": {
+          "encrypted": "driver[1]LicenseYearOfLicenceAsEncryptedValue",
+          "aggregateRootType": "DriverAggregateRoot",
+          "aggregateRootId": "Driver01",
+          "type": "integer"
+        },
+        "category": {
+          "encrypted": "driver[1]LicenseCategoryAsEncryptedValue",
+          "aggregateRootType": "DriverAggregateRoot",
           "aggregateRootId": "Driver01",
           "type": "string"
         }
-      }
+      },
+      "drivingSkills": "B"
     }
   ]
 }

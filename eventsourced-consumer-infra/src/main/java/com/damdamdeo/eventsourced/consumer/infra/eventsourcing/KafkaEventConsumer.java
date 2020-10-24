@@ -1,17 +1,17 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
-import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
+import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,21 +32,22 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
-    private final ObjectMapper objectMapper;
-    private final CryptoService<JsonNode> jsonCryptoService;
+    private static final String CREATE_OPERATION = "c";
+    private static final String READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START = "r";
+
+    private final CryptoService<JsonObject> jsonCryptoService;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final UserTransaction transaction;
-    private final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans;
+    private final Instance<AggregateRootEventConsumer<JsonObject>> eventConsumersBeans;
     private final String gitCommitId;
     private final Executor executor;
     private final CreatedAtProvider createdAtProvider;
 
-    public KafkaEventConsumer(final CryptoService<JsonNode> jsonCryptoService,
+    public KafkaEventConsumer(final CryptoService<JsonObject> jsonCryptoService,
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
                               final UserTransaction transaction,
-                              @Any final Instance<AggregateRootEventConsumer<JsonNode>> eventConsumersBeans,
+                              @Any final Instance<AggregateRootEventConsumer<JsonObject>> eventConsumersBeans,
                               final CreatedAtProvider createdAtProvider) {
-        this.objectMapper = new ObjectMapper();
         this.jsonCryptoService = Objects.requireNonNull(jsonCryptoService);
         this.kafkaEventConsumedRepository = Objects.requireNonNull(kafkaEventConsumedRepository);
         this.transaction = Objects.requireNonNull(transaction);
@@ -55,7 +56,7 @@ public class KafkaEventConsumer {
         this.createdAtProvider = createdAtProvider;
         try (final InputStream gitProperties = getClass().getClassLoader().getResourceAsStream("git.properties");
              final JsonReader reader = Json.createReader(gitProperties)) {
-            final javax.json.JsonObject gitPropertiesObject = reader.readObject();
+            final JsonObject gitPropertiesObject = reader.readObject();
             this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));
         } catch (final IOException e) {
             throw new RuntimeException(e);
@@ -64,24 +65,28 @@ public class KafkaEventConsumer {
 
     @Incoming("event-in")
     @Transactional(Transactional.TxType.NEVER)
-    public CompletionStage<Void> onMessage(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
+    public CompletionStage<Void> onMessage(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) {
         LOGGER.info(String.format("Receiving record '%s'", record.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
             boolean processedSuccessfully = true;
             do {
                 try {
-                    final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable = new DebeziumAggregateRootEventConsumable(record, objectMapper);
-                    final String aggregateRootType = debeziumAggregateRootEventConsumable.eventId().aggregateRootId().aggregateRootType();
-                    final AggregateRootEventId aggregateRootEventId = debeziumAggregateRootEventConsumable.eventId();
+                    if (!Arrays.asList(CREATE_OPERATION, READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START).contains(record.getPayload().operation())) {
+                        throw new UnsupportedDebeziumOperationException(record);
+                    }
+                    final DebeziumJsonbAggregateRootEventConsumable debeziumJsonbAggregateRootEventConsumable = record.getPayload().debeziumJsonbAggregateRootEventConsumable();
+                    final String aggregateRootType = debeziumJsonbAggregateRootEventConsumable.eventId().aggregateRootId().aggregateRootType();
+                    final AggregateRootEventId aggregateRootEventId = debeziumJsonbAggregateRootEventConsumable.eventId();
                     if (!kafkaEventConsumedRepository.hasFinishedConsumingEvent(aggregateRootEventId)) {
-                        final String eventType = debeziumAggregateRootEventConsumable.eventType();
+                        final String eventType = debeziumJsonbAggregateRootEventConsumable.eventType();
                         final List<AggregateRootEventConsumer> consumersToProcessEvent = eventConsumersBeans.stream()
                                 .filter(eventConsumer -> aggregateRootType.equals(eventConsumer.aggregateRootType()))
                                 .filter(eventConsumer -> eventType.equals(eventConsumer.eventType()))
                                 .collect(Collectors.toList());
+                        final KafkaInfrastructureMetadata kafkaInfrastructureMetadata = new IncomingKafkaRecordKafkaInfrastructureMetadata(record);
                         for (final AggregateRootEventConsumer consumerToProcessEvent: consumersToProcessEvent) {
                             final AggregateRootEventConsumable aggregateRootEventConsumable = DecryptedAggregateRootEventConsumable.newBuilder()
-                                    .withDebeziumAggregateRootEventConsumable(debeziumAggregateRootEventConsumable)
+                                    .withDebeziumJsonbAggregateRootEventConsumable(debeziumJsonbAggregateRootEventConsumable)
                                     .build(jsonCryptoService);
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
@@ -90,23 +95,15 @@ public class KafkaEventConsumer {
                                 kafkaEventConsumedRepository.addEventConsumerConsumed(aggregateRootEventConsumable.eventId(),
                                         consumerToProcessEvent.getClass(),
                                         createdAtProvider.createdAt(),
-                                        new ConsumerRecordKafkaInfrastructureMetadata(record),
+                                        kafkaInfrastructureMetadata,
                                         gitCommitId);
                                 transaction.commit();
                             }
                         }
-                        kafkaEventConsumedRepository.markEventAsConsumed(aggregateRootEventId, createdAtProvider.createdAt(), new ConsumerRecordKafkaInfrastructureMetadata(record));
+                        kafkaEventConsumedRepository.markEventAsConsumed(aggregateRootEventId, createdAtProvider.createdAt(), kafkaInfrastructureMetadata);
                     } else {
                         LOGGER.info(String.format("Event '%s' already consumed", aggregateRootEventId));
                     }
-                } catch (final UnableToDecodeDebeziumEventMessageException unableToDecodeDebeziumEventMessageException) {
-                    LOGGER.error(String.format("Unable to decode debezium event message in topic '%s' in partition '%d' in offset '%d' get message '%s'. Will try once again.",
-                            unableToDecodeDebeziumEventMessageException.topic(),
-                            unableToDecodeDebeziumEventMessageException.partition(),
-                            unableToDecodeDebeziumEventMessageException.offset(),
-                            unableToDecodeDebeziumEventMessageException.getMessage()));
-                    processedSuccessfully = false;
-                    waitSomeTime();
                 } catch (final UnsupportedDebeziumOperationException unsupportedDebeziumOperationException) {
                     LOGGER.warn(String.format("Unsupported Debezium operation to decode in topic '%s' in partition '%d' in offset '%d' get key '%s' and payload '%s'. Will not try.",
                             unsupportedDebeziumOperationException.topic(),
@@ -117,19 +114,10 @@ public class KafkaEventConsumer {
                 } catch (final Exception exception) {
                     LOGGER.error("Message processing failure. Will try once again.", exception);
                     processedSuccessfully = false;
-                    waitSomeTime();
                 }
             } while (!processedSuccessfully);
             return null;
         }, executor);
-    }
-
-    private void waitSomeTime() {
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
 }

@@ -4,7 +4,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedCryptoService;
+import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedJsonbCryptoService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -96,7 +96,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
 
     // Using @InjectMock is not working when verifying invocations ... I do not know why
     @InjectSpy
-    UnsupportedCryptoService cryptoService;
+    UnsupportedJsonbCryptoService cryptoService;
 
     @InjectSpy
     JacksonAggregateRootMaterializedStateDeSerializerTest jacksonAggregateRootMaterializedStateDeSerializerTest;

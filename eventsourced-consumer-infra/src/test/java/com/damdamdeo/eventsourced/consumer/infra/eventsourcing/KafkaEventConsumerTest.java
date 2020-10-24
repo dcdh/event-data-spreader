@@ -2,8 +2,8 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptoService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbAggregateRootEventId;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbAggregateRootId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,21 +72,21 @@ public class KafkaEventConsumerTest {
     }
 
     @ApplicationScoped
-    public static class AccountDebitedAggregateRootEventConsumer implements JsonNodeAggregateRootEventConsumer {
+    public static class AccountDebitedAggregateRootEventConsumer implements JsonObjectAggregateRootEventConsumer {
 
         @Override
-        public void consume(final AggregateRootEventConsumable<JsonNode> aggregateRootEventConsumable) {
+        public void consume(final AggregateRootEventConsumable<JsonObject> aggregateRootEventConsumable) {
             // If it fail, an exception will be thrown. In this case, the consumer will fail and retry again
-            assertEquals("damdamdeo", aggregateRootEventConsumable.eventMetaData().get("executedBy").asText());
+            assertEquals("damdamdeo", aggregateRootEventConsumable.eventMetaData().getString("executedBy"));
 
-            assertEquals("damdamdeo", aggregateRootEventConsumable.eventPayload().get("owner").asText());
-            assertEquals("100.00", aggregateRootEventConsumable.eventPayload().get("price").asText());
-            assertEquals("900.00", aggregateRootEventConsumable.eventPayload().get("balance").asText());
+            assertEquals("damdamdeo", aggregateRootEventConsumable.eventPayload().getString("owner"));
+            assertEquals("100.00", aggregateRootEventConsumable.eventPayload().getString("price"));
+            assertEquals("900.00", aggregateRootEventConsumable.eventPayload().getString("balance"));
 
-            assertEquals("damdamdeo", aggregateRootEventConsumable.materializedState().get("aggregateRootId").asText());
-            assertEquals(0L, aggregateRootEventConsumable.materializedState().get("version").asLong());
-            assertEquals("AccountAggregateRoot", aggregateRootEventConsumable.materializedState().get("aggregateRootType").asText());
-            assertEquals("900.00", aggregateRootEventConsumable.materializedState().get("balance").asText());
+            assertEquals("damdamdeo", aggregateRootEventConsumable.materializedState().getString("aggregateRootId"));
+            assertEquals(0L, aggregateRootEventConsumable.materializedState().getJsonNumber("version").longValueExact());
+            assertEquals("AccountAggregateRoot", aggregateRootEventConsumable.materializedState().getString("aggregateRootType"));
+            assertEquals("900.00", aggregateRootEventConsumable.materializedState().getString("balance"));
         }
 
         @Override
@@ -100,7 +103,6 @@ public class KafkaEventConsumerTest {
     @Test
     public void should_consume_event_when_event_has_not_been_consumed() throws Exception {
         // Given
-        final ObjectMapper objectMapper = new ObjectMapper();
 
         // When
         kafkaDebeziumProducer.produce("eventsourcing/AccountDebited.json");
@@ -109,12 +111,12 @@ public class KafkaEventConsumerTest {
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
         final AggregateRootEventConsumable aggregateRootEventConsumer = new DecryptedAggregateRootEventConsumable(
-                new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l),
+                new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l),
                 "AccountDebited",
                 LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
-                objectMapper.readTree("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}"),
-                objectMapper.readTree("{\"executedBy\": \"damdamdeo\"}"),
-                objectMapper.readTree("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")
+                Json.createParser(new StringReader("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}")).getObject(),
+                Json.createParser(new StringReader("{\"executedBy\": \"damdamdeo\"}")).getObject(),
+                Json.createParser(new StringReader("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")).getObject()
         );
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
@@ -130,10 +132,10 @@ public class KafkaEventConsumerTest {
 
         // Then
         verify(spiedKafkaEventConsumedRepository, times(1)).addEventConsumerConsumed(
-                eq(new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l)),
+                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l)),
                 any(),// Got the proxy of spiedAccountDebitedAggregateRootEventConsumer !
                 eq(LocalDateTime.of(1980,01,01,0,0,0,0)),
-                any(ConsumerRecordKafkaInfrastructureMetadata.class),// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
+                any(IncomingKafkaRecordKafkaInfrastructureMetadata.class),// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
                 eq("3bc9898721c64c5d6d17724bf6ec1c715cca0f69"));
     }
 
@@ -147,9 +149,9 @@ public class KafkaEventConsumerTest {
 
         // Then
         verify(spiedKafkaEventConsumedRepository, times(1)).markEventAsConsumed(
-                eq(new DebeziumAggregateRootEventId("damdamdeo", "AccountAggregateRoot", 0l)),
+                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l)),
                 eq(LocalDateTime.of(1980,01,01,0,0,0,0)),
-                any(ConsumerRecordKafkaInfrastructureMetadata.class)// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
+                any(IncomingKafkaRecordKafkaInfrastructureMetadata.class)// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
         );
     }
 

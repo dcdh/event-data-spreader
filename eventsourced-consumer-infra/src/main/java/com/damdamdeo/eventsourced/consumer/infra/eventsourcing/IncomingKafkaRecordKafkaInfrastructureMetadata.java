@@ -1,17 +1,18 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
-import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
 
-public final class ConsumerRecordKafkaInfrastructureMetadata implements KafkaInfrastructureMetadata {
+public final class IncomingKafkaRecordKafkaInfrastructureMetadata implements KafkaInfrastructureMetadata {
 
     private final Integer partition;
     private final String topic;
     private final Long offset;
 
-    public ConsumerRecordKafkaInfrastructureMetadata(final IncomingKafkaRecord<JsonObject, JsonObject> record) {
+    public IncomingKafkaRecordKafkaInfrastructureMetadata(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) {
         this.partition = Objects.requireNonNull(record.getPartition());
         this.topic = Objects.requireNonNull(record.getTopic());
         this.offset = Objects.requireNonNull(record.getOffset());
@@ -36,7 +37,7 @@ public final class ConsumerRecordKafkaInfrastructureMetadata implements KafkaInf
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConsumerRecordKafkaInfrastructureMetadata that = (ConsumerRecordKafkaInfrastructureMetadata) o;
+        IncomingKafkaRecordKafkaInfrastructureMetadata that = (IncomingKafkaRecordKafkaInfrastructureMetadata) o;
         return Objects.equals(partition, that.partition) &&
                 Objects.equals(topic, that.topic) &&
                 Objects.equals(offset, that.offset);
@@ -49,7 +50,7 @@ public final class ConsumerRecordKafkaInfrastructureMetadata implements KafkaInf
 
     @Override
     public String toString() {
-        return "ConsumerRecordKafkaInfrastructureMetadata{" +
+        return "IncomingKafkaRecordKafkaInfrastructureMetadata{" +
                 "partition=" + partition +
                 ", topic='" + topic + '\'' +
                 ", offset=" + offset +

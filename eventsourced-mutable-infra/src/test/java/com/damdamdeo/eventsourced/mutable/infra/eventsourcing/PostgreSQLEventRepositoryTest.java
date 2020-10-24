@@ -4,7 +4,7 @@ import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import io.agroal.api.AgroalDataSource;
@@ -41,7 +41,7 @@ public class PostgreSQLEventRepositoryTest {
     AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer;
 
     @InjectMock
-    AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
+    AggregateRootEventMetadataSerializer aggregateRootEventMetadataSerializer;
 
     @InjectMock
     AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer;
@@ -66,7 +66,7 @@ public class PostgreSQLEventRepositoryTest {
     @BeforeEach
     public void setupInjectedServicesMocks() {
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
-        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
+        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataSerializer).serialize();
         doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesDeSerializer).serialize(any(), anyBoolean());
         doReturn(mock(Secret.class)).when(secretStore).read(any());
     }

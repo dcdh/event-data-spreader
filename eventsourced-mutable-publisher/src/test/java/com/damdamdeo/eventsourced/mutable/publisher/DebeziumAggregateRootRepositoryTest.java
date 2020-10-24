@@ -5,7 +5,7 @@ import com.damdamdeo.eventsourced.encryption.api.Encryption;
 import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.encryption.api.SecretStore;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataDeSerializer;
+import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
@@ -55,7 +55,7 @@ public class DebeziumAggregateRootRepositoryTest {
     AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer;
 
     @InjectMock
-    AggregateRootEventMetadataDeSerializer aggregateRootEventMetadataDeSerializer;
+    AggregateRootEventMetadataSerializer aggregateRootEventMetadataSerializer;
 
     @InjectMock
     AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer;
@@ -78,7 +78,7 @@ public class DebeziumAggregateRootRepositoryTest {
         doReturn("secret").when(encryption).generateNewSecret();
         doReturn("3bc9898721c64c5d6d17724bf6ec1c715cca0f69").when(gitCommitProvider).gitCommitId();
         doReturn("{\"payload\": {}}").when(aggregateRootEventPayloadsDeSerializer).serialize(any(), any(), any());
-        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataDeSerializer).serialize();
+        doReturn("{\"meta\": {}}").when(aggregateRootEventMetadataSerializer).serialize();
         doReturn("{\"materializedState\": {}}").when(aggregateRootMaterializedStatesDeSerializer).serialize(any(), anyBoolean());
     }
 

@@ -1,4 +1,4 @@
-package com.damdamdeo.eventsourced.mutable.publisher;
+package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.encryption.api.UnableToEncryptMissingSecretException;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 @ApplicationScoped
-public class UnsupportedCryptoService implements CryptoService<JsonValue> {
+public class UnsupportedJsonbCryptoService implements CryptoService<JsonValue> {
 
     @Override
     public JsonValue encrypt(final AggregateRootId aggregateRootId, final String valueToEncrypt, final boolean shouldEncrypt) throws UnableToEncryptMissingSecretException {
@@ -46,5 +46,4 @@ public class UnsupportedCryptoService implements CryptoService<JsonValue> {
     public JsonValue recursiveDecrypt(final JsonValue source) {
         throw new UnsupportedOperationException("Must be mocked !");
     }
-
 }

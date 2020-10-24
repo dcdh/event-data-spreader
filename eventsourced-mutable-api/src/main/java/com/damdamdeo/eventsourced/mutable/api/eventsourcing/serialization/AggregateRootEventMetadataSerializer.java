@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization;
 
-public interface AggregateRootEventMetadataDeSerializer {
+public interface AggregateRootEventMetadataSerializer {
 
     String serialize();
 

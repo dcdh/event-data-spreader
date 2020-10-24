@@ -3,12 +3,12 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.AggregateRootEventConsumable;
 import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.fasterxml.jackson.databind.JsonNode;
 
+import javax.json.JsonObject;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable<JsonNode> {
+public final class DecryptedAggregateRootEventConsumable implements AggregateRootEventConsumable<JsonObject> {
 
     private final AggregateRootEventId eventId;
 
@@ -16,18 +16,18 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
 
     private final LocalDateTime creationDate;
 
-    private final JsonNode eventPayload;
+    private final JsonObject eventPayload;
 
-    private final JsonNode eventMetaData;
+    private final JsonObject eventMetaData;
 
-    private final JsonNode materializedState;
+    private final JsonObject materializedState;
 
     public DecryptedAggregateRootEventConsumable(final AggregateRootEventId eventId,
                                                  final String eventType,
                                                  final LocalDateTime creationDate,
-                                                 final JsonNode eventPayload,
-                                                 final JsonNode eventMetaData,
-                                                 final JsonNode materializedState) {
+                                                 final JsonObject eventPayload,
+                                                 final JsonObject eventMetaData,
+                                                 final JsonObject materializedState) {
         this.eventId = Objects.requireNonNull(eventId);
         this.eventType = Objects.requireNonNull(eventType);
         this.creationDate = Objects.requireNonNull(creationDate);
@@ -63,17 +63,17 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
     }
 
     @Override
-    public JsonNode eventPayload() {
+    public JsonObject eventPayload() {
         return eventPayload;
     }
 
     @Override
-    public JsonNode eventMetaData() {
+    public JsonObject eventMetaData() {
         return eventMetaData;
     }
 
     @Override
-    public JsonNode materializedState() {
+    public JsonObject materializedState() {
         return materializedState;
     }
 
@@ -86,23 +86,23 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
         private AggregateRootEventId eventId;
         private String eventType;
         private LocalDateTime creationDate;
-        private JsonNode eventPayload;
-        private JsonNode eventMetaData;
-        private JsonNode materializedState;
+        private JsonObject eventPayload;
+        private JsonObject eventMetaData;
+        private JsonObject materializedState;
 
         private Builder() {}
 
-        public Builder withDebeziumAggregateRootEventConsumable(final DebeziumAggregateRootEventConsumable debeziumAggregateRootEventConsumable) {
-            this.eventId = debeziumAggregateRootEventConsumable.eventId();
-            this.eventType = debeziumAggregateRootEventConsumable.eventType();
-            this.creationDate = debeziumAggregateRootEventConsumable.creationDate();
-            this.eventPayload = debeziumAggregateRootEventConsumable.eventPayload();
-            this.eventMetaData = debeziumAggregateRootEventConsumable.eventMetaData();
-            this.materializedState = debeziumAggregateRootEventConsumable.materializedState();
+        public Builder withDebeziumJsonbAggregateRootEventConsumable(final DebeziumJsonbAggregateRootEventConsumable debeziumJsonbAggregateRootEventConsumable) {
+            this.eventId = debeziumJsonbAggregateRootEventConsumable.eventId();
+            this.eventType = debeziumJsonbAggregateRootEventConsumable.eventType();
+            this.creationDate = debeziumJsonbAggregateRootEventConsumable.creationDate();
+            this.eventPayload = debeziumJsonbAggregateRootEventConsumable.eventPayload();
+            this.eventMetaData = debeziumJsonbAggregateRootEventConsumable.eventMetaData();
+            this.materializedState = debeziumJsonbAggregateRootEventConsumable.materializedState();
             return this;
         }
 
-        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonNode> jsonCryptoService) {
+        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonObject> jsonCryptoService) {
             jsonCryptoService.recursiveDecrypt(this.eventPayload);
             jsonCryptoService.recursiveDecrypt(this.eventMetaData);
             jsonCryptoService.recursiveDecrypt(this.materializedState);
