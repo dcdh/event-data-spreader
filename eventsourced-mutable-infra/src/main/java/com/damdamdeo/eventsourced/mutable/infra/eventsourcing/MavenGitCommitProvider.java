@@ -15,7 +15,7 @@ public class MavenGitCommitProvider implements GitCommitProvider {
     private final String gitCommitId;
 
     public MavenGitCommitProvider() {
-        try (final InputStream gitProperties = getClass().getClassLoader().getResourceAsStream("git.properties");
+        try (final InputStream gitProperties = getClass().getResourceAsStream("/git.properties");
              final JsonReader reader = Json.createReader(gitProperties)) {
             final javax.json.JsonObject gitPropertiesObject = reader.readObject();
             this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));

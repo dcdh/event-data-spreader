@@ -53,7 +53,7 @@ public class KafkaEventConsumer {
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
         this.executor = Executors.newSingleThreadExecutor();
         this.createdAtProvider = createdAtProvider;
-        try (final InputStream gitProperties = getClass().getClassLoader().getResourceAsStream("git.properties");
+        try (final InputStream gitProperties = this.getClass().getResourceAsStream("/git.properties");
              final JsonReader reader = Json.createReader(gitProperties)) {
             final JsonObject gitPropertiesObject = reader.readObject();
             this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));
