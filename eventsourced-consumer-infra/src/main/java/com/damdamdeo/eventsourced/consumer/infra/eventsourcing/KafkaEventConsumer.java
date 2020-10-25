@@ -13,8 +13,8 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -53,13 +53,12 @@ public class KafkaEventConsumer {
         this.eventConsumersBeans = Objects.requireNonNull(eventConsumersBeans);
         this.executor = Executors.newSingleThreadExecutor();
         this.createdAtProvider = createdAtProvider;
-        try (final InputStream gitProperties = this.getClass().getResourceAsStream("/git.properties");
-             final JsonReader reader = Json.createReader(gitProperties)) {
+        final InputStream gitProperties = this.getClass().getResourceAsStream("/git.properties");
+        try (final Scanner scanner = new Scanner(gitProperties).useDelimiter("\\Z");
+             final JsonReader reader = Json.createReader(new StringReader(scanner.next()))) {
             final JsonObject gitPropertiesObject = reader.readObject();
             LOGGER.info(String.format("Git build properties '%s'", gitPropertiesObject));
             this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
