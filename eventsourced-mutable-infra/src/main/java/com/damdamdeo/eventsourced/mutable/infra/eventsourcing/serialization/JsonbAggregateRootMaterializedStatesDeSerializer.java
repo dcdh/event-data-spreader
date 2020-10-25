@@ -17,19 +17,19 @@ import java.util.Objects;
 @ApplicationScoped
 public class JsonbAggregateRootMaterializedStatesDeSerializer implements AggregateRootMaterializedStatesDeSerializer {
 
-    final Instance<JsonbAggregateRootMaterializedStateDeSerializer> jacksonAggregateRootMaterializedStateDeSerializerBeans;
+    final Instance<JsonbAggregateRootMaterializedStateDeSerializer> jsonbAggregateRootMaterializedStateDeSerializerBeans;
     final JsonbCryptoService jsonbCryptoService;
 
-    public JsonbAggregateRootMaterializedStatesDeSerializer(@Any final Instance<JsonbAggregateRootMaterializedStateDeSerializer> jacksonAggregateRootMaterializedStateDeSerializerBeans,
+    public JsonbAggregateRootMaterializedStatesDeSerializer(@Any final Instance<JsonbAggregateRootMaterializedStateDeSerializer> jsonbAggregateRootMaterializedStateDeSerializerBeans,
                                                             final JsonbCryptoService jsonbCryptoService) {
-        this.jacksonAggregateRootMaterializedStateDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootMaterializedStateDeSerializerBeans);
+        this.jsonbAggregateRootMaterializedStateDeSerializerBeans = Objects.requireNonNull(jsonbAggregateRootMaterializedStateDeSerializerBeans);
         this.jsonbCryptoService = jsonbCryptoService;
     }
 
     @Override
     public String serialize(final AggregateRoot aggregateRoot, final boolean shouldEncrypt) {
         final String aggregateRootType = aggregateRoot.aggregateRootType();
-        return jacksonAggregateRootMaterializedStateDeSerializerBeans.stream()
+        return jsonbAggregateRootMaterializedStateDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .findFirst()
                 .map(jsonbAggregateRootMaterializedStateDeSerializerBean -> jsonbAggregateRootMaterializedStateDeSerializerBean.serialize(aggregateRoot, shouldEncrypt))
@@ -40,7 +40,7 @@ public class JsonbAggregateRootMaterializedStatesDeSerializer implements Aggrega
     @Override
     public <T extends AggregateRoot> T deserialize(final AggregateRootMaterializedState aggregateRootMaterializedState) {
         final String aggregateRootType = aggregateRootMaterializedState.aggregateRootId().aggregateRootType();
-        return (T) jacksonAggregateRootMaterializedStateDeSerializerBeans.stream()
+        return (T) jsonbAggregateRootMaterializedStateDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .findFirst()
                 .map(jsonbAggregateRootMaterializedStateDeSerializerBean -> {

@@ -17,12 +17,12 @@ import java.util.Objects;
 @ApplicationScoped
 public class JsonbAggregateRootEventPayloadsDeSerializer implements AggregateRootEventPayloadsDeSerializer {
 
-    final Instance<JsonbAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
+    final Instance<JsonbAggregateRootEventPayloadDeSerializer> jsonbAggregateRootEventPayloadDeSerializerBeans;
     final JsonbCryptoService jsonbCryptoService;
 
-    public JsonbAggregateRootEventPayloadsDeSerializer(@Any final Instance<JsonbAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
+    public JsonbAggregateRootEventPayloadsDeSerializer(@Any final Instance<JsonbAggregateRootEventPayloadDeSerializer> jsonbAggregateRootEventPayloadDeSerializerBeans,
                                                        final JsonbCryptoService jsonbCryptoService) {
-        this.jacksonAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootEventPayloadDeSerializerBeans);
+        this.jsonbAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jsonbAggregateRootEventPayloadDeSerializerBeans);
         this.jsonbCryptoService = Objects.requireNonNull(jsonbCryptoService);
     }
 
@@ -31,7 +31,7 @@ public class JsonbAggregateRootEventPayloadsDeSerializer implements AggregateRoo
                             final String eventType,
                             final AggregateRootEventPayload aggregateRootEventPayload) throws UnsupportedAggregateRootEventPayload {
         final String aggregateRootType = aggregateRootId.aggregateRootType();
-        return jacksonAggregateRootEventPayloadDeSerializerBeans.stream()
+        return jsonbAggregateRootEventPayloadDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .filter(bean -> eventType.equals(bean.eventType()))
                 .findFirst()
@@ -45,7 +45,7 @@ public class JsonbAggregateRootEventPayloadsDeSerializer implements AggregateRoo
     public AggregateRootEventPayload deserialize(final String aggregateRootType,
                                                  final String eventType,
                                                  final String eventPayload) throws UnsupportedAggregateRootEventPayload {
-        return jacksonAggregateRootEventPayloadDeSerializerBeans.stream()
+        return jsonbAggregateRootEventPayloadDeSerializerBeans.stream()
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .filter(bean -> eventType.equals(bean.eventType()))
                 .findFirst()
