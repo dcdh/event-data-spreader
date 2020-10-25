@@ -56,6 +56,7 @@ public class KafkaEventConsumer {
         try (final InputStream gitProperties = this.getClass().getResourceAsStream("/git.properties");
              final JsonReader reader = Json.createReader(gitProperties)) {
             final JsonObject gitPropertiesObject = reader.readObject();
+            LOGGER.info(String.format("Git build properties '%s'", gitPropertiesObject));
             this.gitCommitId = Objects.requireNonNull(gitPropertiesObject.getString("git.commit.id"));
         } catch (final IOException e) {
             throw new RuntimeException(e);
