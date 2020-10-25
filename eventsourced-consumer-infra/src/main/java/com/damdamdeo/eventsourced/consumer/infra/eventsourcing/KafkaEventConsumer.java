@@ -3,7 +3,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
-import com.damdamdeo.eventsourced.encryption.api.CryptoService;
+import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -34,8 +34,7 @@ public class KafkaEventConsumer {
 
     private static final String CREATE_OPERATION = "c";
     private static final String READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START = "r";
-
-    private final CryptoService<JsonObject> jsonCryptoService;
+    private final JsonbCryptoService jsonCryptoService;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final UserTransaction transaction;
     private final Instance<AggregateRootEventConsumer<JsonObject>> eventConsumersBeans;
@@ -43,7 +42,7 @@ public class KafkaEventConsumer {
     private final Executor executor;
     private final CreatedAtProvider createdAtProvider;
 
-    public KafkaEventConsumer(final CryptoService<JsonObject> jsonCryptoService,
+    public KafkaEventConsumer(final JsonbCryptoService jsonCryptoService,
                               final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository,
                               final UserTransaction transaction,
                               @Any final Instance<AggregateRootEventConsumer<JsonObject>> eventConsumersBeans,

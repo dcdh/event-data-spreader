@@ -1,31 +1,31 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
+import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedJsonbCryptoService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-public class JacksonAggregateRootEventPayloadsDeSerializerTest {
+public class JsonbAggregateRootEventPayloadsDeSerializerTest {
 
      public static final class TestAggregateRootId implements AggregateRootId {
 
@@ -73,7 +73,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
      }
 
      @ApplicationScoped
-     public static final class TestJacksonAggregateRootEventPayloadDeSerializer implements JacksonAggregateRootEventPayloadDeSerializer {
+     public static final class TestJsonbAggregateRootEventPayloadDeSerializer implements JsonbAggregateRootEventPayloadDeSerializer {
 
           @Override
           public String aggregateRootType() {
@@ -86,31 +86,35 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
           }
 
           @Override
-          public JsonNode encode(final AggregateRootId aggregateRootId,
-                                 final AggregateRootEventPayload aggregateRootEventPayload, final ObjectMapper objectMapper) {
-               final ObjectNode objectNode = objectMapper.createObjectNode();
-               objectNode.put("test", "test");
-               return objectNode;
+          public JsonObject encode(final AggregateRootId aggregateRootId, final AggregateRootEventPayload aggregateRootEventPayload) {
+               return Json.createObjectBuilder()
+                       .add("test", "test")
+                       .build();
           }
 
           @Override
-          public AggregateRootEventPayload decode(final JsonNode json) {
-               return new TestAggregateRootEventPayload(json.get("test").asText());
+          public AggregateRootEventPayload decode(final JsonObject json) {
+               return new TestAggregateRootEventPayload(json.getString("test"));
           }
      }
 
      @Inject
-     JacksonAggregateRootEventPayloadsDeSerializer jacksonAggregateRootEventPayloadsDeSerializer;
+     JsonbAggregateRootEventPayloadsDeSerializer jsonbAggregateRootEventPayloadsDeSerializer;
 
      @InjectMock
-     UnsupportedJsonbCryptoService jsonCryptoService;
+     JsonbCryptoService jsonbCryptoService;
+
+     @BeforeEach
+     public void setup() {
+          doAnswer(returnsFirstArg()).when(jsonbCryptoService).recursiveDecrypt(any());
+     }
 
      @Test
      public void should_serialize_aggregate_root_event() {
           // Given
 
           // When
-          final String serialized = jacksonAggregateRootEventPayloadsDeSerializer.serialize(
+          final String serialized = jsonbAggregateRootEventPayloadsDeSerializer.serialize(
                   new TestAggregateRootId("aggregateRootType"),
                   "eventType",
                   new TestAggregateRootEventPayload("test")
@@ -126,7 +130,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
 
           // When && Then
           final UnsupportedAggregateRootEventPayload unsupportedAggregateRootEventPayload = assertThrows(UnsupportedAggregateRootEventPayload.class,
-                  () -> jacksonAggregateRootEventPayloadsDeSerializer.serialize(
+                  () -> jsonbAggregateRootEventPayloadsDeSerializer.serialize(
                           new TestAggregateRootId("unknownAggregateRootType"),
                           "eventType",
                           mock(AggregateRootEventPayload.class)
@@ -140,7 +144,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
 
           // When && Then
           final UnsupportedAggregateRootEventPayload unsupportedAggregateRootEventPayload = assertThrows(UnsupportedAggregateRootEventPayload.class,
-                  () -> jacksonAggregateRootEventPayloadsDeSerializer.serialize(
+                  () -> jsonbAggregateRootEventPayloadsDeSerializer.serialize(
                           new TestAggregateRootId("aggregateRootType"),
                           "unknownEventType",
                           mock(AggregateRootEventPayload.class)
@@ -148,23 +152,20 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
           assertEquals(new UnsupportedAggregateRootEventPayload("aggregateRootType", "unknownEventType"), unsupportedAggregateRootEventPayload);
      }
 
-//     FIXME The verify is failing, because we've got two different instances between the one injected in this
-//        test and the one in the jacksonAggregateRootEventPayloadsDeSerializer implementation
      @Test
-     @Disabled
      public void should_recursively_decrypt_aggregate_root_event_payload_when_deserialize_aggregate_root_event() throws Exception {
           // Given
 
           // When
-          jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
+          jsonbAggregateRootEventPayloadsDeSerializer.deserialize(
                   "aggregateRootType",
                   "eventType",
                   "{\"test\":\"test\"}"
           );
 
           // Then
-          final ArgumentCaptor<ObjectNode> sourceCaptor = ArgumentCaptor.forClass(ObjectNode.class);
-          verify(jsonCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture());
+          final ArgumentCaptor<JsonObject> sourceCaptor = ArgumentCaptor.forClass(JsonObject.class);
+          verify(jsonbCryptoService, times(1)).recursiveDecrypt(sourceCaptor.capture());
           JSONAssert.assertEquals("{\"test\":\"test\"}", sourceCaptor.getValue().toString(), true);
      }
 
@@ -173,7 +174,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
           // Given
 
           // When
-          final AggregateRootEventPayload deserialized = jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
+          final AggregateRootEventPayload deserialized = jsonbAggregateRootEventPayloadsDeSerializer.deserialize(
                   "aggregateRootType",
                   "eventType",
                   "{\"test\":\"test\"}"
@@ -191,7 +192,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
 
           // When && Then
           final UnsupportedAggregateRootEventPayload unsupportedAggregateRootEventPayload = assertThrows(UnsupportedAggregateRootEventPayload.class,
-                  () -> jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
+                  () -> jsonbAggregateRootEventPayloadsDeSerializer.deserialize(
                           "unknownAggregateRootType",
                           "eventType",
                           "{}"
@@ -205,7 +206,7 @@ public class JacksonAggregateRootEventPayloadsDeSerializerTest {
 
           // When && Then
           final UnsupportedAggregateRootEventPayload unsupportedAggregateRootEventPayload = assertThrows(UnsupportedAggregateRootEventPayload.class,
-                  () -> jacksonAggregateRootEventPayloadsDeSerializer.deserialize(
+                  () -> jsonbAggregateRootEventPayloadsDeSerializer.deserialize(
                           "aggregateRootType",
                           "unknownEventType",
                           "{}"

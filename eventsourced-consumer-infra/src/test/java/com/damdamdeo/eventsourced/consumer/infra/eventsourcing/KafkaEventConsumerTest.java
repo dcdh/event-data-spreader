@@ -1,9 +1,9 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.consumer.infra.UnsupportedCryptoService;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbAggregateRootEventId;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbAggregateRootId;
+import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -44,7 +45,7 @@ public class KafkaEventConsumerTest {
     KafkaDebeziumProducer kafkaDebeziumProducer;
 
     @InjectMock
-    UnsupportedCryptoService jsonCryptoService;
+    JsonbCryptoService jsonCryptoService;
 
     @InjectSpy
     AccountDebitedAggregateRootEventConsumer spiedAccountDebitedAggregateRootEventConsumer;
@@ -56,7 +57,7 @@ public class KafkaEventConsumerTest {
     @BeforeEach
     public void setup() {
         doReturn(LocalDateTime.of(1980,01,01,0,0,0,0)).when(mockedCreatedAtProvider).createdAt();
-        doNothing().when(jsonCryptoService).decrypt(any(), any());
+        doAnswer(returnsFirstArg()).when(jsonCryptoService).recursiveDecrypt(any());
     }
 
     @BeforeEach
@@ -111,12 +112,12 @@ public class KafkaEventConsumerTest {
         // Then
         // 1569174260987000 in nanoseconds converted to 1569174260987 in milliseconds == Sunday 22 September 2019 17:44:20.987
         final AggregateRootEventConsumable aggregateRootEventConsumer = new DecryptedAggregateRootEventConsumable(
-                new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l),
+                new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("AccountAggregateRoot", "damdamdeo"), 0l),
                 "AccountDebited",
                 LocalDateTime.of(2019, Month.SEPTEMBER, 22, 17, 44, 20, 987000000),
-                Json.createParser(new StringReader("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}")).getObject(),
-                Json.createParser(new StringReader("{\"executedBy\": \"damdamdeo\"}")).getObject(),
-                Json.createParser(new StringReader("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")).getObject()
+                Json.createReader(new StringReader("{\"owner\": \"damdamdeo\", \"price\": \"100.00\", \"balance\": \"900.00\"}")).readObject(),
+                Json.createReader(new StringReader("{\"executedBy\": \"damdamdeo\"}")).readObject(),
+                Json.createReader(new StringReader("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")).readObject()
         );
         verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
@@ -132,7 +133,7 @@ public class KafkaEventConsumerTest {
 
         // Then
         verify(spiedKafkaEventConsumedRepository, times(1)).addEventConsumerConsumed(
-                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l)),
+                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("AccountAggregateRoot", "damdamdeo"), 0l)),
                 any(),// Got the proxy of spiedAccountDebitedAggregateRootEventConsumer !
                 eq(LocalDateTime.of(1980,01,01,0,0,0,0)),
                 any(IncomingKafkaRecordKafkaInfrastructureMetadata.class),// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
@@ -149,7 +150,7 @@ public class KafkaEventConsumerTest {
 
         // Then
         verify(spiedKafkaEventConsumedRepository, times(1)).markEventAsConsumed(
-                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId("damdamdeo", "AccountAggregateRoot"), 0l)),
+                eq(new DebeziumJsonbAggregateRootEventId(new DebeziumJsonbAggregateRootId( "AccountAggregateRoot", "damdamdeo"), 0l)),
                 eq(LocalDateTime.of(1980,01,01,0,0,0,0)),
                 any(IncomingKafkaRecordKafkaInfrastructureMetadata.class)// trop compliqué de tester sur l'offset car celui-ci change en fonction du nombre d'executions
         );

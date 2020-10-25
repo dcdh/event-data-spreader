@@ -22,6 +22,11 @@
             <artifactId>jakarta.inject-api</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- cf JsonbCryptoService -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jsonb</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>

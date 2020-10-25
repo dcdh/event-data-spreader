@@ -5,22 +5,22 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedJsonbCryptoService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.Test;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
+public class JsonbAggregateRootMaterializedStatesDeSerializerTest {
 
     public static class TestAggregateRoot extends AggregateRoot {
 
@@ -67,7 +67,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
     }
 
     @ApplicationScoped
-    public static class JacksonAggregateRootMaterializedStateDeSerializerTest implements JacksonAggregateRootMaterializedStateDeSerializer {
+    public static class JsonbAggregateRootMaterializedStateDeSerializerTest implements JsonbAggregateRootMaterializedStateDeSerializer {
 
         @Override
         public String aggregateRootType() {
@@ -75,14 +75,14 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
         }
 
         @Override
-        public JsonNode serialize(final AggregateRoot aggregateRoot, final boolean shouldEncrypt, final ObjectMapper objectMapper) {
-            final ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.put("test", "test");
-            return objectNode;
+        public JsonObject serialize(final AggregateRoot aggregateRoot, final boolean shouldEncrypt) {
+            return Json.createObjectBuilder()
+                    .add("test", "test")
+                    .build();
         }
 
         @Override
-        public TestAggregateRoot deserialize(final AggregateRootId aggregateRootId, final JsonNode aggregateRoot, final Long version) {
+        public TestAggregateRoot deserialize(final AggregateRootId aggregateRootId, final JsonObject aggregateRoot, final Long version) {
             return TestAggregateRoot.newBuilder()
                     .withAggregateRootId(aggregateRootId)
                     .withVersion(version)
@@ -92,14 +92,14 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
     }
 
     @Inject
-    JacksonAggregateRootMaterializedStatesDeSerializer jacksonAggregateRootMaterializedStatesSerializer;
+    JsonbAggregateRootMaterializedStatesDeSerializer jacksonAggregateRootMaterializedStatesSerializer;
 
     // Using @InjectMock is not working when verifying invocations ... I do not know why
     @InjectSpy
     UnsupportedJsonbCryptoService cryptoService;
 
     @InjectSpy
-    JacksonAggregateRootMaterializedStateDeSerializerTest jacksonAggregateRootMaterializedStateDeSerializerTest;
+    JsonbAggregateRootMaterializedStateDeSerializerTest jacksonAggregateRootMaterializedStateDeSerializerTest;
 
     @Test
     public void should_serialize_aggregate_root_as_materialized_state() {
@@ -137,13 +137,12 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
     @Test
     public void should_deserialize_aggregate_root_from_materialized_state() throws Exception {
         // Given
-        final ObjectMapper objectMapper = new ObjectMapper();
         final AggregateRootMaterializedState mockAggregateRootMaterializedState = mock(AggregateRootMaterializedState.class, RETURNS_DEEP_STUBS);
         when(mockAggregateRootMaterializedState.aggregateRootId().aggregateRootId()).thenReturn("aggregateRootId");
         when(mockAggregateRootMaterializedState.aggregateRootId().aggregateRootType()).thenReturn("aggregateRootType");
         doReturn("{}").when(mockAggregateRootMaterializedState).serializedMaterializedState();
         doReturn(0L).when(mockAggregateRootMaterializedState).version();
-        doNothing().when(cryptoService).recursiveDecrypt(objectMapper.readTree("{}"));
+        doAnswer(returnsFirstArg()).when(cryptoService).recursiveDecrypt(any());
 
         // When
         final TestAggregateRoot testAggregateRoot = jacksonAggregateRootMaterializedStatesSerializer.deserialize(mockAggregateRootMaterializedState);
@@ -151,7 +150,7 @@ public class JacksonAggregateRootMaterializedStatesDeSerializerTest {
         // Then
         assertEquals(TestAggregateRoot.newBuilder().withAggregateRootId("aggregateRootId").withVersion(0l).build(), testAggregateRoot);
         verify(jacksonAggregateRootMaterializedStateDeSerializerTest, times(1)).deserialize(mockAggregateRootMaterializedState.aggregateRootId(),
-                objectMapper.createObjectNode(),
+                Json.createObjectBuilder().build(),
                 0L);
         verify(cryptoService, times(1)).recursiveDecrypt(any());
         verify(mockAggregateRootMaterializedState.aggregateRootId(), atLeastOnce()).aggregateRootId();

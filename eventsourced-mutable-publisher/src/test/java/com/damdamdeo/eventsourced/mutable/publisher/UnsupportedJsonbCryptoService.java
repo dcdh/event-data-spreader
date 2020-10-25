@@ -1,4 +1,4 @@
-package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
+package com.damdamdeo.eventsourced.mutable.publisher;
 
 import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.encryption.api.UnableToEncryptMissingSecretException;
@@ -47,4 +47,5 @@ public class UnsupportedJsonbCryptoService implements JsonbCryptoService {
     public JsonObject recursiveDecrypt(final JsonObject source) {
         throw new UnsupportedOperationException("Must be mocked !");
     }
+
 }

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class JsonbCryptoEncryptServiceTest {
 
     @Inject
-    JsonbCryptoService jsonbCryptoService;
+    DefaultJsonbCryptoService defaultJsonbCryptoService;
 
     @InjectMock
     SecretStore secretStore;
@@ -45,7 +45,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", true);
+        defaultJsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", true);
 
         // Then
         verify(secretStore, times(1)).read(aggregateRootId);
@@ -65,7 +65,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", true);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", true);
 
         // Then
         assertEquals("{\"encrypted\":\"encrypted\",\"aggregateRootType\":\"aggregateRootType\",\"aggregateRootId\":\"aggregateRootId\",\"type\":\"string\"}", jsonValue.toString());
@@ -82,7 +82,7 @@ public class JsonbCryptoEncryptServiceTest {
         final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", false);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, "valueToEncrypt", false);
 
         // Then
         assertEquals("\"valueToEncrypt\"", jsonValue.toString());
@@ -101,7 +101,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonbCryptoService.encrypt(aggregateRootId, 0l, true);
+        defaultJsonbCryptoService.encrypt(aggregateRootId, 0l, true);
 
         // Then
         verify(secretStore, times(1)).read(aggregateRootId);
@@ -121,7 +121,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, 0l, true);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, 0l, true);
 
         // Then
         assertEquals("{\"encrypted\":\"encrypted\",\"aggregateRootType\":\"aggregateRootType\",\"aggregateRootId\":\"aggregateRootId\",\"type\":\"long\"}", jsonValue.toString());
@@ -138,7 +138,7 @@ public class JsonbCryptoEncryptServiceTest {
         final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, 0l, false);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, 0l, false);
 
         // Then
         assertEquals("0", jsonValue.toString());
@@ -157,7 +157,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonbCryptoService.encrypt(aggregateRootId, 0, true);
+        defaultJsonbCryptoService.encrypt(aggregateRootId, 0, true);
 
         // Then
         verify(secretStore, times(1)).read(aggregateRootId);
@@ -177,7 +177,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, 0, true);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, 0, true);
 
         // Then
         assertEquals("{\"encrypted\":\"encrypted\",\"aggregateRootType\":\"aggregateRootType\",\"aggregateRootId\":\"aggregateRootId\",\"type\":\"integer\"}", jsonValue.toString());
@@ -194,7 +194,7 @@ public class JsonbCryptoEncryptServiceTest {
         final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, 0, false);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, 0, false);
 
         // Then
         assertEquals("0", jsonValue.toString());
@@ -213,7 +213,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, true);
+        defaultJsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, true);
 
         // Then
         verify(secretStore, times(1)).read(aggregateRootId);
@@ -233,7 +233,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, true);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, true);
 
         // Then
         assertEquals("{\"encrypted\":\"encrypted\",\"aggregateRootType\":\"aggregateRootType\",\"aggregateRootId\":\"aggregateRootId\",\"type\":\"bigInteger\"}", jsonValue.toString());
@@ -250,7 +250,7 @@ public class JsonbCryptoEncryptServiceTest {
         final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, false);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, BigInteger.ZERO, false);
 
         // Then
         assertEquals("0", jsonValue.toString());
@@ -269,7 +269,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        jsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, true);
+        defaultJsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, true);
 
         // Then
         verify(secretStore, times(1)).read(aggregateRootId);
@@ -289,7 +289,7 @@ public class JsonbCryptoEncryptServiceTest {
         doReturn(secret).when(secretStore).read(any());
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, true);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, true);
 
         // Then
         assertEquals("{\"encrypted\":\"encrypted\",\"aggregateRootType\":\"aggregateRootType\",\"aggregateRootId\":\"aggregateRootId\",\"type\":\"bigDecimal\"}", jsonValue.toString());
@@ -306,7 +306,7 @@ public class JsonbCryptoEncryptServiceTest {
         final AggregateRootId aggregateRootId = mock(AggregateRootId.class);
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, false);
+        final JsonValue jsonValue = defaultJsonbCryptoService.encrypt(aggregateRootId, BigDecimal.ZERO, false);
 
         // Then
         assertEquals("0", jsonValue.toString());

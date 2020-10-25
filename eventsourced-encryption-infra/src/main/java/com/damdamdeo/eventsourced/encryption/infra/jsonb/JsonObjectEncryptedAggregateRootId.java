@@ -12,8 +12,8 @@ public final class JsonObjectEncryptedAggregateRootId implements AggregateRootId
     private final String aggregateRootId;
 
     public JsonObjectEncryptedAggregateRootId(final JsonObject jsonNodeEncrypted) {
-        this(jsonNodeEncrypted.getString(JsonbCryptoService.AGGREGATE_ROOT_TYPE),
-                jsonNodeEncrypted.getString(JsonbCryptoService.AGGREGATE_ROOT_ID));
+        this(jsonNodeEncrypted.getString(DefaultJsonbCryptoService.AGGREGATE_ROOT_TYPE),
+                jsonNodeEncrypted.getString(DefaultJsonbCryptoService.AGGREGATE_ROOT_ID));
     }
 
     public JsonObjectEncryptedAggregateRootId(final String aggregateRootType,

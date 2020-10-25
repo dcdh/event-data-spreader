@@ -1,31 +1,29 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.encryption.api.CryptoService;
+import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.io.StringReader;
 import java.util.Objects;
 
 @ApplicationScoped
-public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateRootEventPayloadsDeSerializer {
+public class JsonbAggregateRootEventPayloadsDeSerializer implements AggregateRootEventPayloadsDeSerializer {
 
-    final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
-    final CryptoService<JsonNode> jsonCryptoService;
-    final ObjectMapper objectMapper;
+    final Instance<JsonbAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans;
+    final JsonbCryptoService jsonbCryptoService;
 
-    public JacksonAggregateRootEventPayloadsDeSerializer(@Any final Instance<JacksonAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
-                                                         final CryptoService<JsonNode> jsonCryptoService) {
+    public JsonbAggregateRootEventPayloadsDeSerializer(@Any final Instance<JsonbAggregateRootEventPayloadDeSerializer> jacksonAggregateRootEventPayloadDeSerializerBeans,
+                                                       final JsonbCryptoService jsonbCryptoService) {
         this.jacksonAggregateRootEventPayloadDeSerializerBeans = Objects.requireNonNull(jacksonAggregateRootEventPayloadDeSerializerBeans);
-        this.objectMapper = new ObjectMapper();
-        this.jsonCryptoService = jsonCryptoService;
+        this.jsonbCryptoService = Objects.requireNonNull(jsonbCryptoService);
     }
 
     @Override
@@ -37,15 +35,9 @@ public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateR
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .filter(bean -> eventType.equals(bean.eventType()))
                 .findFirst()
-                .map(jacksonAggregateRootEventPayloadDeSerializerBean ->
-                        jacksonAggregateRootEventPayloadDeSerializerBean.encode(aggregateRootId, aggregateRootEventPayload, this.objectMapper))
-                .map(jsonNode -> {
-                    try {
-                        return objectMapper.writeValueAsString(jsonNode);
-                    } catch (final JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
+                .map(jsonbAggregateRootEventPayloadDeSerializerBean ->
+                        jsonbAggregateRootEventPayloadDeSerializerBean.encode(aggregateRootId, aggregateRootEventPayload))
+                .map(jsonValue -> jsonValue.toString())
                 .orElseThrow(() -> new UnsupportedAggregateRootEventPayload(aggregateRootType, eventType));
     }
 
@@ -57,14 +49,10 @@ public class JacksonAggregateRootEventPayloadsDeSerializer implements AggregateR
                 .filter(bean -> aggregateRootType.equals(bean.aggregateRootType()))
                 .filter(bean -> eventType.equals(bean.eventType()))
                 .findFirst()
-                .map(jacksonAggregateRootEventPayloadDeSerializerBean -> {
-                    try {
-                        final JsonNode json = objectMapper.readTree(eventPayload);
-                        this.jsonCryptoService.recursiveDecrypt(json);
-                        return jacksonAggregateRootEventPayloadDeSerializerBean.decode(json);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
+                .map(jsonbAggregateRootEventPayloadDeSerializerBean -> {
+                    final JsonObject jsonObject = Json.createReader(new StringReader(eventPayload)).readObject();
+                    final JsonObject decryptedJsonObject = this.jsonbCryptoService.recursiveDecrypt(jsonObject);
+                    return jsonbAggregateRootEventPayloadDeSerializerBean.decode(decryptedJsonObject);
                 })
                 .orElseThrow(() -> new UnsupportedAggregateRootEventPayload(aggregateRootType, eventType));
     }

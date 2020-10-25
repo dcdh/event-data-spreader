@@ -5,6 +5,7 @@ import com.damdamdeo.eventsourced.encryption.api.CryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -102,10 +103,10 @@ public final class DecryptedAggregateRootEventConsumable implements AggregateRoo
             return this;
         }
 
-        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonObject> jsonCryptoService) {
-            jsonCryptoService.recursiveDecrypt(this.eventPayload);
-            jsonCryptoService.recursiveDecrypt(this.eventMetaData);
-            jsonCryptoService.recursiveDecrypt(this.materializedState);
+        public DecryptedAggregateRootEventConsumable build(final CryptoService<JsonValue, JsonObject> jsonCryptoService) {
+            this.eventPayload = jsonCryptoService.recursiveDecrypt(this.eventPayload);
+            this.eventMetaData = jsonCryptoService.recursiveDecrypt(this.eventMetaData);
+            this.materializedState = jsonCryptoService.recursiveDecrypt(this.materializedState);
             return new DecryptedAggregateRootEventConsumable(this);
         }
 

@@ -9,6 +9,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 public class JsonbCryptoDecryptServiceTest {
 
     @Inject
-    JsonbCryptoService jsonbCryptoService;
+    DefaultJsonbCryptoService defaultJsonbCryptoService;
 
     @InjectMock
     SecretStore secretStore;
@@ -39,7 +40,7 @@ public class JsonbCryptoDecryptServiceTest {
         final JsonValue givenJsonValue = Json.createReader(new StringReader("{\"message\":\"hello!\"}")).readObject();
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createObjectBuilder(Collections.singletonMap("message", "hello!")).build(), jsonValueDecrypted);
@@ -52,7 +53,7 @@ public class JsonbCryptoDecryptServiceTest {
         final JsonValue givenJsonValue = Json.createValue(0);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue(0), jsonValueDecrypted);
@@ -69,7 +70,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(secret).when(secretStore).read(aggregateRootId);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue("decrypted"), jsonValueDecrypted);
@@ -88,7 +89,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(secret).when(secretStore).read(aggregateRootId);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue(0), jsonValueDecrypted);
@@ -107,7 +108,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(secret).when(secretStore).read(aggregateRootId);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue(0l), jsonValueDecrypted);
@@ -126,7 +127,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(secret).when(secretStore).read(aggregateRootId);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue(BigDecimal.ZERO), jsonValueDecrypted);
@@ -145,7 +146,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(secret).when(secretStore).read(aggregateRootId);
 
         // When
-        final JsonValue jsonValueDecrypted = jsonbCryptoService.decrypt(givenJsonValue);
+        final JsonValue jsonValueDecrypted = defaultJsonbCryptoService.decrypt(givenJsonValue);
 
         // Then
         assertEquals(Json.createValue(BigInteger.ZERO), jsonValueDecrypted);
@@ -158,7 +159,7 @@ public class JsonbCryptoDecryptServiceTest {
     public void should_decrypt_recursively() throws Exception {
         // Given
         final String givenJsonEncrypted = new String(Files.readAllBytes(Paths.get(getClass().getResource("/jsonEncrypted.json").toURI())));
-        final JsonValue givenJsonValue = Json.createReader(new StringReader(givenJsonEncrypted)).readValue();
+        final JsonObject givenJsonObject = Json.createReader(new StringReader(givenJsonEncrypted)).readObject();
 
         // define CarAggregateRoot Car01 decrypt behavior
         final Secret carAggregateRootCar01Secret = mock(Secret.class, RETURNS_DEEP_STUBS);
@@ -199,7 +200,7 @@ public class JsonbCryptoDecryptServiceTest {
         doReturn(driverAggregateRootDriver01Secret).when(secretStore).read(new JsonObjectEncryptedAggregateRootId("DriverAggregateRoot", "Driver01"));
 
         // When
-        final JsonValue jsonValue = jsonbCryptoService.recursiveDecrypt(givenJsonValue);
+        final JsonValue jsonValue = defaultJsonbCryptoService.recursiveDecrypt(givenJsonObject);
 
         // Then
         final String expectedJsonDecrypted = new String(Files.readAllBytes(Paths.get(getClass().getResource("/jsonDecrypted.json").toURI())));

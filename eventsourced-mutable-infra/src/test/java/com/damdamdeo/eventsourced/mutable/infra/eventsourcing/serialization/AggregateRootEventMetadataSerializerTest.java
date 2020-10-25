@@ -25,7 +25,7 @@ public class AggregateRootEventMetadataSerializerTest {
         final String serialized = aggregateRootEventMetadataSerializer.serialize();
 
         // Then
-        assertEquals("{\"user.anonymous\":false,\"user.name\":\"damdamdeo\"}", serialized);
+        assertEquals("{\"user.anonymous\":false, \"user.name\":\"damdamdeo\"}", serialized);
 
         MetadataEnhancerContextHolder.cleanupThread();
     }

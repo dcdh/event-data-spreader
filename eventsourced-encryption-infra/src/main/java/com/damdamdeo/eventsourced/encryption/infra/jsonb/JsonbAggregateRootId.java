@@ -11,8 +11,8 @@ public final class JsonbAggregateRootId implements AggregateRootId {
     private final String aggregateRootId;
 
     public JsonbAggregateRootId(final JsonObject jsonObject) {
-        this(jsonObject.getString(JsonbCryptoService.AGGREGATE_ROOT_TYPE),
-                jsonObject.getString(JsonbCryptoService.AGGREGATE_ROOT_ID));
+        this(jsonObject.getString(DefaultJsonbCryptoService.AGGREGATE_ROOT_TYPE),
+                jsonObject.getString(DefaultJsonbCryptoService.AGGREGATE_ROOT_ID));
     }
 
     private JsonbAggregateRootId(final String aggregateRootType, final String aggregateRootId) {

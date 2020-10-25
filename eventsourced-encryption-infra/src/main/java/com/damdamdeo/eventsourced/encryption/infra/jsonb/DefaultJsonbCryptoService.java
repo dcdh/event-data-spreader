@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
-public class JsonbCryptoService implements CryptoService<JsonValue> {
+public class DefaultJsonbCryptoService implements JsonbCryptoService {
 
     public static final String ENCRYPTED = "encrypted";
     public static final String AGGREGATE_ROOT_TYPE = "aggregateRootType";
@@ -23,7 +23,7 @@ public class JsonbCryptoService implements CryptoService<JsonValue> {
     private final SecretStore secretStore;
     private final Encryption encryption;
 
-    public JsonbCryptoService(final SecretStore secretStore, @AESEncryptionQualifier final Encryption encryption) {
+    public DefaultJsonbCryptoService(final SecretStore secretStore, @AESEncryptionQualifier final Encryption encryption) {
         this.secretStore = Objects.requireNonNull(secretStore);
         this.encryption = Objects.requireNonNull(encryption);
     }
@@ -235,7 +235,7 @@ public class JsonbCryptoService implements CryptoService<JsonValue> {
     }
 
     @Override
-    public JsonValue recursiveDecrypt(final JsonValue source) {
+    public JsonObject recursiveDecrypt(final JsonObject source) {
         return recursiveDecrypt(source, Json.createObjectBuilder())
                 .build();
     }
