@@ -41,10 +41,6 @@
             <groupId>net.jodah</groupId>
             <artifactId>failsafe</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-security</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>

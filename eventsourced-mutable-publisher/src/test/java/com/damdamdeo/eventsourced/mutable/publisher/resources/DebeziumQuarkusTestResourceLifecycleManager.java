@@ -35,9 +35,6 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
                 .withNetworkAliases("mutable");
         postgresMutableContainer.start();
         postgresMutableContainer.followOutput(logConsumer);
-        System.setProperty("quarkus.datasource.jdbc.url", postgresMutableContainer.getJdbcUrl());
-        System.setProperty("quarkus.datasource.username", postgresMutableContainer.getUsername());
-        System.setProperty("quarkus.datasource.password", postgresMutableContainer.getPassword());
         System.setProperty("quarkus.datasource.mutable.jdbc.url", postgresMutableContainer.getJdbcUrl());
         System.setProperty("quarkus.datasource.mutable.username", postgresMutableContainer.getUsername());
         System.setProperty("quarkus.datasource.mutable.password", postgresMutableContainer.getPassword());
@@ -65,9 +62,6 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
 
     @Override
     public void stop() {
-        System.clearProperty("quarkus.datasource.jdbc.url");
-        System.clearProperty("quarkus.datasource.username");
-        System.clearProperty("quarkus.datasource.password");
         System.clearProperty("quarkus.datasource.mutable.jdbc.url");
         System.clearProperty("quarkus.datasource.mutable.username");
         System.clearProperty("quarkus.datasource.mutable.password");
