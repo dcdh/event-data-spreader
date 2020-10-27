@@ -1,21 +1,19 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import io.quarkus.runtime.Startup;
-
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
 import io.quarkus.qute.Template;
 import io.quarkus.qute.api.ResourcePath;
+import io.quarkus.runtime.StartupEvent;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-@Startup
 @ApplicationScoped
 public class DebeziumConnectorInitializer {
 
@@ -48,8 +46,7 @@ public class DebeziumConnectorInitializer {
         this.slotDropOnStop = slotDropOnStop == null ? Boolean.FALSE : Boolean.TRUE;
     }
 
-    @PostConstruct
-    public void onInit() {
+    public void onStart(@Observes final StartupEvent ev) {
         final String connectorConfiguration = this.debeziumTemplate.data("databaseHostname", mutableHostname)
                 .data("name", EVENTSOURCED_CONNECTOR)
                 .data("databaseServerName", mutableHostname)

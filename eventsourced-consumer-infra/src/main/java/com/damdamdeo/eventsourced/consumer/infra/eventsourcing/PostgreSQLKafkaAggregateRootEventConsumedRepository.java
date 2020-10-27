@@ -3,10 +3,10 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
-import io.quarkus.runtime.Startup;
+import io.quarkus.runtime.StartupEvent;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.sql.*;
@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 // I could used entities to do some business cases like marked an event as consumed. However it will imply a lot of mapping ...
-
-@Startup
 @ApplicationScoped
 public class PostgreSQLKafkaAggregateRootEventConsumedRepository implements KafkaAggregateRootEventConsumedRepository {
 
@@ -27,8 +25,7 @@ public class PostgreSQLKafkaAggregateRootEventConsumedRepository implements Kafk
         this.consumedEventsDataSource = Objects.requireNonNull(consumedEventsDataSource);
     }
 
-    @PostConstruct
-    public void initTables() {
+    public void onStart(@Observes StartupEvent ev) {
         final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
         try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
              final Connection con = consumedEventsDataSource.getConnection();

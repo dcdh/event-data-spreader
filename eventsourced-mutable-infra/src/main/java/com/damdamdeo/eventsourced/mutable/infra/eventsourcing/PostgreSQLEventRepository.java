@@ -7,11 +7,11 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
-import io.quarkus.runtime.Startup;
+import io.quarkus.runtime.StartupEvent;
 import org.apache.commons.lang3.Validate;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.sql.*;
@@ -20,7 +20,6 @@ import java.util.*;
 // TODO fait trop de chose
 // Je devrais uniquement stocker un event et non appliquer la serialization et la deserialization
 
-@Startup
 @ApplicationScoped
 public class PostgreSQLEventRepository implements EventRepository {
 
@@ -44,8 +43,7 @@ public class PostgreSQLEventRepository implements EventRepository {
         this.gitCommitProvider = Objects.requireNonNull(gitCommitProvider);
     }
 
-    @PostConstruct
-    public void initTables() {
+    public void onStart(@Observes final StartupEvent ev) {
         final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
         try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
              final Connection con = mutableDataSource.getConnection();

@@ -9,10 +9,10 @@ import io.quarkus.agroal.DataSource;
 import io.quarkus.cache.CacheInvalidate;
 import io.quarkus.cache.CacheKey;
 import io.quarkus.cache.CacheResult;
-import io.quarkus.runtime.Startup;
+import io.quarkus.runtime.StartupEvent;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,7 +21,6 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.Scanner;
 
-@Startup
 @ApplicationScoped
 public class PostgreSQLSecretStore implements SecretStore {
 
@@ -33,8 +32,7 @@ public class PostgreSQLSecretStore implements SecretStore {
         this.secretStoreDataSource = Objects.requireNonNull(secretStoreDataSource);
     }
 
-    @PostConstruct
-    public void initSecretStoreTables() {
+    public void onStart(@Observes final StartupEvent ev) {
         final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
         try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
              final Connection con = secretStoreDataSource.getConnection();
