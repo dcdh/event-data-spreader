@@ -88,8 +88,11 @@ public class DebeziumAggregateRootRepositoryTest {
 
     @BeforeEach
     public void waitDebeziumConnectorIsReady() {
-        // Wait to avoid to have a read operation instead of create one because the connector should be ready after the writing
+        RestAssured.given()
+                .when()
+                .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
         final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        // Wait to avoid to have a read operation instead of create one because the connector should be ready after the writing
         RestAssured.given()
                 .accept("application/json")
                 .contentType("application/json")
