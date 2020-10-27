@@ -5,6 +5,7 @@ import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.D
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
 import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
+import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
@@ -27,6 +28,7 @@ import javax.json.Json;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
 
+@Startup
 @ApplicationScoped
 public class KafkaEventConsumer {
 
