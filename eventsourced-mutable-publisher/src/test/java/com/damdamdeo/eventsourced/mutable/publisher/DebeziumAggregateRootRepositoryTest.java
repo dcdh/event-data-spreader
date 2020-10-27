@@ -21,6 +21,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -60,6 +61,9 @@ public class DebeziumAggregateRootRepositoryTest {
     @InjectMock
     AggregateRootMaterializedStatesDeSerializer aggregateRootMaterializedStatesDeSerializer;
 
+    @Inject
+    DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator;
+
     @InjectMock
     SecretStore secretStore;
 
@@ -85,6 +89,16 @@ public class DebeziumAggregateRootRepositoryTest {
     @BeforeEach
     public void waitDebeziumConnectorIsReady() {
         // Wait to avoid to have a read operation instead of create one because the connector should be ready after the writing
+        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .body(connectorConfiguration)
+                .when()
+                .post(kafkaConnectorRemoteApi + "/connectors")
+                .then()
+                .log().all()
+                .statusCode(201);
         Awaitility.await()
                 .atMost(Durations.FIVE_SECONDS)
                 .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() ->
@@ -98,6 +112,13 @@ public class DebeziumAggregateRootRepositoryTest {
                         .extract()
                         .jsonPath().getString("connector.state").equals("RUNNING")
         );
+    }
+
+    @AfterEach
+    public void tearDown() {
+        RestAssured.given()
+                .when()
+                .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
     }
 
     // https://github.com/debezium/debezium-examples/blob/master/testcontainers/src/test/java/io/debezium/examples/testcontainers/DebeziumContainerTest.java
