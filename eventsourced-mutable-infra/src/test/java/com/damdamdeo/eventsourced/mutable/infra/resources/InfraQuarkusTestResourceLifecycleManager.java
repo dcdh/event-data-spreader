@@ -41,12 +41,7 @@ public class InfraQuarkusTestResourceLifecycleManager implements QuarkusTestReso
         hazelcastContainer.start();
         hazelcastContainer.followOutput(logConsumer);
 
-        System.setProperty("quarkus.hazelcast-client.cluster-name", "dev");
-        System.setProperty("quarkus.hazelcast-client.cluster-members", String.format("localhost:%d", hazelcastContainer.getMappedPort(5701)));
-        // System.setProperty("quarkus.hazelcast-client.outbound-port-definitions",);
-        // System.setProperty("quarkus.hazelcast-client.outbound-ports", );
-        // System.setProperty("quarkus.hazelcast-client.labels",);
-        // System.setProperty("quarkus.hazelcast-client.connection-timeout", "60");
+        System.setProperty("HAZELCAST_IP", String.format("localhost:%d", hazelcastContainer.getMappedPort(5701)));
 
         System.setProperty("quarkus.datasource.jdbc.url", postgresMutableContainer.getJdbcUrl());
         System.setProperty("quarkus.datasource.username", postgresMutableContainer.getUsername());
@@ -65,12 +60,7 @@ public class InfraQuarkusTestResourceLifecycleManager implements QuarkusTestReso
         System.clearProperty("quarkus.datasource.mutable.jdbc.url");
         System.clearProperty("quarkus.datasource.mutable.username");
         System.clearProperty("quarkus.datasource.mutable.password");
-        System.clearProperty("quarkus.hazelcast-client.cluster-name");
-        System.clearProperty("quarkus.hazelcast-client.cluster-members");
-        System.clearProperty("quarkus.hazelcast-client.outbound-port-definitions");
-        System.clearProperty("quarkus.hazelcast-client.outbound-ports");
-        System.clearProperty("quarkus.hazelcast-client.labels");
-        System.clearProperty("quarkus.hazelcast-client.connection-timeout");
+        System.clearProperty("HAZELCAST_IP");
 
         if (postgresMutableContainer != null) {
             postgresMutableContainer.close();
