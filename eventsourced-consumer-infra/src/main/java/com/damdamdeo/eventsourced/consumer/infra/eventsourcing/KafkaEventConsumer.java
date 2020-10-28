@@ -117,6 +117,7 @@ public class KafkaEventConsumer {
                     processedSuccessfully = false;
                 }
             } while (!processedSuccessfully);
+            record.ack();
             return null;
         }, executor);
     }
