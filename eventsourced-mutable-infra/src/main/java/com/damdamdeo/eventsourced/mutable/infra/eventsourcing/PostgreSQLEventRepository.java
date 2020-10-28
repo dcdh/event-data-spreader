@@ -8,6 +8,8 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.StartupEvent;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.lang3.Validate;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -15,6 +17,7 @@ import javax.enterprise.event.Observes;
 import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.sql.*;
+import java.time.Duration;
 import java.util.*;
 
 // TODO fait trop de chose
@@ -44,6 +47,9 @@ public class PostgreSQLEventRepository implements EventRepository {
     }
 
     public void onStart(@Observes final StartupEvent ev) {
+        final RetryPolicy<Object> retryPolicy = new RetryPolicy<>().handle(Exception.class)
+                .withDelay(Duration.ofMillis(100))
+                .withMaxRetries(100);
         final InputStream ddlResource = this.getClass().getResourceAsStream(POSTGRESQL_DDL_FILE);
         try (final Scanner scanner = new Scanner(ddlResource).useDelimiter("!!");
              final Connection con = mutableDataSource.getConnection();
@@ -51,7 +57,7 @@ public class PostgreSQLEventRepository implements EventRepository {
             while (scanner.hasNext()) {
                 final String ddlEntry = scanner.next().trim();
                 if (!ddlEntry.isEmpty()) {
-                    stmt.executeUpdate(ddlEntry);
+                    Failsafe.with(retryPolicy).run(() -> stmt.executeUpdate(ddlEntry));
                 }
             }
         } catch (SQLException e) {
