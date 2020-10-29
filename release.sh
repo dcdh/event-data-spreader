@@ -1,4 +1,9 @@
 #!/bin/bash
+# https://gist.github.com/ricardozanini/fa65e485251913e1467837b1c5a8ed28
+export GRAALVM_HOME=/usr/lib/jvm/graalvm/
+export JAVA_HOME=${GRAALVM_HOME}
+export PATH=${GRAALVM_HOME}/bin:$PATH
+
 if [[ -n $(git status -s) ]]
 then
   echo 'release cannot be performed when uncommited changes are presents'
