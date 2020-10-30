@@ -28,6 +28,7 @@
         <module>eventsourced-mutable-infra</module>
         <module>eventsourced-mutable-publisher</module>
         <module>event-data-spreader-bom</module>
+        <module>eventsourced-mutable-kafka-connect</module>
     </modules>
 
     <dependencyManagement>

@@ -53,6 +53,7 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
                 .add("key.converter.schemas.enable", "false")
                 .add("value.converter", "org.apache.kafka.connect.json.JsonConverter")
                 .add("value.converter.schemas.enable", "false")
+                .add("partitioner.class", "com.damdamdeo.eventsourced.mutable.kafka.connect.partitioner.EventPartitioner")
                 .add("include.schema.changes", "false")
                 .add("tombstones.on.delete", "false")
                 .add("slot.drop.on.stop", Json.createValue(slotDropOnStop.toString()))

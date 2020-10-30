@@ -20,6 +20,7 @@
     "key.converter.schemas.enable": "false",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
+    "partitioner.class": "com.damdamdeo.eventsourced.mutable.kafka.connect.partitioner.EventPartitioner",
     "include.schema.changes": "false",
     "tombstones.on.delete": "false",
     "slot.drop.on.stop": "true"
