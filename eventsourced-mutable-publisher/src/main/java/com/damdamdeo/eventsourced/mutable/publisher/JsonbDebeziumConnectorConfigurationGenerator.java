@@ -6,6 +6,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Objects;
+import java.util.Optional;
 
 @ApplicationScoped
 public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumConnectorConfigurationGenerator {
@@ -28,7 +29,8 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
         this.mutablePassword = Objects.requireNonNull(mutablePassword);
         this.mutablePort = Objects.requireNonNull(mutablePort);
         this.mutableDbname = Objects.requireNonNull(mutableDbname);
-        this.slotDropOnStop = slotDropOnStop == null ? Boolean.FALSE : Boolean.TRUE;
+        this.slotDropOnStop = Optional.ofNullable(slotDropOnStop)
+                .orElse(Boolean.FALSE);
     }
 
     @Override
