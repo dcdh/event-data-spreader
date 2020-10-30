@@ -31,6 +31,10 @@ public final class KafkaConnectorStatus {
         return "RUNNING".equals(this.connector.state());
     }
 
+    public String state() {
+        return this.connector.state();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -39,7 +39,11 @@ public class DebeziumConnectorInitializer {
         final RetryPolicy<KafkaConnectorStatus> retryPolicy = new RetryPolicy<KafkaConnectorStatus>()
                 .handleResultIf(kafkaConnectorStatus -> !kafkaConnectorStatus.isRunning())
                 .withDelay(Duration.ofSeconds(1))
-                .withMaxRetries(100);
+                .withMaxRetries(100)
+                .onFailedAttempt(e -> LOGGER.error(String.format("Connector running attempt failed - connector current state '%s' - attempt count '%d'", e.getLastResult().state(), e.getAttemptCount())))
+                .onRetry(e -> LOGGER.warn(String.format("Connector not running yet - connector current state '%s' - attempt count '%d'", e.getLastResult().state(), e.getAttemptCount())))
+                .onRetriesExceeded(e -> LOGGER.warn("Failed for connector to run - Max retries exceeded - connector current state '%s' - attempt count '%d'", String.format(e.getResult().state(), e.getAttemptCount())))
+                .onAbort(e -> LOGGER.warn("Wait for connector running state aborted - connector current state '%s' - attempt count '%d'", String.format(e.getResult().state(), e.getAttemptCount())));
         Failsafe.with(retryPolicy).run(() -> kafkaConnectorApi.connectorStatus(DebeziumConnectorConfigurationGenerator.EVENTSOURCED_CONNECTOR));
     }
 
