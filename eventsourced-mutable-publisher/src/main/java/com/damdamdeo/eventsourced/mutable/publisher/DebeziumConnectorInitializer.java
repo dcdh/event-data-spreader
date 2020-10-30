@@ -11,9 +11,13 @@ import io.quarkus.runtime.StartupEvent;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class DebeziumConnectorInitializer {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(DebeziumConnectorInitializer.class);
 
     private final DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator;
 
@@ -30,6 +34,7 @@ public class DebeziumConnectorInitializer {
         final List<String> connectors = kafkaConnectorApi.getAllConnectors();
         if (!connectors.contains(DebeziumConnectorConfigurationGenerator.EVENTSOURCED_CONNECTOR)) {
             kafkaConnectorApi.registerConnector(connectorConfiguration);
+            LOGGER.info(String.format("Debezium connector registered using this configuration '%s'", connectorConfiguration.toString()));
         }
         final RetryPolicy<KafkaConnectorStatus> retryPolicy = new RetryPolicy<KafkaConnectorStatus>()
                 .handleResultIf(kafkaConnectorStatus -> !kafkaConnectorStatus.isRunning())
