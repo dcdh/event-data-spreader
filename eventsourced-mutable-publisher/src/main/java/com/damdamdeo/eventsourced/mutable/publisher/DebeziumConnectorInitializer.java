@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
+import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
 import io.quarkus.runtime.StartupEvent;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -25,7 +26,7 @@ public class DebeziumConnectorInitializer {
     }
 
     public void onStart(@Observes final StartupEvent ev) {
-        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
         final List<String> connectors = kafkaConnectorApi.getAllConnectors();
         if (!connectors.contains(DebeziumConnectorConfigurationGenerator.EVENTSOURCED_CONNECTOR)) {
             kafkaConnectorApi.registerConnector(connectorConfiguration);

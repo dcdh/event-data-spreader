@@ -1,7 +1,11 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
+import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.mapper.ObjectMapperType;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -29,6 +33,9 @@ public class KafkaConnectorApiTest {
     @Inject
     DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator;
 
+    final RestAssuredConfig restAssuredConfig = RestAssured.config()
+            .objectMapperConfig(ObjectMapperConfig.objectMapperConfig().defaultObjectMapperType(ObjectMapperType.JSONB));
+
     @BeforeEach
     @AfterEach
     public void purge() {
@@ -40,7 +47,7 @@ public class KafkaConnectorApiTest {
     @Test
     public void should_register_event_sourced_connector() {
         // Given
-        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
 
         // When
         kafkaConnectorApi.registerConnector(connectorConfiguration);
@@ -57,8 +64,9 @@ public class KafkaConnectorApiTest {
     @Test
     public void should_get_all_connectors_return_event_sourced_connector() {
         // Given
-        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
         RestAssured.given()
+                .config(restAssuredConfig)
                 .accept("application/json")
                 .contentType("application/json")
                 .body(connectorConfiguration)
@@ -79,8 +87,9 @@ public class KafkaConnectorApiTest {
     @Test
     public void should_get_event_sourced_connector_state() {
         // Given
-        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
         RestAssured.given()
+                .config(restAssuredConfig)
                 .accept("application/json")
                 .contentType("application/json")
                 .body(connectorConfiguration)

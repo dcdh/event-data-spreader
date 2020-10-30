@@ -10,10 +10,14 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.DefaultAggregateRootRepository;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
 import com.jayway.jsonpath.JsonPath;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.mapper.ObjectMapperType;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -77,6 +81,9 @@ public class DebeziumAggregateRootRepositoryTest {
     @ConfigProperty(name = "kafka-connector-api/mp-rest/url")
     String kafkaConnectorRemoteApi;
 
+    final RestAssuredConfig restAssuredConfig = RestAssured.config()
+            .objectMapperConfig(ObjectMapperConfig.objectMapperConfig().defaultObjectMapperType(ObjectMapperType.JSONB));
+
     @BeforeEach
     public void setupInjectedServicesMocks() {
         doReturn("secret").when(encryption).generateNewSecret();
@@ -91,13 +98,14 @@ public class DebeziumAggregateRootRepositoryTest {
         RestAssured.given()
                 .when()
                 .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
-        final String connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
-        // Wait to avoid to have a read operation instead of create one because the connector should be ready after the writing
-        RestAssured.given()
+        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        RestAssured.given().config(restAssuredConfig)
+                .given()
                 .accept("application/json")
                 .contentType("application/json")
                 .body(connectorConfiguration)
                 .when()
+                .log().all()
                 .post(kafkaConnectorRemoteApi + "/connectors")
                 .then()
                 .log().all()
