@@ -10,11 +10,11 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DebeziumJsonbEventInValueRecordTest {
+public class DebeziumJsonbEventInPayloadRecordTest {
 
     @Test
     public void should_verify_equality() {
-        EqualsVerifier.forClass(DebeziumJsonbEventInValueRecord.class).verify();
+        EqualsVerifier.forClass(DebeziumJsonbEventInPayloadRecord.class).verify();
     }
 
     @Test
@@ -24,10 +24,10 @@ public class DebeziumJsonbEventInValueRecordTest {
         final String jsonContent = new String(Files.readAllBytes(Paths.get(getClass().getResource("/eventsourcing/DebeziumEventInValueRecord.json").toURI())));
 
         // When
-        final DebeziumJsonbEventInValueRecord debeziumEventInKeyRecord = jsonb.fromJson(jsonContent, DebeziumJsonbEventInValueRecord.class);
+        final DebeziumJsonbEventInPayloadRecord debeziumEventInKeyRecord = jsonb.fromJson(jsonContent, DebeziumJsonbEventInPayloadRecord.class);
 
         // Then
-        assertEquals(new DebeziumJsonbEventInValueRecord(
+        assertEquals(new DebeziumJsonbEventInPayloadRecord(
                         new DebeziumJsonbAggregateRootEvent("AccountAggregateRoot",
                                 "damdamdeo",
                                 0l,

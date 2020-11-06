@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInPayloadRecord;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
@@ -12,9 +12,9 @@ public final class UnsupportedDebeziumOperationException extends Exception {
     private final String topic;
     private final Long offset;
     private final DebeziumJsonbEventInKeyRecord key;
-    private final DebeziumJsonbEventInValueRecord payload;
+    private final DebeziumJsonbEventInPayloadRecord payload;
 
-    public UnsupportedDebeziumOperationException(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) {
+    public UnsupportedDebeziumOperationException(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record) {
         this.partition = Objects.requireNonNull(record.getPartition());
         this.topic = Objects.requireNonNull(record.getTopic());
         this.offset = Objects.requireNonNull(record.getOffset());
@@ -38,7 +38,7 @@ public final class UnsupportedDebeziumOperationException extends Exception {
         return key;
     }
 
-    public DebeziumJsonbEventInValueRecord payload() {
+    public DebeziumJsonbEventInPayloadRecord payload() {
         return payload;
     }
 

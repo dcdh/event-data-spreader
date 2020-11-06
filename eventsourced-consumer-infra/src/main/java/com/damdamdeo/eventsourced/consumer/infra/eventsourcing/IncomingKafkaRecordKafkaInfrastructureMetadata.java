@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInPayloadRecord;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import java.util.Objects;
@@ -12,7 +12,7 @@ public final class IncomingKafkaRecordKafkaInfrastructureMetadata implements Kaf
     private final String topic;
     private final Long offset;
 
-    public IncomingKafkaRecordKafkaInfrastructureMetadata(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) {
+    public IncomingKafkaRecordKafkaInfrastructureMetadata(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record) {
         this.partition = Objects.requireNonNull(record.getPartition());
         this.topic = Objects.requireNonNull(record.getTopic());
         this.offset = Objects.requireNonNull(record.getOffset());

@@ -8,15 +8,15 @@ import javax.json.bind.annotation.JsonbProperty;
 import java.util.Objects;
 
 @RegisterForReflection
-public final class DebeziumJsonbEventInValueRecord {
+public final class DebeziumJsonbEventInPayloadRecord {
 
     private final DebeziumJsonbAggregateRootEvent after;
 
     private final String operation;
 
     @JsonbCreator
-    public DebeziumJsonbEventInValueRecord(@JsonbProperty("after") final DebeziumJsonbAggregateRootEvent after,
-                                           @JsonbProperty("op") final String operation) {
+    public DebeziumJsonbEventInPayloadRecord(@JsonbProperty("after") final DebeziumJsonbAggregateRootEvent after,
+                                             @JsonbProperty("op") final String operation) {
         this.after = Objects.requireNonNull(after);
         this.operation = Objects.requireNonNull(operation);
     }
@@ -32,8 +32,8 @@ public final class DebeziumJsonbEventInValueRecord {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DebeziumJsonbEventInValueRecord)) return false;
-        DebeziumJsonbEventInValueRecord that = (DebeziumJsonbEventInValueRecord) o;
+        if (!(o instanceof DebeziumJsonbEventInPayloadRecord)) return false;
+        DebeziumJsonbEventInPayloadRecord that = (DebeziumJsonbEventInPayloadRecord) o;
         return Objects.equals(after, that.after) &&
                 Objects.equals(operation, that.operation);
     }
@@ -45,7 +45,7 @@ public final class DebeziumJsonbEventInValueRecord {
 
     @Override
     public String toString() {
-        return "DebeziumJsonbEventInValueRecord{" +
+        return "DebeziumJsonbEventInPayloadRecord{" +
                 "after=" + after +
                 ", operation='" + operation + '\'' +
                 '}';

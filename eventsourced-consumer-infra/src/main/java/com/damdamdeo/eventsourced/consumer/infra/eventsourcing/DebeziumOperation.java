@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.Operation;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInPayloadRecord;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import java.util.stream.Stream;
@@ -41,7 +41,7 @@ public enum DebeziumOperation {
 
     public abstract Operation operation();
 
-    public static DebeziumOperation fromDebeziumOperation(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) throws UnsupportedDebeziumOperationException {
+    public static DebeziumOperation fromDebeziumOperation(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record) throws UnsupportedDebeziumOperationException {
         final String debeziumOperation = record.getPayload().operation();
         return Stream.of(DebeziumOperation.values())
                 .filter(operation -> debeziumOperation.equals(operation.debeziumOperation()))

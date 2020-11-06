@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.consumer.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.consumer.api.eventsourcing.*;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInPayloadRecord;
 import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
 import io.quarkus.runtime.Startup;
@@ -64,7 +64,7 @@ public class KafkaEventConsumer {
 
     @Incoming("event-in")
     @Transactional(Transactional.TxType.NEVER)
-    public CompletionStage<Void> onMessage(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record) {
+    public CompletionStage<Void> onMessage(final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record) {
         LOGGER.info(String.format("Receiving record '%s'", record.getKey().toString()));
         return CompletableFuture.supplyAsync(() -> {
             boolean processedSuccessfully = true;

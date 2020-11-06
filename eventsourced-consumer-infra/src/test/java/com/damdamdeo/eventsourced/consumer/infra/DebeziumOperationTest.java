@@ -4,7 +4,7 @@ import com.damdamdeo.eventsourced.consumer.api.eventsourcing.Operation;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.DebeziumOperation;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.UnsupportedDebeziumOperationException;
 import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInKeyRecord;
-import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInValueRecord;
+import com.damdamdeo.eventsourced.consumer.infra.eventsourcing.record.event_in.DebeziumJsonbEventInPayloadRecord;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +17,8 @@ public class DebeziumOperationTest {
     @Test
     public void should_create_operation_mapped_with_debezium_create_operation() throws UnsupportedDebeziumOperationException {
         // Given
-        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record = mock(IncomingKafkaRecord.class);
-        final DebeziumJsonbEventInValueRecord payload = mock(DebeziumJsonbEventInValueRecord.class);
+        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record = mock(IncomingKafkaRecord.class);
+        final DebeziumJsonbEventInPayloadRecord payload = mock(DebeziumJsonbEventInPayloadRecord.class);
         doReturn(payload).when(record).getPayload();
         doReturn("c").when(payload).operation();
 
@@ -43,8 +43,8 @@ public class DebeziumOperationTest {
     @Test
     public void should_read_due_to_snapshotting_operation_mapped_with_debezium_read_due_to_snapshotting_operation() throws UnsupportedDebeziumOperationException {
         // Given
-        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record = mock(IncomingKafkaRecord.class);
-        final DebeziumJsonbEventInValueRecord payload = mock(DebeziumJsonbEventInValueRecord.class);
+        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record = mock(IncomingKafkaRecord.class);
+        final DebeziumJsonbEventInPayloadRecord payload = mock(DebeziumJsonbEventInPayloadRecord.class);
         doReturn(payload).when(record).getPayload();
         doReturn("r").when(payload).operation();
 
@@ -69,8 +69,8 @@ public class DebeziumOperationTest {
     @Test
     public void should_throw_unsupported_debezium_operation_exception_when_debezium_operation_is_unsupported() {
         // Given
-        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInValueRecord> record = mock(IncomingKafkaRecord.class);
-        final DebeziumJsonbEventInValueRecord payload = mock(DebeziumJsonbEventInValueRecord.class);
+        final IncomingKafkaRecord<DebeziumJsonbEventInKeyRecord, DebeziumJsonbEventInPayloadRecord> record = mock(IncomingKafkaRecord.class);
+        final DebeziumJsonbEventInPayloadRecord payload = mock(DebeziumJsonbEventInPayloadRecord.class);
         doReturn(payload).when(record).getPayload();
         doReturn("o").when(payload).operation();
         doReturn(0).when(record).getPartition();
