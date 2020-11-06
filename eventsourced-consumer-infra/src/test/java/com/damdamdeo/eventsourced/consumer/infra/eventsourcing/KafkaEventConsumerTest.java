@@ -76,7 +76,7 @@ public class KafkaEventConsumerTest {
     public static class AccountDebitedAggregateRootEventConsumer implements JsonObjectAggregateRootEventConsumer {
 
         @Override
-        public void consume(final AggregateRootEventConsumable<JsonObject> aggregateRootEventConsumable) {
+        public void consume(final AggregateRootEventConsumable<JsonObject> aggregateRootEventConsumable, final Operation operation) {
             // If it fail, an exception will be thrown. In this case, the consumer will fail and retry again
             assertEquals("damdamdeo", aggregateRootEventConsumable.eventMetaData().getString("executedBy"));
 
@@ -88,6 +88,8 @@ public class KafkaEventConsumerTest {
             assertEquals(0L, aggregateRootEventConsumable.materializedState().getJsonNumber("version").longValueExact());
             assertEquals("AccountAggregateRoot", aggregateRootEventConsumable.materializedState().getString("aggregateRootType"));
             assertEquals("900.00", aggregateRootEventConsumable.materializedState().getString("balance"));
+
+            assertEquals(Operation.CREATE, operation);
         }
 
         @Override
@@ -119,7 +121,7 @@ public class KafkaEventConsumerTest {
                 Json.createReader(new StringReader("{\"executedBy\": \"damdamdeo\"}")).readObject(),
                 Json.createReader(new StringReader("{\"aggregateRootId\": \"damdamdeo\", \"version\":0, \"aggregateRootType\": \"AccountAggregateRoot\", \"balance\": \"900.00\"}")).readObject()
         );
-        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer);
+        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(aggregateRootEventConsumer, Operation.CREATE);
         verify(spiedKafkaEventConsumedRepository, times(1)).hasFinishedConsumingEvent(any());
     }
 
@@ -167,7 +169,7 @@ public class KafkaEventConsumerTest {
         waitForEventToBeConsumed();
 
         // Then
-        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(any());
+        verify(spiedAccountDebitedAggregateRootEventConsumer, times(1)).consume(any(), any());
     }
 
     private void waitForEventToBeConsumed() {

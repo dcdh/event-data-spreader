@@ -34,8 +34,6 @@ public class KafkaEventConsumer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
-    private static final String CREATE_OPERATION = "c";
-    private static final String READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START = "r";
     private final JsonbCryptoService jsonCryptoService;
     private final KafkaAggregateRootEventConsumedRepository kafkaEventConsumedRepository;
     private final UserTransaction transaction;
@@ -72,9 +70,7 @@ public class KafkaEventConsumer {
             boolean processedSuccessfully = true;
             do {
                 try {
-                    if (!Arrays.asList(CREATE_OPERATION, READ_DUE_TO_SNAPSHOTTING_AT_CONNECTOR_START).contains(record.getPayload().operation())) {
-                        throw new UnsupportedDebeziumOperationException(record);
-                    }
+                    final DebeziumOperation debeziumOperation = DebeziumOperation.fromDebeziumOperation(record);
                     final DebeziumJsonbAggregateRootEventConsumable debeziumJsonbAggregateRootEventConsumable = record.getPayload().debeziumJsonbAggregateRootEventConsumable();
                     final String aggregateRootType = debeziumJsonbAggregateRootEventConsumable.eventId().aggregateRootId().aggregateRootType();
                     final AggregateRootEventId aggregateRootEventId = debeziumJsonbAggregateRootEventConsumable.eventId();
@@ -92,7 +88,7 @@ public class KafkaEventConsumer {
                             final List<String> consumersHavingProcessedEventClassNames = kafkaEventConsumedRepository.getConsumersHavingProcessedEvent(aggregateRootEventConsumable.eventId());
                             if (!consumersHavingProcessedEventClassNames.contains(consumerToProcessEvent.getClass().getName())) {
                                 transaction.begin();// needed however exception will be thrown even if the consumer is marked with @Transactional
-                                consumerToProcessEvent.consume(aggregateRootEventConsumable);
+                                consumerToProcessEvent.consume(aggregateRootEventConsumable, debeziumOperation.operation());
                                 kafkaEventConsumedRepository.addEventConsumerConsumed(aggregateRootEventConsumable.eventId(),
                                         consumerToProcessEvent.getClass(),
                                         createdAtProvider.createdAt(),
