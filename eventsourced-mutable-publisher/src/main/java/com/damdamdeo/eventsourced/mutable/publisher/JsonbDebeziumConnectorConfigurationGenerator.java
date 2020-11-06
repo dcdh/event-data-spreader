@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationConfigDTO;
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationConfigDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -34,10 +34,11 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
     }
 
     @Override
-    public EventSourcedConnectorConfigurationDTO generateConnectorConfiguration() {
-        return EventSourcedConnectorConfigurationDTO
+    public DebeziumConnectorConfigurationDTO generateConnectorConfiguration(final String connectorName) {
+        return DebeziumConnectorConfigurationDTO
                 .newBuilder()
-                .withConfig(EventSourcedConnectorConfigurationConfigDTO
+                .withName(connectorName)
+                .withConfig(DebeziumConnectorConfigurationConfigDTO
                         .newBuilder()
                         .withDatabaseHostname(mutableHostname)
                         .withDatabasePort(mutablePort.toString())

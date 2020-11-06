@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
@@ -23,7 +23,7 @@ public interface KafkaConnectorApi {
     @Path("/connectors")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    Void registerConnector(EventSourcedConnectorConfigurationDTO connectorConfiguration);
+    Void registerConnector(DebeziumConnectorConfigurationDTO connectorConfiguration);
 
     @GET
     @Path("/connectors/{connectorName}/status")

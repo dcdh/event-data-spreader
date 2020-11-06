@@ -6,14 +6,14 @@ import javax.json.bind.annotation.JsonbProperty;
 import java.util.Objects;
 
 @RegisterForReflection
-public final class EventSourcedConnectorConfigurationDTO {
+public final class DebeziumConnectorConfigurationDTO {
 
     private final String name;
 
-    private final EventSourcedConnectorConfigurationConfigDTO config;
+    private final DebeziumConnectorConfigurationConfigDTO config;
 
-    private EventSourcedConnectorConfigurationDTO(final Builder builder) {
-        this.name = "event-sourced-connector";
+    private DebeziumConnectorConfigurationDTO(final Builder builder) {
+        this.name = Objects.requireNonNull(builder.name);
         this.config = Objects.requireNonNull(builder.config);
     }
 
@@ -22,15 +22,21 @@ public final class EventSourcedConnectorConfigurationDTO {
     }
 
     public static class Builder {
-        private EventSourcedConnectorConfigurationConfigDTO config;
+        private String name;
+        private DebeziumConnectorConfigurationConfigDTO config;
 
-        public Builder withConfig(final EventSourcedConnectorConfigurationConfigDTO config) {
+        public Builder withName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withConfig(final DebeziumConnectorConfigurationConfigDTO config) {
             this.config = config;
             return this;
         }
 
-        public EventSourcedConnectorConfigurationDTO build() {
-            return new EventSourcedConnectorConfigurationDTO(this);
+        public DebeziumConnectorConfigurationDTO build() {
+            return new DebeziumConnectorConfigurationDTO(this);
         }
 
     }
@@ -41,15 +47,15 @@ public final class EventSourcedConnectorConfigurationDTO {
     }
 
     @JsonbProperty("config")
-    public EventSourcedConnectorConfigurationConfigDTO getConfig() {
+    public DebeziumConnectorConfigurationConfigDTO getConfig() {
         return config;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EventSourcedConnectorConfigurationDTO)) return false;
-        EventSourcedConnectorConfigurationDTO that = (EventSourcedConnectorConfigurationDTO) o;
+        if (!(o instanceof DebeziumConnectorConfigurationDTO)) return false;
+        DebeziumConnectorConfigurationDTO that = (DebeziumConnectorConfigurationDTO) o;
         return Objects.equals(name, that.name) &&
                 Objects.equals(config, that.config);
     }
@@ -61,7 +67,7 @@ public final class EventSourcedConnectorConfigurationDTO {
 
     @Override
     public String toString() {
-        return "EventSourcedConnectorConfigurationDTO{" +
+        return "DebeziumConnectorConfigurationDTO{" +
                 "name='" + name + '\'' +
                 ", config=" + config +
                 '}';

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ public class DebeziumConnectorConfigurationGeneratorTest {
         // Given
 
         // When
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final DebeziumConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration("event-sourced-connector");
         final JsonObject jsonConnectorConfiguration = Json.createReader(new StringReader(JsonbBuilder.create().toJson(connectorConfiguration))).readObject();
 
         // Then

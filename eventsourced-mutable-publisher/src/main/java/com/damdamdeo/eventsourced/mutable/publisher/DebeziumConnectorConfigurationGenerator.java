@@ -1,11 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 
 public interface DebeziumConnectorConfigurationGenerator {
 
-    String EVENTSOURCED_CONNECTOR = "event-sourced-connector";
-
-    EventSourcedConnectorConfigurationDTO generateConnectorConfiguration();
+    DebeziumConnectorConfigurationDTO generateConnectorConfiguration(String connectorName);
 
 }

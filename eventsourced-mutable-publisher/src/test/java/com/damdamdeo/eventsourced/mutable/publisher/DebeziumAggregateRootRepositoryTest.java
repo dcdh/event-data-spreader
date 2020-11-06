@@ -10,7 +10,6 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.DefaultAggregateRootRepository;
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
 import com.jayway.jsonpath.JsonPath;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -25,7 +24,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -95,21 +93,6 @@ public class DebeziumAggregateRootRepositoryTest {
 
     @BeforeEach
     public void waitDebeziumConnectorIsReady() {
-        RestAssured.given()
-                .when()
-                .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
-        RestAssured.given().config(restAssuredConfig)
-                .given()
-                .accept("application/json")
-                .contentType("application/json")
-                .body(connectorConfiguration)
-                .when()
-                .log().all()
-                .post(kafkaConnectorRemoteApi + "/connectors")
-                .then()
-                .log().all()
-                .statusCode(201);
         Awaitility.await()
                 .atMost(Durations.FIVE_SECONDS)
                 .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() ->
@@ -123,13 +106,6 @@ public class DebeziumAggregateRootRepositoryTest {
                         .extract()
                         .jsonPath().getString("connector.state").equals("RUNNING")
         );
-    }
-
-    @AfterEach
-    public void tearDown() {
-        RestAssured.given()
-                .when()
-                .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
     }
 
     // https://github.com/debezium/debezium-examples/blob/master/testcontainers/src/test/java/io/debezium/examples/testcontainers/DebeziumContainerTest.java

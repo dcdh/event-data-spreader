@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 import io.quarkus.runtime.StartupEvent;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -15,24 +15,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-public class DebeziumConnectorInitializer {
+public class DebeziumEventSourcedConnectorInitializer {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(DebeziumConnectorInitializer.class);
+    private final static String EVENTSOURCED_CONNECTOR = "event-sourced-connector";
+
+    private final Logger LOGGER = LoggerFactory.getLogger(DebeziumEventSourcedConnectorInitializer.class);
 
     private final DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator;
 
     private final KafkaConnectorApi kafkaConnectorApi;
 
-    public DebeziumConnectorInitializer(@RestClient final KafkaConnectorApi kafkaConnectorApi,
-                                        final DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator) {
+    public DebeziumEventSourcedConnectorInitializer(@RestClient final KafkaConnectorApi kafkaConnectorApi,
+                                                    final DebeziumConnectorConfigurationGenerator debeziumConnectorConfigurationGenerator) {
         this.kafkaConnectorApi = Objects.requireNonNull(kafkaConnectorApi);
         this.debeziumConnectorConfigurationGenerator = Objects.requireNonNull(debeziumConnectorConfigurationGenerator);
     }
 
     public void onStart(@Observes final StartupEvent ev) {
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final DebeziumConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration(EVENTSOURCED_CONNECTOR);
         final List<String> connectors = kafkaConnectorApi.getAllConnectors();
-        if (!connectors.contains(DebeziumConnectorConfigurationGenerator.EVENTSOURCED_CONNECTOR)) {
+        if (!connectors.contains(EVENTSOURCED_CONNECTOR)) {
             kafkaConnectorApi.registerConnector(connectorConfiguration);
             LOGGER.info(String.format("Debezium connector registered using this configuration '%s'", connectorConfiguration.toString()));
         }
@@ -44,7 +46,7 @@ public class DebeziumConnectorInitializer {
                 .onRetry(e -> LOGGER.warn(String.format("Connector not running yet - connector current state '%s' - attempt count '%d'", e.getLastResult().state(), e.getAttemptCount())))
                 .onRetriesExceeded(e -> LOGGER.warn("Failed for connector to run - Max retries exceeded - connector current state '%s' - attempt count '%d'", String.format(e.getResult().state(), e.getAttemptCount())))
                 .onAbort(e -> LOGGER.warn("Wait for connector running state aborted - connector current state '%s' - attempt count '%d'", String.format(e.getResult().state(), e.getAttemptCount())));
-        Failsafe.with(retryPolicy).run(() -> kafkaConnectorApi.connectorStatus(DebeziumConnectorConfigurationGenerator.EVENTSOURCED_CONNECTOR));
+        Failsafe.with(retryPolicy).run(() -> kafkaConnectorApi.connectorStatus(EVENTSOURCED_CONNECTOR));
     }
 
 }

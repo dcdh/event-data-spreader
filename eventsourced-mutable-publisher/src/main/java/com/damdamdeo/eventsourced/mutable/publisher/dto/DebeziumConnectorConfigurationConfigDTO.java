@@ -6,7 +6,7 @@ import javax.json.bind.annotation.JsonbProperty;
 import java.util.Objects;
 
 @RegisterForReflection
-public final class EventSourcedConnectorConfigurationConfigDTO {
+public final class DebeziumConnectorConfigurationConfigDTO {
 
     private final String connectorClass;
     private final String tasksMax;
@@ -32,7 +32,7 @@ public final class EventSourcedConnectorConfigurationConfigDTO {
     private final String tombstonesOnDelete;
     private final String slotDropOnStop;
 
-    private EventSourcedConnectorConfigurationConfigDTO(final Builder builder) {
+    private DebeziumConnectorConfigurationConfigDTO(final Builder builder) {
         this.connectorClass = "io.debezium.connector.postgresql.PostgresConnector";
         this.tasksMax = "1";
         this.pluginName = "wal2json";
@@ -106,8 +106,8 @@ public final class EventSourcedConnectorConfigurationConfigDTO {
             return this;
         }
 
-        public EventSourcedConnectorConfigurationConfigDTO build() {
-            return new EventSourcedConnectorConfigurationConfigDTO(this);
+        public DebeziumConnectorConfigurationConfigDTO build() {
+            return new DebeziumConnectorConfigurationConfigDTO(this);
         }
     }
 
@@ -229,8 +229,8 @@ public final class EventSourcedConnectorConfigurationConfigDTO {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EventSourcedConnectorConfigurationConfigDTO)) return false;
-        EventSourcedConnectorConfigurationConfigDTO that = (EventSourcedConnectorConfigurationConfigDTO) o;
+        if (!(o instanceof DebeziumConnectorConfigurationConfigDTO)) return false;
+        DebeziumConnectorConfigurationConfigDTO that = (DebeziumConnectorConfigurationConfigDTO) o;
         return Objects.equals(connectorClass, that.connectorClass) &&
                 Objects.equals(tasksMax, that.tasksMax) &&
                 Objects.equals(pluginName, that.pluginName) &&
@@ -263,7 +263,7 @@ public final class EventSourcedConnectorConfigurationConfigDTO {
 
     @Override
     public String toString() {
-        return "EventSourcedConnectorConfigurationConfigDTO{" +
+        return "DebeziumConnectorConfigurationConfigDTO{" +
                 "connectorClass='" + connectorClass + '\'' +
                 ", tasksMax='" + tasksMax + '\'' +
                 ", pluginName='" + pluginName + '\'' +

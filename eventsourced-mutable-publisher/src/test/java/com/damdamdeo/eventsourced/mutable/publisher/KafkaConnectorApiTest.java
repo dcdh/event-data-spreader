@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.publisher;
 
-import com.damdamdeo.eventsourced.mutable.publisher.dto.EventSourcedConnectorConfigurationDTO;
+import com.damdamdeo.eventsourced.mutable.publisher.dto.DebeziumConnectorConfigurationDTO;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -41,30 +41,30 @@ public class KafkaConnectorApiTest {
     public void purge() {
         RestAssured.given()
                 .when()
-                .delete(kafkaConnectorRemoteApi+ "/connectors/event-sourced-connector");
+                .delete(kafkaConnectorRemoteApi+ "/connectors/test-connector");
     }
 
     @Test
-    public void should_register_event_sourced_connector() {
+    public void should_register_test_connector() {
         // Given
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final DebeziumConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration("test-connector");
 
         // When
         kafkaConnectorApi.registerConnector(connectorConfiguration);
-        waitUntilConnectorIsRunning("event-sourced-connector");
+        waitUntilConnectorIsRunning("test-connector");
 
         // Then
         RestAssured.given()
                 .when()
-                .get(kafkaConnectorRemoteApi + "/connectors/event-sourced-connector")
+                .get(kafkaConnectorRemoteApi + "/connectors/test-connector")
                 .then()
                 .statusCode(200);
     }
 
     @Test
-    public void should_get_all_connectors_return_event_sourced_connector() {
+    public void should_get_all_connectors_return_test_connector() {
         // Given
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final DebeziumConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration("test-connector");
         RestAssured.given()
                 .config(restAssuredConfig)
                 .accept("application/json")
@@ -75,19 +75,19 @@ public class KafkaConnectorApiTest {
                 .then()
                 .log().all()
                 .statusCode(201);
-        waitUntilConnectorIsRunning("event-sourced-connector");
+        waitUntilConnectorIsRunning("test-connector");
 
         // When
         final List<String> connectors = kafkaConnectorApi.getAllConnectors();
 
         // Then
-        assertEquals(Arrays.asList("event-sourced-connector"), connectors);
+        assertThat(connectors).contains("test-connector");
     }
 
     @Test
-    public void should_get_event_sourced_connector_state() {
+    public void should_get_test_connector_state() {
         // Given
-        final EventSourcedConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration();
+        final DebeziumConnectorConfigurationDTO connectorConfiguration = debeziumConnectorConfigurationGenerator.generateConnectorConfiguration("test-connector");
         RestAssured.given()
                 .config(restAssuredConfig)
                 .accept("application/json")
@@ -98,13 +98,13 @@ public class KafkaConnectorApiTest {
                 .then()
                 .log().all()
                 .statusCode(201);
-        waitUntilConnectorIsRunning("event-sourced-connector");
+        waitUntilConnectorIsRunning("test-connector");
 
         // When
-        final KafkaConnectorStatus kafkaConnectorStatus = kafkaConnectorApi.connectorStatus("event-sourced-connector");
+        final KafkaConnectorStatus kafkaConnectorStatus = kafkaConnectorApi.connectorStatus("test-connector");
 
         // Then
-        assertEquals("event-sourced-connector", kafkaConnectorStatus.name());
+        assertEquals("test-connector", kafkaConnectorStatus.name());
         assertNotNull(kafkaConnectorStatus.connector());
         assertEquals("RUNNING", kafkaConnectorStatus.connector().state());
         assertNotNull(kafkaConnectorStatus.connector().workerId());
