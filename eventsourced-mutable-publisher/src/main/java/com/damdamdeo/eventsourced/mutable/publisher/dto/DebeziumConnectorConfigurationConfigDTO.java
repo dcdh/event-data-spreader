@@ -20,9 +20,9 @@ public final class DebeziumConnectorConfigurationConfigDTO {
     private final String tableWhitelist;
     private final String snapshotMode;
     private final String transforms;
-    private final String transformsRouteType;
-    private final String transformsRouteRegex;
-    private final String transformsRouteReplacement;
+    private final String transformsRouterType;
+    private final String transformsRouterRegex;
+    private final String transformsRouterReplacement;
     private final String keyConverter;
     private final String keyConverterSchemasEnable;
     private final String valueConverter;
@@ -44,10 +44,10 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         this.databaseServerName = Objects.requireNonNull(builder.databaseServerName);
         this.tableWhitelist = "public.event";
         this.snapshotMode = "always";
-        this.transforms = "route";
-        this.transformsRouteType = "org.apache.kafka.connect.transforms.RegexRouter";
-        this.transformsRouteRegex = "([^.]+)\\.([^.]+)\\.([^.]+)";
-        this.transformsRouteReplacement = "$3";
+        this.transforms = "router";
+        this.transformsRouterType = "org.apache.kafka.connect.transforms.RegexRouter";
+        this.transformsRouterRegex = "([^.]+)\\.([^.]+)\\.([^.]+)";
+        this.transformsRouterReplacement = "$3";
         this.keyConverter = "org.apache.kafka.connect.json.JsonConverter";
         this.keyConverterSchemasEnable = "false";
         this.valueConverter = "org.apache.kafka.connect.json.JsonConverter";
@@ -171,19 +171,19 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         return transforms;
     }
 
-    @JsonbProperty("transforms.route.type")
-    public String getTransformsRouteType() {
-        return transformsRouteType;
+    @JsonbProperty("transforms.router.type")
+    public String getTransformsRouterType() {
+        return transformsRouterType;
     }
 
-    @JsonbProperty("transforms.route.regex")
-    public String getTransformsRouteRegex() {
-        return transformsRouteRegex;
+    @JsonbProperty("transforms.router.regex")
+    public String getTransformsRouterRegex() {
+        return transformsRouterRegex;
     }
 
-    @JsonbProperty("transforms.route.replacement")
-    public String getTransformsRouteReplacement() {
-        return transformsRouteReplacement;
+    @JsonbProperty("transforms.router.replacement")
+    public String getTransformsRouterReplacement() {
+        return transformsRouterReplacement;
     }
 
     @JsonbProperty("key.converter")
@@ -243,9 +243,9 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 Objects.equals(tableWhitelist, that.tableWhitelist) &&
                 Objects.equals(snapshotMode, that.snapshotMode) &&
                 Objects.equals(transforms, that.transforms) &&
-                Objects.equals(transformsRouteType, that.transformsRouteType) &&
-                Objects.equals(transformsRouteRegex, that.transformsRouteRegex) &&
-                Objects.equals(transformsRouteReplacement, that.transformsRouteReplacement) &&
+                Objects.equals(transformsRouterType, that.transformsRouterType) &&
+                Objects.equals(transformsRouterRegex, that.transformsRouterRegex) &&
+                Objects.equals(transformsRouterReplacement, that.transformsRouterReplacement) &&
                 Objects.equals(keyConverter, that.keyConverter) &&
                 Objects.equals(keyConverterSchemasEnable, that.keyConverterSchemasEnable) &&
                 Objects.equals(valueConverter, that.valueConverter) &&
@@ -258,7 +258,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableWhitelist, snapshotMode, transforms, transformsRouteType, transformsRouteRegex, transformsRouteReplacement, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
+        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableWhitelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
     }
 
     @Override
@@ -276,9 +276,9 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 ", tableWhitelist='" + tableWhitelist + '\'' +
                 ", snapshotMode='" + snapshotMode + '\'' +
                 ", transforms='" + transforms + '\'' +
-                ", transformsRouteType='" + transformsRouteType + '\'' +
-                ", transformsRouteRegex='" + transformsRouteRegex + '\'' +
-                ", transformsRouteReplacement='" + transformsRouteReplacement + '\'' +
+                ", transformsRouterType='" + transformsRouterType + '\'' +
+                ", transformsRouterRegex='" + transformsRouterRegex + '\'' +
+                ", transformsRouterReplacement='" + transformsRouterReplacement + '\'' +
                 ", keyConverter='" + keyConverter + '\'' +
                 ", keyConverterSchemasEnable='" + keyConverterSchemasEnable + '\'' +
                 ", valueConverter='" + valueConverter + '\'' +
