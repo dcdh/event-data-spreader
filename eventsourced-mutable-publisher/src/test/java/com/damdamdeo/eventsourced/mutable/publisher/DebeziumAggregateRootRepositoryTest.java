@@ -17,6 +17,7 @@ import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.mapper.ObjectMapperType;
+import org.apache.commons.lang3.Validate;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -108,6 +109,7 @@ public class DebeziumAggregateRootRepositoryTest {
                             .statusCode(200)
                             .extract()
                             .jsonPath();
+                    Validate.validState(!"FAILED".equals(jsonPath.getString("tasks[0].state")));
                     return RUNNING_STATE.equals(jsonPath.getString("connector.state"))
                             && RUNNING_STATE.equals(jsonPath.getString("tasks[0].state"));
                 }
