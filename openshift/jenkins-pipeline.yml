@@ -152,10 +152,10 @@ objects:
                                    // We pre pull images from internal nexus to avoid download them from internet and go so much faster !
                                    sh """
                                    docker pull nexus.ci-cd.svc:8082/debezium/postgres:11
-                                   docker pull nexus.ci-cd.svc:8082/debezium/connect:1.2.0.Final
+                                   docker pull nexus.ci-cd.svc:8082/debezium/connect:1.3.0.Final
                                    docker pull nexus.ci-cd.svc:8082/confluentinc/cp-kafka:5.2.1
                                    docker tag nexus.ci-cd.svc:8082/debezium/postgres:11 debezium/postgres:11
-                                   docker tag nexus.ci-cd.svc:8082/debezium/connect:1.2.0.Final debezium/connect:1.2.0.Final
+                                   docker tag nexus.ci-cd.svc:8082/debezium/connect:1.3.0.Final debezium/connect:1.3.0.Final
                                    docker tag nexus.ci-cd.svc:8082/confluentinc/cp-kafka:5.2.1 confluentinc/cp-kafka:5.2.1
                                    """
                                }
