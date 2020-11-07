@@ -10,7 +10,7 @@
     "database.password": "postgrespassword",
     "database.dbname": "mutable",
     "database.server.name": "mutable",
-    "table.whitelist": "public.event",
+    "table.include.list": "public.event",
     "snapshot.mode": "always",
     "transforms": "router",
     "transforms.router.type": "org.apache.kafka.connect.transforms.RegexRouter",
