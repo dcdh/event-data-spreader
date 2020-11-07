@@ -23,6 +23,8 @@ public final class DebeziumConnectorConfigurationConfigDTO {
     private final String transformsRouterType;
     private final String transformsRouterRegex;
     private final String transformsRouterReplacement;
+    private final String transformsEventType;
+    private final Integer transformsEventNbOfPartitionsInEventTopic;
     private final String keyConverter;
     private final String keyConverterSchemasEnable;
     private final String valueConverter;
@@ -44,10 +46,15 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         this.databaseServerName = Objects.requireNonNull(builder.databaseServerName);
         this.tableIncludelist = "public.event";
         this.snapshotMode = "always";
-        this.transforms = "router";
+        this.transforms = "router,event";
         this.transformsRouterType = "org.apache.kafka.connect.transforms.RegexRouter";
         this.transformsRouterRegex = "([^.]+)\\.([^.]+)\\.([^.]+)";
         this.transformsRouterReplacement = "$3";
+        this.transformsEventType = "com.damdamdeo.eventsourced.mutable.kafka.connect.transforms.EventTransformation";
+        // TODO share the value with topic creation using debezium connector after this issue https://issues.redhat.com/browse/DBZ-2731
+        // has been resolved. Until now all message will be routed to the first partition. Use with caution when
+        // multiple partitions will be available (do a full read)
+        this.transformsEventNbOfPartitionsInEventTopic = 1;
         this.keyConverter = "org.apache.kafka.connect.json.JsonConverter";
         this.keyConverterSchemasEnable = "false";
         this.valueConverter = "org.apache.kafka.connect.json.JsonConverter";
@@ -186,6 +193,16 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         return transformsRouterReplacement;
     }
 
+    @JsonbProperty("transforms.event.type")
+    public String getTransformsEventType() {
+        return transformsEventType;
+    }
+
+    @JsonbProperty("transforms.event.nbOfPartitionsInEventTopic")
+    public Integer getTransformsEventNbOfPartitionsInEventTopic() {
+        return transformsEventNbOfPartitionsInEventTopic;
+    }
+
     @JsonbProperty("key.converter")
     public String getKeyConverter() {
         return keyConverter;
@@ -246,6 +263,8 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 Objects.equals(transformsRouterType, that.transformsRouterType) &&
                 Objects.equals(transformsRouterRegex, that.transformsRouterRegex) &&
                 Objects.equals(transformsRouterReplacement, that.transformsRouterReplacement) &&
+                Objects.equals(transformsEventType, that.transformsEventType) &&
+                Objects.equals(transformsEventNbOfPartitionsInEventTopic, that.transformsEventNbOfPartitionsInEventTopic) &&
                 Objects.equals(keyConverter, that.keyConverter) &&
                 Objects.equals(keyConverterSchemasEnable, that.keyConverterSchemasEnable) &&
                 Objects.equals(valueConverter, that.valueConverter) &&
@@ -258,7 +277,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableIncludelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
+        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableIncludelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, transformsEventType, transformsEventNbOfPartitionsInEventTopic, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
     }
 
     @Override
@@ -279,6 +298,8 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 ", transformsRouterType='" + transformsRouterType + '\'' +
                 ", transformsRouterRegex='" + transformsRouterRegex + '\'' +
                 ", transformsRouterReplacement='" + transformsRouterReplacement + '\'' +
+                ", transformsEventType='" + transformsEventType + '\'' +
+                ", transformsEventNbOfPartitionsInEventTopic=" + transformsEventNbOfPartitionsInEventTopic +
                 ", keyConverter='" + keyConverter + '\'' +
                 ", keyConverterSchemasEnable='" + keyConverterSchemasEnable + '\'' +
                 ", valueConverter='" + valueConverter + '\'' +

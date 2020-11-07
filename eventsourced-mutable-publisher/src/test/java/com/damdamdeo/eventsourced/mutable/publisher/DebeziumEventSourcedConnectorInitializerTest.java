@@ -24,4 +24,7 @@ public class DebeziumEventSourcedConnectorInitializerTest {
                 .body("connector.worker_id", notNullValue());
     }
 
+    // TODO tester la publication et voir si les events sont bien routées ...
+    // Le faire une fois que https://issues.redhat.com/browse/DBZ-2731 fixé
+
 }
