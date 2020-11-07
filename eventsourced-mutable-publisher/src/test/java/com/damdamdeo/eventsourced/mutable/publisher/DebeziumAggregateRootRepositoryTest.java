@@ -45,6 +45,8 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class DebeziumAggregateRootRepositoryTest {
 
+    private static final String RUNNING_STATE = "RUNNING";
+
     @InjectMock
     AggregateRootInstanceCreator aggregateRootInstanceCreator;
 
@@ -95,16 +97,20 @@ public class DebeziumAggregateRootRepositoryTest {
     public void waitDebeziumConnectorIsReady() {
         Awaitility.await()
                 .atMost(Durations.FIVE_SECONDS)
-                .pollInterval(Durations.ONE_HUNDRED_MILLISECONDS).until(() ->
-                RestAssured.given()
-                        .accept("application/json")
-                        .contentType("application/json")
-                        .when()
-                        .get(String.format("%s/connectors/%s/status", kafkaConnectorRemoteApi, "event-sourced-connector"))
-                        .then()
-                        .statusCode(200)
-                        .extract()
-                        .jsonPath().getString("connector.state").equals("RUNNING")
+                .pollInterval(Durations.FIVE_HUNDRED_MILLISECONDS).until(() -> {
+                    final io.restassured.path.json.JsonPath jsonPath = RestAssured.given()
+                            .accept("application/json")
+                            .contentType("application/json")
+                            .when()
+                            .get(String.format("%s/connectors/%s/status", kafkaConnectorRemoteApi, "event-sourced-connector"))
+                            .then()
+                            .log().all()
+                            .statusCode(200)
+                            .extract()
+                            .jsonPath();
+                    return RUNNING_STATE.equals(jsonPath.getString("connector.state"))
+                            && RUNNING_STATE.equals(jsonPath.getString("tasks[0].state"));
+                }
         );
     }
 
