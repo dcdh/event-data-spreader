@@ -28,13 +28,14 @@ public class KafkaQuarkusTestResourceLifecycleManager implements QuarkusTestReso
         final Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(logger);
         zookeeperContainer = new GenericContainer<>("debezium/zookeeper:" + DEBEZIUM_VERSION)
                 .withNetwork(network)
+                .withNetworkAliases("zookeeper")
                 .waitingFor(Wait.forLogMessage(".*Started.*", 1));
         zookeeperContainer.start();
 
         kafkaContainer = new GenericContainer<>("debezium/kafka:" + DEBEZIUM_VERSION)
                 .withNetwork(network)
                 .withExposedPorts(KAFKA_PORT)
-                .withEnv("ZOOKEEPER_CONNECT", String.format("%s:%d", zookeeperContainer.getNetworkAliases().get(0), 2181))
+                .withEnv("ZOOKEEPER_CONNECT", "zookeeper:2181")
                 .withEnv("CREATE_TOPICS", "event:3:1:compact") // 3 partitions 1 replica
                 .waitingFor(Wait.forLogMessage(".*started.*", 1));
         kafkaContainer.start();

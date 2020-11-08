@@ -47,12 +47,14 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
 
         zookeeperContainer = new GenericContainer<>("debezium/zookeeper:" + DEBEZIUM_VERSION)
                 .withNetwork(network)
+                .withNetworkAliases("zookeeper")
                 .waitingFor(Wait.forLogMessage(".*Started.*", 1));
         zookeeperContainer.start();
         kafkaContainer = new GenericContainer<>("debezium/kafka:" + DEBEZIUM_VERSION)
                 .withNetwork(network)
+                .withNetworkAliases("kafka")
                 .withExposedPorts(KAFKA_PORT)
-                .withEnv("ZOOKEEPER_CONNECT", String.format("%s:%d", zookeeperContainer.getNetworkAliases().get(0), 2181))
+                .withEnv("ZOOKEEPER_CONNECT", "zookeeper:2181")
                 .withEnv("CREATE_TOPICS", "event:3:1:compact") // 3 partitions 1 replica
                 .waitingFor(Wait.forLogMessage(".*started.*", 1));
         kafkaContainer.start();
@@ -60,7 +62,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         debeziumConnectContainer = new GenericContainer<>("damdamdeo/eventsourced-mutable-kafka-connect:1.3.0.Final")
                 .withNetwork(network)
                 .withExposedPorts(DEBEZIUM_CONNECT_API_PORT)
-                .withEnv("BOOTSTRAP_SERVERS", String.format("%s:%d", kafkaContainer.getNetworkAliases().get(0), KAFKA_PORT))
+                .withEnv("BOOTSTRAP_SERVERS", "kafka:" + KAFKA_PORT)
                 .withEnv("GROUP_ID", "1")
                 .withEnv("CONFIG_STORAGE_TOPIC", "my_connect_configs")
                 .withEnv("OFFSET_STORAGE_TOPIC", "my_connect_offsets")
