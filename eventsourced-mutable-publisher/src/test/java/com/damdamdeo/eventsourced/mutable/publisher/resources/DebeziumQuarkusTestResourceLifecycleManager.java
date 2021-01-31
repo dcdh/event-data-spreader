@@ -15,7 +15,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
 
     private final Logger logger = LoggerFactory.getLogger(DebeziumQuarkusTestResourceLifecycleManager.class);
 
-    private final static String DEBEZIUM_VERSION = "1.3.0.Final";
+    private final static String DEBEZIUM_VERSION = "1.4.1.Final";
     private final static Integer KAFKA_PORT = 9092;
     private final static Integer DEBEZIUM_CONNECT_API_PORT = 8083;
 
@@ -59,7 +59,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
                 .waitingFor(Wait.forLogMessage(".*started.*", 1));
         kafkaContainer.start();
         kafkaContainer.followOutput(logConsumer);
-        debeziumConnectContainer = new GenericContainer<>("damdamdeo/eventsourced-mutable-kafka-connect:1.3.0.Final")
+        debeziumConnectContainer = new GenericContainer<>("damdamdeo/eventsourced-mutable-kafka-connect:1.4.1.Final")
                 .withNetwork(network)
                 .withExposedPorts(DEBEZIUM_CONNECT_API_PORT)
                 .withEnv("BOOTSTRAP_SERVERS", "kafka:" + KAFKA_PORT)
