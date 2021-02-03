@@ -121,6 +121,7 @@ public class KafkaConnectorApiTest {
                             .when()
                             .get(String.format("%s/connectors/%s/status", kafkaConnectorRemoteApi, connectorName))
                             .then()
+                            .log().all()
                             .statusCode(200)
                             .extract()
                             .jsonPath().getString("connector.state").equals("RUNNING")

@@ -149,6 +149,15 @@ public class DebeziumAggregateRootRepositoryTest {
 
         // When
         defaultAggregateRootRepository.save(mockAggregateRoot);
+        // /!\ A consumer will not consume messages if this one subscribe to a not yet created topic.
+        // The topic seems not to be created at connector startup. But only after producing a first message.
+        // I need to wait for the message to be push by debezium into kafka (and so the topic creation) before consuming it.
+        // However the consumer will not consume it.
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // Then
         final KafkaConsumer<String, String> consumer = getConsumer(bootstrapServers);

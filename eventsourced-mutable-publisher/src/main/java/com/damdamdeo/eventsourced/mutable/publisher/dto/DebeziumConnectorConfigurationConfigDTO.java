@@ -25,6 +25,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
     private final String transformsRouterReplacement;
     private final String transformsEventType;
     private final Integer transformsEventNbOfPartitionsInEventTopic;
+    private final Integer topicCreationEventPartitions;
     private final String keyConverter;
     private final String keyConverterSchemasEnable;
     private final String valueConverter;
@@ -51,10 +52,8 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         this.transformsRouterRegex = "([^.]+)\\.([^.]+)\\.([^.]+)";
         this.transformsRouterReplacement = "$3";
         this.transformsEventType = "com.damdamdeo.eventsourced.mutable.kafka.connect.transforms.EventTransformation";
-        // TODO share the value with topic creation using debezium connector after this issue https://issues.redhat.com/browse/DBZ-2731
-        // has been resolved. Until now all message will be routed to the first partition. Use with caution when
-        // multiple partitions will be available (do a full read)
-        this.transformsEventNbOfPartitionsInEventTopic = 1;
+        this.transformsEventNbOfPartitionsInEventTopic = Objects.requireNonNull(builder.nbOfPartitionsInEventTopic);
+        this.topicCreationEventPartitions = Objects.requireNonNull(builder.nbOfPartitionsInEventTopic);
         this.keyConverter = "org.apache.kafka.connect.json.JsonConverter";
         this.keyConverterSchemasEnable = "false";
         this.valueConverter = "org.apache.kafka.connect.json.JsonConverter";
@@ -77,6 +76,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         private String databaseDbname;
         private String databaseServerName;
         private String slotDropOnStop;
+        private Integer nbOfPartitionsInEventTopic;
 
         public Builder withDatabaseHostname(final String databaseHostname) {
             this.databaseHostname = databaseHostname;
@@ -110,6 +110,11 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
         public Builder withSlotDropOnStop(String slotDropOnStop) {
             this.slotDropOnStop = slotDropOnStop;
+            return this;
+        }
+
+        public Builder withNbOfPartitionsInEventTopic(Integer nbOfPartitionsInEventTopic) {
+            this.nbOfPartitionsInEventTopic = nbOfPartitionsInEventTopic;
             return this;
         }
 
@@ -203,6 +208,21 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         return transformsEventNbOfPartitionsInEventTopic;
     }
 
+    @JsonbProperty("topic.creation.default.replication.factor")
+    public Integer getTopicCreationDefaultReplicationFactor() {
+        return 1;
+    }
+
+    @JsonbProperty("topic.creation.default.partitions")
+    public Integer getTopicCreationDefaultPartitions() {
+        return transformsEventNbOfPartitionsInEventTopic;
+    }
+
+    @JsonbProperty("topic.creation.default.cleanup.policy")
+    public String getTopicCreationDefaultCleanupPolicy() {
+        return "compact";
+    }
+
     @JsonbProperty("key.converter")
     public String getKeyConverter() {
         return keyConverter;
@@ -265,6 +285,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 Objects.equals(transformsRouterReplacement, that.transformsRouterReplacement) &&
                 Objects.equals(transformsEventType, that.transformsEventType) &&
                 Objects.equals(transformsEventNbOfPartitionsInEventTopic, that.transformsEventNbOfPartitionsInEventTopic) &&
+                Objects.equals(topicCreationEventPartitions, that.topicCreationEventPartitions) &&
                 Objects.equals(keyConverter, that.keyConverter) &&
                 Objects.equals(keyConverterSchemasEnable, that.keyConverterSchemasEnable) &&
                 Objects.equals(valueConverter, that.valueConverter) &&
@@ -277,7 +298,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableIncludelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, transformsEventType, transformsEventNbOfPartitionsInEventTopic, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
+        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableIncludelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, transformsEventType, transformsEventNbOfPartitionsInEventTopic, topicCreationEventPartitions, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
     }
 
     @Override
@@ -286,12 +307,6 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 "connectorClass='" + connectorClass + '\'' +
                 ", tasksMax='" + tasksMax + '\'' +
                 ", pluginName='" + pluginName + '\'' +
-                ", databaseHostname='" + "*****" + '\'' +
-                ", databasePort='" + "*****" + '\'' +
-                ", databaseUser='" + "*****" + '\'' +
-                ", databasePassword='" + "*****" + '\'' +
-                ", databaseDbname='" + "*****" + '\'' +
-                ", databaseServerName='" + "*****" + '\'' +
                 ", tableIncludelist='" + tableIncludelist + '\'' +
                 ", snapshotMode='" + snapshotMode + '\'' +
                 ", transforms='" + transforms + '\'' +
@@ -300,6 +315,7 @@ public final class DebeziumConnectorConfigurationConfigDTO {
                 ", transformsRouterReplacement='" + transformsRouterReplacement + '\'' +
                 ", transformsEventType='" + transformsEventType + '\'' +
                 ", transformsEventNbOfPartitionsInEventTopic=" + transformsEventNbOfPartitionsInEventTopic +
+                ", topicCreationEventPartitions=" + topicCreationEventPartitions +
                 ", keyConverter='" + keyConverter + '\'' +
                 ", keyConverterSchemasEnable='" + keyConverterSchemasEnable + '\'' +
                 ", valueConverter='" + valueConverter + '\'' +

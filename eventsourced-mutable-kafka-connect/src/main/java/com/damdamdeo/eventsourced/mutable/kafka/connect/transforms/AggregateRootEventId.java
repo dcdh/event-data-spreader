@@ -1,8 +1,8 @@
 package com.damdamdeo.eventsourced.mutable.kafka.connect.transforms;
 
 import org.apache.kafka.common.utils.Utils;
+import org.apache.kafka.connect.data.Struct;
 
-import java.util.Map;
 import java.util.Objects;
 
 public final class AggregateRootEventId {
@@ -11,10 +11,10 @@ public final class AggregateRootEventId {
     private final String aggregateRootId;
     private final Long version;
 
-    public AggregateRootEventId(final Map key) {
-        this.aggregateRootType = Objects.requireNonNull((String) key.get("aggregateRootType"));
-        this.aggregateRootId = Objects.requireNonNull((String) key.get("aggregateRootId"));
-        this.version = Objects.requireNonNull((Long) key.get("version"));
+    public AggregateRootEventId(final Struct key) {
+        this.aggregateRootType = Objects.requireNonNull(key.getString("aggregateroottype"));
+        this.aggregateRootId = Objects.requireNonNull(key.getString("aggregaterootid"));
+        this.version = Objects.requireNonNull(key.getInt64("version"));
     }
 
     public int targetPartition(final int nbOfPartitionsInEventTopic) {

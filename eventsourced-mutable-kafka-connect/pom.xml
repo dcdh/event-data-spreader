@@ -16,14 +16,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <kafkaconnect.version>2.6.1</kafkaconnect.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
-            <version>2.4.0</version><!-- Warning dependant on the target kafka connect instance -->
+            <version>${kafkaconnect.version}</version><!-- Warning dependant on the target kafka connect instance -->
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-transforms</artifactId>
+            <version>${kafkaconnect.version}</version>
         </dependency>
 
         <dependency>

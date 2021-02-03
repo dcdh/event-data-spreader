@@ -1,6 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.kafka.connect.transforms;
 
-import org.apache.kafka.connect.connector.ConnectRecord;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.SchemaBuilder;
+import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +14,6 @@ import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -37,7 +38,7 @@ public class EventTransformationTest {
         eventTransformation.configure(Collections.singletonMap("nbOfPartitionsInEventTopic", 1));
 
         // When
-        eventTransformation.apply(mock(ConnectRecord.class));
+        eventTransformation.apply(mock(SourceRecord.class));
 
         // Then
         assertThat(logger.getLoggingEvents())
@@ -48,8 +49,8 @@ public class EventTransformationTest {
     public void should_route_event_to_the_first_partition_when_an_event_can_be_route_one_the_first_partition_of_a_topic_having_two_partitions() {
         // Given
         eventTransformation.configure(Collections.singletonMap("nbOfPartitionsInEventTopic", 2));
-        final Map<Object, Object> key = keyForTest("aggregateRootType", "b", 0l);
-        final ConnectRecord givenConnectRecord = mock(ConnectRecord.class);
+        final Struct key = keyForTest("aggregateRootType", "b", 0l);
+        final SourceRecord givenConnectRecord = mock(SourceRecord.class);
         doReturn(key).when(givenConnectRecord).key();
 
         // When
@@ -63,8 +64,8 @@ public class EventTransformationTest {
     public void should_route_event_to_the_second_partition_when_an_event_can_be_route_one_the_first_partition_of_a_topic_having_two_partitions() {
         // Given
         eventTransformation.configure(Collections.singletonMap("nbOfPartitionsInEventTopic", 2));
-        final Map<Object, Object> key = keyForTest("aggregateRootType", "a", 0l);
-        final ConnectRecord givenConnectRecord = mock(ConnectRecord.class);
+        final Struct key = keyForTest("aggregateRootType", "a", 0l);
+        final SourceRecord givenConnectRecord = mock(SourceRecord.class);
         doReturn(key).when(givenConnectRecord).key();
 
         // When
@@ -78,8 +79,8 @@ public class EventTransformationTest {
     public void should_route_event_to_the_second_partition_produces_a_log_when_an_event_can_be_route_one_the_first_partition_of_a_topic_having_two_partitions() {
         // Given
         eventTransformation.configure(Collections.singletonMap("nbOfPartitionsInEventTopic", 2));
-        final Map<Object, Object> key = keyForTest("aggregateRootType", "a", 0l);
-        final ConnectRecord givenConnectRecord = mock(ConnectRecord.class);
+        final Struct key = keyForTest("aggregateRootType", "a", 0l);
+        final SourceRecord givenConnectRecord = mock(SourceRecord.class);
         doReturn(key).when(givenConnectRecord).key();
 
         // When
@@ -98,8 +99,8 @@ public class EventTransformationTest {
                                                          final Long givenVersion,
                                                          final Integer expectedPartition) {
         // Given
-        final Map<Object, Object> key = keyForTest(givenAggregateRootType, givenAggregateRootId, givenVersion);
-        final ConnectRecord givenConnectRecord = mock(ConnectRecord.class);
+        final Struct key = keyForTest(givenAggregateRootType, givenAggregateRootId, givenVersion);
+        final SourceRecord givenConnectRecord = mock(SourceRecord.class);
         doReturn(key).when(givenConnectRecord).key();
         eventTransformation.configure(Collections.singletonMap("nbOfPartitionsInEventTopic", 2));
 
@@ -110,14 +111,18 @@ public class EventTransformationTest {
         verify(givenConnectRecord, times(1)).newRecord(any(), eq(expectedPartition), any(), any(), any(), any(), any());
     }
 
-    private Map<Object, Object> keyForTest(final String aggregateRootType,
-                                           final String aggregateRootId,
-                                           final Long givenVersion) {
-        final Map<Object, Object> key = new HashMap<>();
-        key.put("aggregateRootType", aggregateRootType);
-        key.put("aggregateRootId", aggregateRootId);
-        key.put("version", givenVersion);
-        return key;
+    private Struct keyForTest(final String aggregateRootType,
+                              final String aggregateRootId,
+                              final Long givenVersion) {
+        final Schema schema = SchemaBuilder.struct()
+                .field("aggregateroottype", Schema.STRING_SCHEMA)
+                .field("aggregaterootid", Schema.STRING_SCHEMA)
+                .field("version", Schema.INT64_SCHEMA)
+                .build();
+        return new Struct(schema)
+                .put("aggregateroottype", aggregateRootType)
+                .put("aggregaterootid", aggregateRootId)
+                .put("version", givenVersion);
     }
 
 }

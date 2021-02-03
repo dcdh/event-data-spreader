@@ -16,6 +16,7 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
     final String mutablePassword;
     final Integer mutablePort;
     final String mutableDbname;
+    final Integer nbOfPartitionsInEventTopic;
     final Boolean slotDropOnStop;
 
     public JsonbDebeziumConnectorConfigurationGenerator(@ConfigProperty(name = "connector.mutable.database.hostname") final String mutableHostname,
@@ -23,12 +24,14 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
                                                         @ConfigProperty(name = "connector.mutable.database.password") final String mutablePassword,
                                                         @ConfigProperty(name = "connector.mutable.database.port") final Integer mutablePort,
                                                         @ConfigProperty(name = "connector.mutable.database.dbname") final String mutableDbname,
+                                                        @ConfigProperty(name = "connector.mutable.nbOfPartitionsInEventTopic") final Integer nbOfPartitionsInEventTopic,
                                                         @ConfigProperty(name = "slot.drop.on.stop") final Boolean slotDropOnStop) {
         this.mutableHostname = Objects.requireNonNull(mutableHostname);
         this.mutableUsername = Objects.requireNonNull(mutableUsername);
         this.mutablePassword = Objects.requireNonNull(mutablePassword);
         this.mutablePort = Objects.requireNonNull(mutablePort);
         this.mutableDbname = Objects.requireNonNull(mutableDbname);
+        this.nbOfPartitionsInEventTopic = Objects.requireNonNull(nbOfPartitionsInEventTopic);
         this.slotDropOnStop = Optional.ofNullable(slotDropOnStop)
                 .orElse(Boolean.FALSE);
     }
@@ -46,6 +49,7 @@ public class JsonbDebeziumConnectorConfigurationGenerator implements DebeziumCon
                         .withDatabasePassword(mutablePassword)
                         .withDatabaseDbname(mutableDbname)
                         .withDatabaseServerName(mutableHostname)
+                        .withNbOfPartitionsInEventTopic(nbOfPartitionsInEventTopic)
                         .withSlotDropOnStop(slotDropOnStop.toString())
                         .build()
                 )

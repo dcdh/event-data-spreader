@@ -55,7 +55,6 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
                 .withNetworkAliases("kafka")
                 .withExposedPorts(KAFKA_PORT)
                 .withEnv("ZOOKEEPER_CONNECT", "zookeeper:2181")
-                .withEnv("CREATE_TOPICS", "event:3:1:compact") // 3 partitions 1 replica
                 .waitingFor(Wait.forLogMessage(".*started.*", 1));
         kafkaContainer.start();
         kafkaContainer.followOutput(logConsumer);
@@ -79,6 +78,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         System.setProperty("connector.mutable.database.password", postgresMutableContainer.getPassword());
         System.setProperty("connector.mutable.database.port", "5432");
         System.setProperty("connector.mutable.database.dbname", postgresMutableContainer.getDatabaseName());
+        System.setProperty("connector.mutable.nbOfPartitionsInEventTopic", "3");
         return Collections.emptyMap();
     }
 
@@ -93,6 +93,7 @@ public class DebeziumQuarkusTestResourceLifecycleManager implements QuarkusTestR
         System.clearProperty("connector.mutable.database.password");
         System.clearProperty("connector.mutable.database.port");
         System.clearProperty("connector.mutable.database.dbname");
+        System.clearProperty("connector.mutable.nbOfPartitionsInEventTopic");
         if (postgresMutableContainer != null) {
             postgresMutableContainer.close();
         }
