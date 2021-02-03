@@ -8,59 +8,25 @@ import java.util.Objects;
 @RegisterForReflection
 public final class DebeziumConnectorConfigurationConfigDTO {
 
-    private final String connectorClass;
-    private final String tasksMax;
-    private final String pluginName;
     private final String databaseHostname;
     private final String databasePort;
     private final String databaseUser;
     private final String databasePassword;
     private final String databaseDbname;
     private final String databaseServerName;
-    private final String tableIncludelist;
-    private final String snapshotMode;
-    private final String transforms;
-    private final String transformsRouterType;
-    private final String transformsRouterRegex;
-    private final String transformsRouterReplacement;
-    private final String transformsEventType;
     private final Integer transformsEventNbOfPartitionsInEventTopic;
     private final Integer topicCreationEventPartitions;
-    private final String keyConverter;
-    private final String keyConverterSchemasEnable;
-    private final String valueConverter;
-    private final String valueConverterSchemasEnable;
-    private final String partitionerClass;
-    private final String includeSchemaChanges;
-    private final String tombstonesOnDelete;
     private final String slotDropOnStop;
 
     private DebeziumConnectorConfigurationConfigDTO(final Builder builder) {
-        this.connectorClass = "io.debezium.connector.postgresql.PostgresConnector";
-        this.tasksMax = "1";
-        this.pluginName = "wal2json";
         this.databaseHostname = Objects.requireNonNull(builder.databaseHostname);
         this.databasePort = Objects.requireNonNull(builder.databasePort);
         this.databaseUser = Objects.requireNonNull(builder.databaseUser);
         this.databasePassword = Objects.requireNonNull(builder.databasePassword);
         this.databaseDbname = Objects.requireNonNull(builder.databaseDbname);
         this.databaseServerName = Objects.requireNonNull(builder.databaseServerName);
-        this.tableIncludelist = "public.event";
-        this.snapshotMode = "always";
-        this.transforms = "router,event";
-        this.transformsRouterType = "org.apache.kafka.connect.transforms.RegexRouter";
-        this.transformsRouterRegex = "([^.]+)\\.([^.]+)\\.([^.]+)";
-        this.transformsRouterReplacement = "$3";
-        this.transformsEventType = "com.damdamdeo.eventsourced.mutable.kafka.connect.transforms.EventTransformation";
         this.transformsEventNbOfPartitionsInEventTopic = Objects.requireNonNull(builder.nbOfPartitionsInEventTopic);
         this.topicCreationEventPartitions = Objects.requireNonNull(builder.nbOfPartitionsInEventTopic);
-        this.keyConverter = "org.apache.kafka.connect.json.JsonConverter";
-        this.keyConverterSchemasEnable = "false";
-        this.valueConverter = "org.apache.kafka.connect.json.JsonConverter";
-        this.valueConverterSchemasEnable = "false";
-        this.partitionerClass = "com.damdamdeo.eventsourced.mutable.kafka.connect.partitioner.EventPartitioner";
-        this.includeSchemaChanges = "false";
-        this.tombstonesOnDelete = "false";
         this.slotDropOnStop = Objects.requireNonNull(builder.slotDropOnStop);
     }
 
@@ -125,17 +91,17 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @JsonbProperty("connector.class")
     public String getConnectorClass() {
-        return connectorClass;
+        return "io.debezium.connector.postgresql.PostgresConnector";
     }
 
     @JsonbProperty("tasks.max")
     public String getTasksMax() {
-        return tasksMax;
+        return "1";
     }
 
     @JsonbProperty("plugin.name")
     public String getPluginName() {
-        return pluginName;
+        return "wal2json";
     }
 
     @JsonbProperty("database.hostname")
@@ -170,37 +136,37 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @JsonbProperty("table.include.list")
     public String getTableIncludelist() {
-        return tableIncludelist;
+        return "public.event";
     }
 
     @JsonbProperty("snapshot.mode")
     public String getSnapshotMode() {
-        return snapshotMode;
+        return "always";
     }
 
     @JsonbProperty("transforms")
     public String getTransforms() {
-        return transforms;
+        return "router,event";
     }
 
     @JsonbProperty("transforms.router.type")
     public String getTransformsRouterType() {
-        return transformsRouterType;
+        return "org.apache.kafka.connect.transforms.RegexRouter";
     }
 
     @JsonbProperty("transforms.router.regex")
     public String getTransformsRouterRegex() {
-        return transformsRouterRegex;
+        return "([^.]+)\\.([^.]+)\\.([^.]+)";
     }
 
     @JsonbProperty("transforms.router.replacement")
     public String getTransformsRouterReplacement() {
-        return transformsRouterReplacement;
+        return "$3";
     }
 
     @JsonbProperty("transforms.event.type")
     public String getTransformsEventType() {
-        return transformsEventType;
+        return "com.damdamdeo.eventsourced.mutable.kafka.connect.transforms.EventTransformation";
     }
 
     @JsonbProperty("transforms.event.nbOfPartitionsInEventTopic")
@@ -225,37 +191,37 @@ public final class DebeziumConnectorConfigurationConfigDTO {
 
     @JsonbProperty("key.converter")
     public String getKeyConverter() {
-        return keyConverter;
+        return "org.apache.kafka.connect.json.JsonConverter";
     }
 
     @JsonbProperty("key.converter.schemas.enable")
     public String getKeyConverterSchemasEnable() {
-        return keyConverterSchemasEnable;
+        return "false";
     }
 
     @JsonbProperty("value.converter")
     public String getValueConverter() {
-        return valueConverter;
+        return "org.apache.kafka.connect.json.JsonConverter";
     }
 
     @JsonbProperty("value.converter.schemas.enable")
     public String getValueConverterSchemasEnable() {
-        return valueConverterSchemasEnable;
+        return "false";
     }
 
     @JsonbProperty("partitioner.class")
     public String getPartitionerClass() {
-        return partitionerClass;
+        return "com.damdamdeo.eventsourced.mutable.kafka.connect.partitioner.EventPartitioner";
     }
 
     @JsonbProperty("include.schema.changes")
     public String getIncludeSchemaChanges() {
-        return includeSchemaChanges;
+        return "false";
     }
 
     @JsonbProperty("tombstones.on.delete")
     public String getTombstonesOnDelete() {
-        return tombstonesOnDelete;
+        return "false";
     }
 
     @JsonbProperty("slot.drop.on.stop")
@@ -268,61 +234,27 @@ public final class DebeziumConnectorConfigurationConfigDTO {
         if (this == o) return true;
         if (!(o instanceof DebeziumConnectorConfigurationConfigDTO)) return false;
         DebeziumConnectorConfigurationConfigDTO that = (DebeziumConnectorConfigurationConfigDTO) o;
-        return Objects.equals(connectorClass, that.connectorClass) &&
-                Objects.equals(tasksMax, that.tasksMax) &&
-                Objects.equals(pluginName, that.pluginName) &&
-                Objects.equals(databaseHostname, that.databaseHostname) &&
+        return Objects.equals(databaseHostname, that.databaseHostname) &&
                 Objects.equals(databasePort, that.databasePort) &&
                 Objects.equals(databaseUser, that.databaseUser) &&
                 Objects.equals(databasePassword, that.databasePassword) &&
                 Objects.equals(databaseDbname, that.databaseDbname) &&
                 Objects.equals(databaseServerName, that.databaseServerName) &&
-                Objects.equals(tableIncludelist, that.tableIncludelist) &&
-                Objects.equals(snapshotMode, that.snapshotMode) &&
-                Objects.equals(transforms, that.transforms) &&
-                Objects.equals(transformsRouterType, that.transformsRouterType) &&
-                Objects.equals(transformsRouterRegex, that.transformsRouterRegex) &&
-                Objects.equals(transformsRouterReplacement, that.transformsRouterReplacement) &&
-                Objects.equals(transformsEventType, that.transformsEventType) &&
                 Objects.equals(transformsEventNbOfPartitionsInEventTopic, that.transformsEventNbOfPartitionsInEventTopic) &&
                 Objects.equals(topicCreationEventPartitions, that.topicCreationEventPartitions) &&
-                Objects.equals(keyConverter, that.keyConverter) &&
-                Objects.equals(keyConverterSchemasEnable, that.keyConverterSchemasEnable) &&
-                Objects.equals(valueConverter, that.valueConverter) &&
-                Objects.equals(valueConverterSchemasEnable, that.valueConverterSchemasEnable) &&
-                Objects.equals(partitionerClass, that.partitionerClass) &&
-                Objects.equals(includeSchemaChanges, that.includeSchemaChanges) &&
-                Objects.equals(tombstonesOnDelete, that.tombstonesOnDelete) &&
                 Objects.equals(slotDropOnStop, that.slotDropOnStop);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(connectorClass, tasksMax, pluginName, databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, tableIncludelist, snapshotMode, transforms, transformsRouterType, transformsRouterRegex, transformsRouterReplacement, transformsEventType, transformsEventNbOfPartitionsInEventTopic, topicCreationEventPartitions, keyConverter, keyConverterSchemasEnable, valueConverter, valueConverterSchemasEnable, partitionerClass, includeSchemaChanges, tombstonesOnDelete, slotDropOnStop);
+        return Objects.hash(databaseHostname, databasePort, databaseUser, databasePassword, databaseDbname, databaseServerName, transformsEventNbOfPartitionsInEventTopic, topicCreationEventPartitions, slotDropOnStop);
     }
 
     @Override
     public String toString() {
         return "DebeziumConnectorConfigurationConfigDTO{" +
-                "connectorClass='" + connectorClass + '\'' +
-                ", tasksMax='" + tasksMax + '\'' +
-                ", pluginName='" + pluginName + '\'' +
-                ", tableIncludelist='" + tableIncludelist + '\'' +
-                ", snapshotMode='" + snapshotMode + '\'' +
-                ", transforms='" + transforms + '\'' +
-                ", transformsRouterType='" + transformsRouterType + '\'' +
-                ", transformsRouterRegex='" + transformsRouterRegex + '\'' +
-                ", transformsRouterReplacement='" + transformsRouterReplacement + '\'' +
-                ", transformsEventType='" + transformsEventType + '\'' +
                 ", transformsEventNbOfPartitionsInEventTopic=" + transformsEventNbOfPartitionsInEventTopic +
                 ", topicCreationEventPartitions=" + topicCreationEventPartitions +
-                ", keyConverter='" + keyConverter + '\'' +
-                ", keyConverterSchemasEnable='" + keyConverterSchemasEnable + '\'' +
-                ", valueConverter='" + valueConverter + '\'' +
-                ", valueConverterSchemasEnable='" + valueConverterSchemasEnable + '\'' +
-                ", partitionerClass='" + partitionerClass + '\'' +
-                ", includeSchemaChanges='" + includeSchemaChanges + '\'' +
-                ", tombstonesOnDelete='" + tombstonesOnDelete + '\'' +
                 ", slotDropOnStop='" + slotDropOnStop + '\'' +
                 '}';
     }
