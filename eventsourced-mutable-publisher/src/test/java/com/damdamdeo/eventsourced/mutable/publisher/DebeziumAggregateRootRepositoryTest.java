@@ -10,13 +10,13 @@ import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.Aggreg
 import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.AggregateRootInstanceCreator;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.DefaultAggregateRootRepository;
-import com.jayway.jsonpath.JsonPath;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.mapper.ObjectMapperType;
+import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.Validate;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -166,22 +166,22 @@ public class DebeziumAggregateRootRepositoryTest {
         final List<ConsumerRecord<String, String>> changeEvents = drain(consumer, 1);
         final ConsumerRecord<String, String> changeEvent = changeEvents.get(0);
 
-        assertEquals("aggregateRootId", JsonPath.<String> read(changeEvent.key(), "$.aggregaterootid"));
-        assertEquals("aggregateRootType", JsonPath.<String> read(changeEvent.key(), "$.aggregateroottype"));
-        assertEquals(0, JsonPath.<Integer> read(changeEvent.key(), "$.version"));
+        assertEquals("aggregateRootId", JsonPath.from(changeEvent.key()).getString("aggregaterootid"));
+        assertEquals("aggregateRootType", JsonPath.from(changeEvent.key()).getString("aggregateroottype"));
+        assertEquals(0, JsonPath.from(changeEvent.key()).getInt("version"));
 
-        assertNull(JsonPath.<String> read(changeEvent.value(), "$.before"));
-        assertEquals("c", JsonPath.<String> read(changeEvent.value(), "$.op"), changeEvent.toString());
-        assertEquals("aggregateRootId", JsonPath.<String> read(changeEvent.value(), "$.after.aggregaterootid"));
-        assertEquals("aggregateRootType", JsonPath.<String> read(changeEvent.value(), "$.after.aggregateroottype"));
-        assertEquals(0, JsonPath.<Integer> read(changeEvent.value(), "$.after.version"));
-        assertNotNull(JsonPath.<Long> read(changeEvent.value(), "$.after.creationdate"));
+        assertNull(JsonPath.from(changeEvent.value()).getString("before"));
+        assertEquals("c", JsonPath.from(changeEvent.value()).getString("op"), changeEvent.toString());
+        assertEquals("aggregateRootId", JsonPath.from(changeEvent.value()).getString("after.aggregaterootid"));
+        assertEquals("aggregateRootType", JsonPath.from(changeEvent.value()).getString("after.aggregateroottype"));
+        assertEquals(0, JsonPath.from(changeEvent.value()).getInt("after.version"));
+        assertNotNull(JsonPath.from(changeEvent.value()).getLong("after.creationdate"));
 
-        assertEquals("eventType", JsonPath.<String> read(changeEvent.value(), "$.after.eventtype"));
-        assertEquals("{\"meta\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.eventmetadata"));
-        assertEquals("{\"payload\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.eventpayload"));
-        assertEquals("{\"materializedState\": {}}", JsonPath.<String> read(changeEvent.value(), "$.after.materializedstate"));
-        assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", JsonPath.<String> read(changeEvent.value(), "$.after.gitcommitid"));
+        assertEquals("eventType", JsonPath.from(changeEvent.value()).getString("after.eventtype"));
+        assertEquals("{\"meta\": {}}", JsonPath.from(changeEvent.value()).getString("after.eventmetadata"));
+        assertEquals("{\"payload\": {}}", JsonPath.from(changeEvent.value()).getString("after.eventpayload"));
+        assertEquals("{\"materializedState\": {}}", JsonPath.from(changeEvent.value()).getString("after.materializedstate"));
+        assertEquals("3bc9898721c64c5d6d17724bf6ec1c715cca0f69", JsonPath.from(changeEvent.value()).getString("after.gitcommitid"));
     }
 
     private KafkaConsumer<String, String> getConsumer(final String bootstrapServers) {

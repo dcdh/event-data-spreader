@@ -7,7 +7,8 @@ import com.damdamdeo.eventsourced.encryption.api.Secret;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
-import io.quarkus.cache.runtime.CacheRepository;
+import io.quarkus.cache.CacheManager;
+import io.quarkus.cache.runtime.AbstractCache;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -35,7 +36,7 @@ public class PostgreSQLSecretStoreTest {
     AgroalDataSource secretStoreDataSource;
 
     @Inject
-    CacheRepository cacheRepository;
+    CacheManager cacheManager;
 
     @BeforeEach
     @AfterEach
@@ -48,7 +49,9 @@ public class PostgreSQLSecretStoreTest {
             throw new RuntimeException(e);
         }
         // flush cache
-        cacheRepository.getCache("secret-cache").invalidateAll();
+        cacheManager.getCache("secret-cache")
+                .map(AbstractCache.class::cast)
+                .ifPresent(AbstractCache::invalidateAll);
     }
 
     @Test
