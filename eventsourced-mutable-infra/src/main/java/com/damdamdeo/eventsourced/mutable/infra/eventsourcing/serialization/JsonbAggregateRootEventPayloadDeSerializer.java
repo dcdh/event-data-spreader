@@ -5,6 +5,7 @@ import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootEventPayloa
 
 import javax.json.JsonObject;
 
+fck extraire cette interface avec generic INFRA
 public interface JsonbAggregateRootEventPayloadDeSerializer {
 
     String aggregateRootType();

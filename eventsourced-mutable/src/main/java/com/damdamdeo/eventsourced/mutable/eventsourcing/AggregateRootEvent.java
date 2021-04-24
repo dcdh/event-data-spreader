@@ -25,16 +25,6 @@ public final class AggregateRootEvent {
         this.aggregateRootEventPayload = Objects.requireNonNull(aggregateRootEventPayload);
     }
 
-    public AggregateRootEvent(final DecryptableEvent decryptableEvent,
-                              final AggregateRootEventPayloadsDeSerializer aggregateRootEventPayloadsDeSerializer) {
-        Validate.notNull(decryptableEvent);
-        Validate.notNull(aggregateRootEventPayloadsDeSerializer);
-        this.aggregateRootEventId = decryptableEvent.eventId();
-        this.eventType = decryptableEvent.eventType();
-        this.creationDate = decryptableEvent.creationDate();
-        this.aggregateRootEventPayload = decryptableEvent.eventPayload(aggregateRootEventPayloadsDeSerializer);
-    }
-
     public AggregateRootEventId eventId() {
         return aggregateRootEventId;
     }

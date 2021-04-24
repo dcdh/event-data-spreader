@@ -6,5 +6,6 @@ package com.damdamdeo.eventsourced.encryption.api;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+// TODO deplacer dans les tests ?
 public interface JsonbCryptoService extends CryptoService<JsonValue, JsonObject> {
 }

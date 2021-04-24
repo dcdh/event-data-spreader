@@ -11,6 +11,7 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.eventsourcing.*;
 import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 
+FCK extraire je dois en faire
 @ApplicationScoped
 public class DefaultAggregateRootRepository implements AggregateRootRepository {
 

@@ -1,6 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootInstanceCreator;
 
 import javax.enterprise.context.ApplicationScoped;
 

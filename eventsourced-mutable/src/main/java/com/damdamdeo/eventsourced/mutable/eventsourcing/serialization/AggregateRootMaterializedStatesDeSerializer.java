@@ -3,10 +3,10 @@ package com.damdamdeo.eventsourced.mutable.eventsourcing.serialization;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
 import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
 
-public interface AggregateRootMaterializedStatesDeSerializer {
+public interface AggregateRootMaterializedStatesDeSerializer<T extends AggregateRoot> {
 
-    String serialize(AggregateRoot aggregateRoot, boolean shouldEncrypt);
+    String serialize(T aggregateRoot, boolean shouldEncrypt);
 
-    <T extends AggregateRoot> T deserialize(AggregateRootMaterializedState aggregateRootMaterializedState);
+    T deserialize(AggregateRootMaterializedState aggregateRootMaterializedState);
 
 }

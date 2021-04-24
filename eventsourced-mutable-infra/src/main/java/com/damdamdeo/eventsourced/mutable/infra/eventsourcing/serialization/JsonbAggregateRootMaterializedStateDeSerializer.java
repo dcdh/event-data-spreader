@@ -5,6 +5,7 @@ import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
 
 import javax.json.JsonObject;
 
+fck extraire cette interface avec generic INFRA
 public interface JsonbAggregateRootMaterializedStateDeSerializer {
 
     String aggregateRootType();

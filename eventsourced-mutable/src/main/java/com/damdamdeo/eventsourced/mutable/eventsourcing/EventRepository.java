@@ -4,12 +4,12 @@ import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 
 import java.util.List;
 
-public interface EventRepository {
+public interface EventRepository<T extends AggregateRoot, EVENT_PAYLOAD_INFRA> {
 
-    void save(AggregateRootEvent aggregateRootEvent, AggregateRoot aggregateRoot);
+    void save(AggregateRootEvent aggregateRootEvent, T aggregateRoot);
 
-    List<AggregateRootEvent> loadOrderByVersionASC(AggregateRootId aggregateRootId);
+    List<EncryptedAggregateRootEvent<EVENT_PAYLOAD_INFRA>> loadOrderByVersionASC(AggregateRootId aggregateRootId);
 
-    List<AggregateRootEvent> loadOrderByVersionASC(AggregateRootId aggregateRootId, Long version);
+    List<EncryptedAggregateRootEvent<EVENT_PAYLOAD_INFRA>> loadOrderByVersionASC(AggregateRootId aggregateRootId, Long version);
 
 }

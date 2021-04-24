@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
+fck je vais devoir extraire ici aussi
 public final class PostgreSQLAggregateRootMaterializedState implements AggregateRootMaterializedState {
 
     private final AggregateRootId aggregateRootId;

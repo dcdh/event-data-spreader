@@ -14,6 +14,7 @@ import javax.json.JsonObject;
 import java.io.StringReader;
 import java.util.Objects;
 
+Humm j'ai des trucs ici à faire aussi
 @ApplicationScoped
 public class JsonbAggregateRootMaterializedStatesDeSerializer implements AggregateRootMaterializedStatesDeSerializer {
 
