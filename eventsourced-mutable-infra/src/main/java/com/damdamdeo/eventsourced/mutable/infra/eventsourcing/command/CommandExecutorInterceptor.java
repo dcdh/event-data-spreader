@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.command.Command;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;

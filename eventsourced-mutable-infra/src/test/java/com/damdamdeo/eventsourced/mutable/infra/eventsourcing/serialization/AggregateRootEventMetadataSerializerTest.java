@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.metadata.MetadataEnhancerContextHolder;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;

@@ -2,9 +2,9 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.UnsupportedAggregateRootEventPayload;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.BeforeEach;

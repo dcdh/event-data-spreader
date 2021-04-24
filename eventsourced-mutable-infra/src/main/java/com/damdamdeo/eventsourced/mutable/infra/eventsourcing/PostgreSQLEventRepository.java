@@ -1,10 +1,13 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootEvent;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.EventRepository;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.StartupEvent;

@@ -2,9 +2,9 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.encryption.api.JsonbCryptoService;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.UnsupportedAggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;

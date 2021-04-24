@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.GitCommitProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.Json;

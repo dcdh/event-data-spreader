@@ -1,10 +1,10 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootEventId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.*;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootEventMetadataSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootEventPayloadsDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 import org.apache.commons.lang3.Validate;
 
 import java.sql.Connection;

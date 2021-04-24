@@ -1,9 +1,9 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandHandler;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.CommandLockingType;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.command.Command;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.command.CommandHandler;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.command.CommandLockingType;
 import com.hazelcast.core.HazelcastInstance;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;

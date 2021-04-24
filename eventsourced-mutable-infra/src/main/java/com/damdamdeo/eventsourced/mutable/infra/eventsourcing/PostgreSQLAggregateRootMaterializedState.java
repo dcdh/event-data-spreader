@@ -2,7 +2,7 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.GitCommitProvider;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 

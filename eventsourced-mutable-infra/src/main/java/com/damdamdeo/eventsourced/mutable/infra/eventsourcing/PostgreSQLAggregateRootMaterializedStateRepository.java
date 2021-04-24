@@ -2,9 +2,9 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootMaterializedStateRepository;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.GitCommitProvider;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnknownAggregateRootException;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootMaterializedStateRepository;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.GitCommitProvider;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.UnknownAggregateRootException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.agroal.DataSource;
 import io.quarkus.runtime.StartupEvent;

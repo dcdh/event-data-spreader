@@ -24,7 +24,7 @@
         <module>eventsourced-encryption-api</module>
         <module>eventsourced-encryption-infra</module>
         <module>eventsourced-consumer-infra</module>
-        <module>eventsourced-mutable-api</module>
+        <module>eventsourced-mutable</module>
         <module>eventsourced-mutable-infra</module>
         <module>eventsourced-mutable-publisher</module>
         <module>event-data-spreader-bom</module>

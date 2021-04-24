@@ -1,7 +1,7 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRootEventPayload;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRootEventPayload;
 
 import javax.json.JsonObject;
 

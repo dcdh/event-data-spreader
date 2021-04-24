@@ -8,8 +8,8 @@ import java.util.Objects;
 import com.damdamdeo.eventsourced.encryption.api.*;
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.*;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.*;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.serialization.AggregateRootMaterializedStatesDeSerializer;
 
 @ApplicationScoped
 public class DefaultAggregateRootRepository implements AggregateRootRepository {

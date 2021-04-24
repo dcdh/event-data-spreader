@@ -2,8 +2,8 @@ package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.serialization;
 
 import com.damdamdeo.eventsourced.model.api.AggregateRootId;
 import com.damdamdeo.eventsourced.model.api.AggregateRootMaterializedState;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.AggregateRoot;
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.UnsupportedAggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.AggregateRoot;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.UnsupportedAggregateRoot;
 import com.damdamdeo.eventsourced.mutable.infra.eventsourcing.UnsupportedJsonbCryptoService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;

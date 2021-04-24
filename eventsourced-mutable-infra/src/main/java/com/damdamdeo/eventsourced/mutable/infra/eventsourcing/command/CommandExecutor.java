@@ -1,6 +1,6 @@
 package com.damdamdeo.eventsourced.mutable.infra.eventsourcing.command;
 
-import com.damdamdeo.eventsourced.mutable.api.eventsourcing.command.Command;
+import com.damdamdeo.eventsourced.mutable.eventsourcing.command.Command;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.lock.FencedLock;
 
